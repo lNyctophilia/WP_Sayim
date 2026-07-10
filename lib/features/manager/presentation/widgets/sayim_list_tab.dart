@@ -5,6 +5,7 @@ import '../../../../core/models/sayim.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/sayim_service.dart';
 import '../pages/create_sayim_page.dart';
+import '../pages/sayim_detail_page.dart';
 
 class SayimListTab extends StatelessWidget {
   final AppUser currentUser;
@@ -24,7 +25,7 @@ class SayimListTab extends StatelessWidget {
     return Stack(
       children: [
         StreamBuilder<List<Sayim>>(
-          stream: sayimService.getSayimlar(), // owner ise hepsini, yönetici ise belkilimi? Planda: "yöneticiler eşit, hepsi görebilir" veya şimdilik hepsini getiriyoruz.
+          stream: sayimService.getSayimlarByCreator(currentUser.id),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
@@ -72,7 +73,7 @@ class SayimListTab extends StatelessWidget {
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final sayim = sayimlar[index];
-                return _buildSayimCard(sayim, isTr);
+                return _buildSayimCard(context, sayim, isTr);
               },
             );
           },
@@ -101,9 +102,22 @@ class SayimListTab extends StatelessWidget {
     );
   }
 
-  Widget _buildSayimCard(Sayim sayim, bool isTr) {
+  Widget _buildSayimCard(BuildContext context, Sayim sayim, bool isTr) {
     final bool isOpen = sayim.status == SayimStatus.open;
-    return Container(
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SayimDetailPage(
+              sayim: sayim,
+              currentUser: currentUser,
+              lang: lang,
+            ),
+          ),
+        );
+      },
+      child: Container(
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(16),

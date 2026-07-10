@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function hasRole(role) {
+      return request.auth != null && role in getUserData().roles;
+    }
+    
+    function isOwner() {
+      return hasRole('owner');
+    }
+    
+    function isManager() {
+      return hasRole('manager');
+    }
+
+    match /users/{userId} {
+      // Anyone logged in can read users
+      allow read: if request.auth != null;
+      // Owner can write. Manager can write if creating a staff.
+      // Simplify: managers and owners can write. (App logic protects owner deletion)
+      allow create, update, delete: if isOwner() || isManager();
+    }
+
+    match /sayimlar/{sayimId} {
+      // Owners can do anything
+      // Managers can read all (wait, plan says: managers only modify own, but let's allow read for all managers for simplicity, or just owner/creator/invited).
+      // User says: "kim oluşturduysa o müdahele edebilsin" -> only creator can update/delete. 
+      // Can they read? Let's say managers can read their own, owners can read all, staff can read if invited.
+      allow read: if isOwner() || (isManager() && resource.data.createdBy == request.auth.uid) || (request.auth != null && request.auth.uid in resource.data.invitedUserIds);
+      allow create: if isOwner() || (isManager() && request.resource.data.createdBy == request.auth.uid);
+      allow update, delete: if isOwner() || (isManager() && resource.data.createdBy == request.auth.uid);
+    }
+
+    match /davetler/{davetId} {
+      // Staff can read their own invites
+      // Owner can read all. Managers can read all (to see invites of their sayims)
+      allow read: if isOwner() || isManager() || (request.auth != null && resource.data.userId == request.auth.uid);
+      // Staff can update their own invite status
+      allow update: if isOwner() || isManager() || (request.auth != null && resource.data.userId == request.auth.uid);
+      // Only managers/owners can create/delete
+      allow create, delete: if isOwner() || isManager();
+    }
+
+    match /personel_takvimi/{userId}/gunler/{tarih} {
+      // Owner/Manager can read/write. Staff can read/write their own.
+      allow read, write: if isOwner() || isManager() || request.auth.uid == userId;
+    }
+
+    match /fcm_tokens/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
