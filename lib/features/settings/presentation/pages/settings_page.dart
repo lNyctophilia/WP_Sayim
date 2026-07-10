@@ -317,8 +317,8 @@ class _SettingsPageState extends State<SettingsPage> {
           );
 
           if (confirmed == true && mounted) {
+            Navigator.of(context).popUntil((route) => route.isFirst);
             await FirebaseAuth.instance.signOut();
-            // AppRouter automatically listens to auth state changes and redirects to LoginPage
           }
         },
         shape: RoundedRectangleBorder(
