@@ -70,11 +70,8 @@ class _UserListTabState extends State<UserListTab>
     );
   }
 
-  Future<void> _toggleUserActive(AppUser user) async {
+  Future<void> _deleteUser(AppUser user) async {
     final isTr = widget.lang.currentLang == 'tr';
-    final action = user.active
-        ? (isTr ? 'devre dışı bırak' : 'deactivate')
-        : (isTr ? 'aktif et' : 'activate');
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -89,8 +86,8 @@ class _UserListTabState extends State<UserListTab>
         ),
         content: Text(
           isTr
-              ? 'Bu kullanıcıyı $action etmek istediğinize emin misiniz?'
-              : 'Are you sure you want to $action this user?',
+              ? 'Bu kullanıcıyı silmek istediğinize emin misiniz?'
+              : 'Are you sure you want to delete this user?',
           style: const TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
@@ -101,22 +98,16 @@ class _UserListTabState extends State<UserListTab>
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(
-              foregroundColor:
-                  user.active ? AppColors.danger : AppColors.success,
+              foregroundColor: AppColors.danger,
             ),
-            child: Text(action.substring(0, 1).toUpperCase() +
-                action.substring(1)),
+            child: Text(isTr ? 'Sil' : 'Delete'),
           ),
         ],
       ),
     );
 
     if (confirmed == true) {
-      if (user.active) {
-        await _authService.deactivateUser(user.id);
-      } else {
-        await _authService.activateUser(user.id);
-      }
+      await _authService.deleteUser(user.id);
       _loadUsers();
     }
   }
@@ -316,19 +307,15 @@ class _UserListTabState extends State<UserListTab>
             ),
           ],
         ),
-        trailing: // Owner kendini deaktif edemez
+        trailing: // Owner kendini silemez
             user.id != widget.currentUser.id
                 ? IconButton(
                     icon: Icon(
-                      user.active
-                          ? Icons.block_rounded
-                          : Icons.check_circle_outline_rounded,
-                      color: user.active
-                          ? AppColors.danger.withValues(alpha: 0.7)
-                          : AppColors.success.withValues(alpha: 0.7),
+                      Icons.delete_outline_rounded,
+                      color: AppColors.danger.withValues(alpha: 0.7),
                       size: 22,
                     ),
-                    onPressed: () => _toggleUserActive(user),
+                    onPressed: () => _deleteUser(user),
                   )
                 : null,
         shape: RoundedRectangleBorder(

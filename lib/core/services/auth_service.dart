@@ -149,6 +149,11 @@ class AuthService {
     await _firestore.collection('users').doc(uid).update({'active': true});
   }
 
+  /// Kullanıcıyı veritabanından tamamen sil
+  Future<void> deleteUser(String uid) async {
+    await _firestore.collection('users').doc(uid).delete();
+  }
+
   /// Şifre değiştir (kendi şifresini)
   Future<void> changePassword(String newPassword) async {
     await _auth.currentUser?.updatePassword(newPassword);
