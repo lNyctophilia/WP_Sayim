@@ -7,6 +7,7 @@ import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../widgets/user_list_tab.dart';
 import '../widgets/sayim_list_tab.dart';
+import '../../../settings/presentation/pages/global_settings_page.dart';
 
 /// Yönetici Paneli — Tab yapısı
 /// Owner: Yönetici Yönetimi + Personel Yönetimi + Sayımlar
@@ -156,6 +157,32 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
                   ],
                 ),
               ),
+              // Genel Ayarlar butonu (Sadece Owner)
+              if (widget.currentUser.isOwner)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => GlobalSettingsPage(lang: widget.lang),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.settings_rounded,
+                      color: AppColors.textSecondary,
+                      size: 24,
+                    ),
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.surface,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
               // Çıkış butonu
               IconButton(
                 onPressed: _handleLogout,

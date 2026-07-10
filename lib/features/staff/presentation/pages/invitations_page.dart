@@ -30,7 +30,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
         builder: (_) => const Center(child: CircularProgressIndicator(color: AppColors.accentLight)),
       );
 
-      await _davetService.acceptDavet(davet);
+      await _davetService.acceptDavet(davet.id);
 
       if (mounted) {
         Navigator.pop(context); // Yükleniyor'u kapat

@@ -27,13 +27,16 @@ service cloud.firestore {
     }
 
     match /sayimlar/{sayimId} {
-      // Owners can do anything
-      // Managers can read all (wait, plan says: managers only modify own, but let's allow read for all managers for simplicity, or just owner/creator/invited).
-      // User says: "kim oluşturduysa o müdahele edebilsin" -> only creator can update/delete. 
-      // Can they read? Let's say managers can read their own, owners can read all, staff can read if invited.
-      allow read: if isOwner() || (isManager() && resource.data.createdBy == request.auth.uid) || (request.auth != null && request.auth.uid in resource.data.invitedUserIds);
+      // Owners and Managers can read all sayims. Staff can read if invited.
+      // Update/Delete is restricted to Owner or Creator.
+      allow read: if isOwner() || isManager() || (request.auth != null && request.auth.uid in resource.data.invitedUserIds);
       allow create: if isOwner() || (isManager() && request.resource.data.createdBy == request.auth.uid);
       allow update, delete: if isOwner() || (isManager() && resource.data.createdBy == request.auth.uid);
+    }
+
+    match /settings/{document} {
+      allow read: if request.auth != null;
+      allow write: if isOwner();
     }
 
     match /davetler/{davetId} {

@@ -11,21 +11,25 @@ import '../../../../core/services/davet_service.dart';
 import '../widgets/grup_selector.dart';
 import '../widgets/staff_picker.dart';
 
-class CreateSayimPage extends StatefulWidget {
+class EditSayimPage extends StatefulWidget {
   final AppUser currentUser;
   final LanguageService lang;
+  final Sayim sayim;
+  final List<Davet> existingDavets;
 
-  const CreateSayimPage({
+  const EditSayimPage({
     super.key,
     required this.currentUser,
     required this.lang,
+    required this.sayim,
+    required this.existingDavets,
   });
 
   @override
-  State<CreateSayimPage> createState() => _CreateSayimPageState();
+  State<EditSayimPage> createState() => _EditSayimPageState();
 }
 
-class _CreateSayimPageState extends State<CreateSayimPage> {
+class _EditSayimPageState extends State<EditSayimPage> {
   final _formKey = GlobalKey<FormState>();
   final _sayimService = SayimService();
   final _davetService = DavetService();
@@ -47,6 +51,13 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
   @override
   void initState() {
     super.initState();
+    _noteController.text = widget.sayim.note;
+    _maxKisiController.text = widget.sayim.maxKisi.toString();
+    _selectedDate = widget.sayim.date;
+    _sehirTipi = widget.sayim.sehirTipi;
+    _globalMultiplier = widget.sayim.globalMultiplier;
+    _gruplar = List.from(widget.sayim.gruplar);
+
     _loadUsers();
   }
 
@@ -61,8 +72,24 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
     setState(() => _isLoading = true);
     try {
       final users = await _authService.getAllUsers();
+      
+      final selected = <SelectedUserConfig>[];
+      for (var davet in widget.existingDavets) {
+        try {
+          final u = users.firstWhere((usr) => usr.id == davet.userId);
+          selected.add(SelectedUserConfig(
+            user: u,
+            role: davet.role,
+            grupId: davet.grupId,
+            ucret: davet.ucret,
+            multiplier: davet.multiplier ?? 1.0,
+          ));
+        } catch (_) {}
+      }
+
       setState(() {
         _allUsers = users;
+        _selectedUsers = selected;
       });
     } catch (e) {
       if (mounted) {
@@ -114,48 +141,58 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
     setState(() => _isLoading = true);
 
     try {
-      // 1. Sayım oluştur
-      final sayim = Sayim(
-        id: '', // Firestore auto-id
+      // 1. Sayımı güncelle
+      final updatedSayim = widget.sayim.copyWith(
         note: _noteController.text.trim(),
         date: _selectedDate,
         maxKisi: int.tryParse(_maxKisiController.text) ?? 20,
-        createdBy: widget.currentUser.id,
         gruplar: _gruplar,
         invitedUserIds: _selectedUsers.map((e) => e.user.id).toList(),
         sehirTipi: _sehirTipi,
         globalMultiplier: _globalMultiplier,
-        createdAt: DateTime.now(),
       );
 
-      final sayimId = await _sayimService.createSayim(sayim);
+      await _sayimService.updateSayim(updatedSayim);
 
-      // 2. Davetleri oluştur
+      // 2. Davetleri yönet (Silinen, Eklenen, Güncellenen)
+      for (var davet in widget.existingDavets) {
+        final configIndex = _selectedUsers.indexWhere((c) => c.user.id == davet.userId);
+        if (configIndex == -1) {
+          await _davetService.deleteDavet(davet.id);
+        } else {
+          final config = _selectedUsers[configIndex];
+          if (config.ucret != davet.ucret || config.grupId != davet.grupId || (config.multiplier ?? 1.0) != (davet.multiplier ?? 1.0)) {
+            await _davetService.updateDavetDetails(davet.id, config.ucret, config.grupId, config.multiplier ?? 1.0);
+          }
+        }
+      }
+
       for (var config in _selectedUsers) {
-        final davet = Davet(
-          id: '', // Firestore auto-id
-          sayimId: sayimId,
-          userId: config.user.id,
-          role: config.role,
-          grupId: config.grupId,
-          sehirIciDisi: _sehirTipi, // Sayımın şehrini kullanıyoruz
-          ucret: config.ucret,
-          multiplier: config.multiplier,
-          createdAt: DateTime.now(),
-        );
-        final createdDavetId = await _davetService.createDavet(davet);
-
-        // Kendi oluşturduğu sayımda kendine davet atıyorsa otomatik kabul et
-        if (config.user.id == widget.currentUser.id) {
-          await _davetService.acceptDavet(createdDavetId);
+        final existing = widget.existingDavets.any((d) => d.userId == config.user.id);
+        if (!existing) {
+          final newDavet = Davet(
+            id: '', 
+            sayimId: updatedSayim.id,
+            userId: config.user.id,
+            role: config.role,
+            grupId: config.grupId,
+            sehirIciDisi: _sehirTipi,
+            ucret: config.ucret,
+            multiplier: config.multiplier,
+            createdAt: DateTime.now(),
+          );
+          final createdId = await _davetService.createDavet(newDavet);
+          if (config.user.id == widget.currentUser.id) {
+            await _davetService.acceptDavet(createdId);
+          }
         }
       }
 
       if (mounted) {
-        Navigator.pop(context);
+        Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(widget.lang.currentLang == 'tr' ? 'Sayım başarıyla oluşturuldu ve davetler gönderildi.' : 'Count created successfully and invitations sent.'),
+            content: Text(widget.lang.currentLang == 'tr' ? 'Sayım başarıyla güncellendi.' : 'Count updated successfully.'),
             backgroundColor: AppColors.success,
           ),
         );
@@ -183,7 +220,7 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
         backgroundColor: AppColors.card,
         elevation: 0,
         title: Text(
-          isTr ? 'Yeni Sayım Oluştur' : 'Create New Count',
+          isTr ? 'Sayımı Düzenle' : 'Edit Count',
           style: GoogleFonts.inter(
             color: AppColors.textPrimary,
             fontSize: 18,
@@ -371,7 +408,7 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
                                 child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                               )
                             : Text(
-                                isTr ? 'Davet Gönder' : 'Send Invitations',
+                                isTr ? 'Güncelle' : 'Update',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,

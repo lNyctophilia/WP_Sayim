@@ -19,6 +19,7 @@ class Davet {
   final int grupId;
   final SehirTipi sehirIciDisi;
   final double ucret;
+  final double multiplier;
   final DateTime? respondedAt;
   final DateTime? lastReminderAt;
   final DateTime createdAt;
@@ -32,6 +33,7 @@ class Davet {
     this.grupId = 1,
     this.sehirIciDisi = SehirTipi.ici,
     required this.ucret,
+    this.multiplier = 1.0,
     this.respondedAt,
     this.lastReminderAt,
     required this.createdAt,
@@ -62,6 +64,7 @@ class Davet {
         orElse: () => SehirTipi.ici,
       ),
       ucret: (data['ucret'] as num?)?.toDouble() ?? 0.0,
+      multiplier: (data['multiplier'] as num?)?.toDouble() ?? 1.0,
       respondedAt: (data['respondedAt'] as Timestamp?)?.toDate(),
       lastReminderAt: (data['lastReminderAt'] as Timestamp?)?.toDate(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -78,6 +81,7 @@ class Davet {
       'grupId': grupId,
       'sehirIciDisi': sehirIciDisi.name,
       'ucret': ucret,
+      'multiplier': multiplier,
       'respondedAt':
           respondedAt != null ? Timestamp.fromDate(respondedAt!) : null,
       'lastReminderAt':
@@ -95,6 +99,7 @@ class Davet {
     int? grupId,
     SehirTipi? sehirIciDisi,
     double? ucret,
+    double? multiplier,
     DateTime? respondedAt,
     DateTime? lastReminderAt,
     DateTime? createdAt,
@@ -108,6 +113,7 @@ class Davet {
       grupId: grupId ?? this.grupId,
       sehirIciDisi: sehirIciDisi ?? this.sehirIciDisi,
       ucret: ucret ?? this.ucret,
+      multiplier: multiplier ?? this.multiplier,
       respondedAt: respondedAt ?? this.respondedAt,
       lastReminderAt: lastReminderAt ?? this.lastReminderAt,
       createdAt: createdAt ?? this.createdAt,

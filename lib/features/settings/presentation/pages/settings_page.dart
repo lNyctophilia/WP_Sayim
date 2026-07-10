@@ -353,7 +353,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const SizedBox(height: 12),
           const Text(
-            'Day Track',
+            'WP Sayim',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,

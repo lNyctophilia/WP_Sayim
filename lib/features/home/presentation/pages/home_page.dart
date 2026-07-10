@@ -14,6 +14,7 @@ import '../widgets/summary_card.dart';
 import '../../../../core/services/davet_service.dart';
 import '../../../../core/models/davet.dart';
 import '../../../staff/presentation/pages/invitations_page.dart';
+import '../../../manager/presentation/widgets/manager_drawer.dart';
 
 /// Ana Sayfa — Takvim + Özet
 class HomePage extends StatefulWidget {
@@ -369,6 +370,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      drawer: widget.currentUser != null && (widget.currentUser!.isOwner || widget.currentUser!.isManager)
+          ? ManagerDrawer(
+              currentUser: widget.currentUser!,
+              lang: widget.lang,
+              storage: widget.storage,
+            )
+          : null,
       body: Stack(
         children: [
           // Arkaplan Deseni (Tam Ekran, Daha Saydam)
@@ -382,7 +390,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           Column(
             children: [
               // Üst bar — farklı renk, yuvarlak alt köşeler
-              _buildTopBar(),
+              Builder(
+                builder: (context) => _buildTopBar(context),
+              ),
               // Takvim + Ay navigasyonu + Özet — kaydırılabilir, ortalanmış
               Expanded(
                 child: _isLoading
@@ -520,7 +530,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(BuildContext context) {
+    final hasDrawer = widget.currentUser != null && (widget.currentUser!.isOwner || widget.currentUser!.isManager);
+    
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.card,
@@ -534,24 +546,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           padding: const EdgeInsets.fromLTRB(20, 8, 12, 14),
           child: Row(
             children: [
-              // App ikon
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.accentLight.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.calendar_month_rounded,
-                  color: AppColors.accentLight,
-                  size: 20,
+              // App ikon veya Drawer ikonu
+              InkWell(
+                onTap: hasDrawer ? () => Scaffold.of(context).openDrawer() : null,
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.accentLight.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    hasDrawer ? Icons.menu_rounded : Icons.calendar_month_rounded,
+                    color: AppColors.accentLight,
+                    size: 20,
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
               // App isim — ayrı yazılış
               const Text(
-                'Day Track',
+                'WP Sayim',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,

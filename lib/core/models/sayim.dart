@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'davet.dart';
 
 /// Sayım durumu
 enum SayimStatus { open, closed }
@@ -38,6 +39,8 @@ class Sayim {
   final SayimStatus status;
   final List<SayimGrup> gruplar;
   final List<String> invitedUserIds;
+  final SehirTipi sehirTipi;
+  final double globalMultiplier;
   final DateTime createdAt;
 
   const Sayim({
@@ -49,8 +52,38 @@ class Sayim {
     this.status = SayimStatus.open,
     this.gruplar = const [],
     this.invitedUserIds = const [],
+    this.sehirTipi = SehirTipi.ici,
+    this.globalMultiplier = 1.0,
     required this.createdAt,
   });
+
+  Sayim copyWith({
+    String? id,
+    String? note,
+    DateTime? date,
+    int? maxKisi,
+    String? createdBy,
+    SayimStatus? status,
+    List<SayimGrup>? gruplar,
+    List<String>? invitedUserIds,
+    SehirTipi? sehirTipi,
+    double? globalMultiplier,
+    DateTime? createdAt,
+  }) {
+    return Sayim(
+      id: id ?? this.id,
+      note: note ?? this.note,
+      date: date ?? this.date,
+      maxKisi: maxKisi ?? this.maxKisi,
+      createdBy: createdBy ?? this.createdBy,
+      status: status ?? this.status,
+      gruplar: gruplar ?? this.gruplar,
+      invitedUserIds: invitedUserIds ?? this.invitedUserIds,
+      sehirTipi: sehirTipi ?? this.sehirTipi,
+      globalMultiplier: globalMultiplier ?? this.globalMultiplier,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 
   /// Firestore'dan oku
   factory Sayim.fromFirestore(DocumentSnapshot doc) {
@@ -73,6 +106,11 @@ class Sayim {
               ?.map((e) => e as String)
               .toList() ??
           [],
+      sehirTipi: SehirTipi.values.firstWhere(
+        (e) => e.name == (data['sehirTipi'] as String? ?? 'ici'),
+        orElse: () => SehirTipi.ici,
+      ),
+      globalMultiplier: (data['globalMultiplier'] as num?)?.toDouble() ?? 1.0,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -87,31 +125,11 @@ class Sayim {
       'status': status.name,
       'gruplar': gruplar.map((g) => g.toMap()).toList(),
       'invitedUserIds': invitedUserIds,
+      'sehirTipi': sehirTipi.name,
+      'globalMultiplier': globalMultiplier,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
 
-  Sayim copyWith({
-    String? id,
-    String? note,
-    DateTime? date,
-    int? maxKisi,
-    String? createdBy,
-    SayimStatus? status,
-    List<SayimGrup>? gruplar,
-    List<String>? invitedUserIds,
-    DateTime? createdAt,
-  }) {
-    return Sayim(
-      id: id ?? this.id,
-      note: note ?? this.note,
-      date: date ?? this.date,
-      maxKisi: maxKisi ?? this.maxKisi,
-      createdBy: createdBy ?? this.createdBy,
-      status: status ?? this.status,
-      gruplar: gruplar ?? this.gruplar,
-      invitedUserIds: invitedUserIds ?? this.invitedUserIds,
-      createdAt: createdAt ?? this.createdAt,
-    );
-  }
+
 }

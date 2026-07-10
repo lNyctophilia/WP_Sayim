@@ -20,10 +20,11 @@ class SayimService {
     return _firestore
         .collection('sayimlar')
         .where('createdBy', isEqualTo: creatorId)
-        .orderBy('date', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => Sayim.fromFirestore(doc)).toList();
+      final list = snapshot.docs.map((doc) => Sayim.fromFirestore(doc)).toList();
+      list.sort((a, b) => b.date.compareTo(a.date)); // Sort in Dart to avoid index
+      return list;
     });
   }
 
@@ -45,8 +46,40 @@ class SayimService {
     });
   }
 
-  /// Sayımı siler
-  Future<void> deleteSayim(String sayimId) async {
-    await _firestore.collection('sayimlar').doc(sayimId).delete();
+  /// Sayımı, ona bağlı davetleri ve kabul edilen takvim kayıtlarını tamamen siler
+  Future<void> deleteSayimFull(String sayimId) async {
+    final sayimDoc = await _firestore.collection('sayimlar').doc(sayimId).get();
+    if (!sayimDoc.exists) return;
+    
+    final sayim = Sayim.fromFirestore(sayimDoc);
+
+    final davetlerQuery = await _firestore
+        .collection('davetler')
+        .where('sayimId', isEqualTo: sayimId)
+        .get();
+
+    final batch = _firestore.batch();
+    
+    // Davetleri ve takvimleri sil
+    for (var davetDoc in davetlerQuery.docs) {
+      batch.delete(davetDoc.reference);
+      
+      final status = davetDoc.data()['status'] as String?;
+      if (status == 'accepted') {
+        final userId = davetDoc.data()['userId'] as String;
+        final dateString = "${sayim.date.year}-${sayim.date.month.toString().padLeft(2, '0')}-${sayim.date.day.toString().padLeft(2, '0')}";
+        final workDayRef = _firestore
+            .collection('personel_takvimi')
+            .doc(userId)
+            .collection('gunler')
+            .doc(dateString);
+        batch.delete(workDayRef);
+      }
+    }
+
+    // Sayımı sil
+    batch.delete(sayimDoc.reference);
+
+    await batch.commit();
   }
 }

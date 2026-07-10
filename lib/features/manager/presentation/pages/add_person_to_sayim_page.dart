@@ -88,7 +88,8 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
           status: DavetStatus.pending,
           role: config.role,
           grupId: config.grupId,
-          sehirIciDisi: config.sehirTipi,
+          sehirIciDisi: widget.sayim.sehirTipi, // Sayımın kendi sehirTipini kullan
+          multiplier: config.multiplier,
           ucret: config.ucret,
           createdAt: now,
         );
@@ -153,6 +154,8 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
                     availableGroups: widget.sayim.gruplar,
                     isTr: isTr,
                     currentUser: widget.currentUser,
+                    sayimSehirTipi: widget.sayim.sehirTipi,
+                    globalMultiplier: widget.sayim.globalMultiplier,
                     onSelectionChanged: (configs) {
                       setState(() {
                         _selectedConfigs = configs;

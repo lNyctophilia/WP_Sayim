@@ -3,11 +3,13 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
 import '../../../../core/models/sayim.dart';
 import '../../../../core/models/davet.dart';
+import '../../../../core/models/app_settings.dart';
+import '../../../../core/services/settings_service.dart';
 
 class SelectedUserConfig {
   final AppUser user;
   int grupId;
-  SehirTipi sehirTipi;
+  double multiplier;
   double ucret;
   DavetRole role;
   bool isSelected;
@@ -15,7 +17,7 @@ class SelectedUserConfig {
   SelectedUserConfig({
     required this.user,
     this.grupId = 1,
-    this.sehirTipi = SehirTipi.ici,
+    this.multiplier = 1.0,
     this.ucret = 0.0,
     this.role = DavetRole.staff,
     this.isSelected = false,
@@ -28,6 +30,8 @@ class StaffPicker extends StatefulWidget {
   final Function(List<SelectedUserConfig>) onSelectionChanged;
   final bool isTr;
   final AppUser currentUser;
+  final SehirTipi sayimSehirTipi;
+  final double globalMultiplier;
 
   const StaffPicker({
     super.key,
@@ -36,6 +40,8 @@ class StaffPicker extends StatefulWidget {
     required this.onSelectionChanged,
     required this.isTr,
     required this.currentUser,
+    this.sayimSehirTipi = SehirTipi.ici,
+    this.globalMultiplier = 1.0,
   });
 
   @override
@@ -45,23 +51,47 @@ class StaffPicker extends StatefulWidget {
 class _StaffPickerState extends State<StaffPicker> {
   late List<SelectedUserConfig> _configs;
   bool _selectAll = false;
+  final SettingsService _settingsService = SettingsService();
+  AppSettings _settings = AppSettings();
 
   @override
   void initState() {
     super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    _settings = await _settingsService.getSettingsOnce();
     _initConfigs();
+    if (mounted) setState(() {});
   }
 
   @override
   void didUpdateWidget(covariant StaffPicker oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.users != widget.users ||
-        oldWidget.availableGroups != widget.availableGroups) {
-      _initConfigs(preserveSelection: true);
+        oldWidget.availableGroups != widget.availableGroups ||
+        oldWidget.sayimSehirTipi != widget.sayimSehirTipi ||
+        oldWidget.globalMultiplier != widget.globalMultiplier) {
+      _initConfigs(preserveSelection: true, oldWidget: oldWidget);
     }
   }
 
-  void _initConfigs({bool preserveSelection = false}) {
+  double _calculateWage(DavetRole role, double multiplier) {
+    double baseWage = 0.0;
+    if (role == DavetRole.staff) {
+      baseWage = widget.sayimSehirTipi == SehirTipi.ici
+          ? _settings.staffSehirIciWage
+          : _settings.staffSehirDisiWage;
+    } else {
+      baseWage = widget.sayimSehirTipi == SehirTipi.ici
+          ? _settings.managerSehirIciWage
+          : _settings.managerSehirDisiWage;
+    }
+    return baseWage * multiplier;
+  }
+
+  void _initConfigs({bool preserveSelection = false, StaffPicker? oldWidget}) {
     final oldConfigs = preserveSelection ? _configs : <SelectedUserConfig>[];
     _configs = widget.users.map((u) {
       final old = preserveSelection
@@ -75,21 +105,34 @@ class _StaffPickerState extends State<StaffPicker> {
           
       if (old != null) {
         bool groupExists = widget.availableGroups.any((g) => g.grupId == old.grupId);
+        // Recalculate ucret because global settings or sehirTipi might have changed
+        double newMultiplier = old.multiplier;
+        if (oldWidget != null && oldWidget.globalMultiplier != widget.globalMultiplier && old.multiplier == oldWidget.globalMultiplier) {
+          // If the old multiplier was exactly the old global multiplier, update it
+          newMultiplier = widget.globalMultiplier;
+        }
+        
         return SelectedUserConfig(
           user: u,
           isSelected: old.isSelected,
           grupId: groupExists ? old.grupId : defaultGrupId,
           role: old.role,
-          sehirTipi: old.sehirTipi,
-          ucret: old.ucret,
+          multiplier: newMultiplier,
+          ucret: old.ucret != _calculateWage(old.role, old.multiplier) ? old.ucret : _calculateWage(old.role, newMultiplier), 
+          // Note: if user manually edited ucret, keep it, otherwise recalculate
         );
       }
 
+      final role = u.isManager || u.isOwner ? DavetRole.manager : DavetRole.staff;
+      final multiplier = widget.globalMultiplier;
+      final autoWage = _calculateWage(role, multiplier);
+
       return SelectedUserConfig(
         user: u,
-        ucret: u.defaultWage ?? 0.0,
-        role: u.isManager || u.isOwner ? DavetRole.manager : DavetRole.staff,
+        ucret: autoWage > 0 ? autoWage : (u.defaultWage ?? 0.0),
+        role: role,
         grupId: defaultGrupId,
+        multiplier: multiplier,
       );
     }).toList();
   }
@@ -292,30 +335,31 @@ class _StaffPickerState extends State<StaffPicker> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: DropdownButtonFormField<SehirTipi>(
-                    initialValue: config.sehirTipi,
+                  child: DropdownButtonFormField<double>(
+                    initialValue: config.multiplier,
                     decoration: InputDecoration(
-                      labelText: widget.isTr ? 'Şehir' : 'City',
+                      labelText: widget.isTr ? 'Çarpan' : 'Multiplier',
                       labelStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
                       border: InputBorder.none,
                       filled: true,
                       fillColor: AppColors.surface,
                     ),
                     dropdownColor: AppColors.card,
-                    items: SehirTipi.values.map((t) {
+                    items: [1.0, 1.5, 2.0].map((m) {
                       return DropdownMenuItem(
-                        value: t,
+                        value: m,
                         child: Text(
-                          t == SehirTipi.ici
-                              ? (widget.isTr ? 'Şehir İçi' : 'In City')
-                              : (widget.isTr ? 'Şehir Dışı' : 'Out of City'),
+                          '${m}x',
                           style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
                         ),
                       );
                     }).toList(),
                     onChanged: (val) {
                       if (val != null) {
-                        setState(() => config.sehirTipi = val);
+                        setState(() {
+                          config.multiplier = val;
+                          config.ucret = _calculateWage(config.role, val);
+                        });
                         _notifyChanges();
                       }
                     },

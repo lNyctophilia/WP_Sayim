@@ -100,18 +100,8 @@ class _AppRouterState extends State<AppRouter> {
 
   /// Kullanıcının rolüne göre uygun ana ekranı döndür
   Widget _buildHomeForRole(AppUser user) {
-    if (user.isOwner || user.isManager) {
-      return ManagerPanelPage(
-        currentUser: user,
-        storage: widget.storage,
-        lang: widget.lang,
-        onLogout: () {
-          // authStateChanges stream tetikleneceği için ekstra bir şey gerekmiyor
-        },
-      );
-    }
-
-    // Personel — mevcut takvim ekranı
+    // Herkes (Personel, Yönetici, Owner) aynı ana ekrana (HomePage) gider.
+    // Yöneticiler HomePage içerisindeki Drawer menü üzerinden yönetici işlevlerine erişir.
     return HomePage(
       storage: widget.storage,
       lang: widget.lang,

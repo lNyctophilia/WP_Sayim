@@ -22,10 +22,11 @@ class DavetService {
     return _firestore
         .collection('davetler')
         .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => Davet.fromFirestore(doc)).toList();
+      final list = snapshot.docs.map((doc) => Davet.fromFirestore(doc)).toList();
+      list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return list;
     });
   }
 
@@ -51,7 +52,11 @@ class DavetService {
   }
 
   /// Daveti kabul et ve takvime işle
-  Future<void> acceptDavet(Davet davet) async {
+  Future<void> acceptDavet(String davetId) async {
+    final doc = await _firestore.collection('davetler').doc(davetId).get();
+    if (!doc.exists) return;
+    final davet = Davet.fromFirestore(doc);
+
     // 1. Sayım detaylarını al (Tarih ve yer/not bilgisi için)
     final sayimDoc = await _firestore.collection('sayimlar').doc(davet.sayimId).get();
     if (!sayimDoc.exists) throw Exception('Sayım bulunamadı!');
@@ -99,9 +104,83 @@ class DavetService {
     await updateDavetStatus(davetId, DavetStatus.declined);
   }
 
-  /// Daveti siler (Yönetici daveti iptal ederse)
+  /// Daveti siler (Yönetici daveti iptal ederse) ve takvimden de kaldırır
   Future<void> deleteDavet(String davetId) async {
-    await _firestore.collection('davetler').doc(davetId).delete();
+    final doc = await _firestore.collection('davetler').doc(davetId).get();
+    if (!doc.exists) return;
+
+    final davet = Davet.fromFirestore(doc);
+    final batch = _firestore.batch();
+
+    batch.delete(doc.reference);
+
+    if (davet.status == DavetStatus.accepted) {
+      final sayimDoc = await _firestore.collection('sayimlar').doc(davet.sayimId).get();
+      if (sayimDoc.exists) {
+        final sayim = Sayim.fromFirestore(sayimDoc);
+        final dateString = "${sayim.date.year}-${sayim.date.month.toString().padLeft(2, '0')}-${sayim.date.day.toString().padLeft(2, '0')}";
+        final workDayRef = _firestore
+            .collection('personel_takvimi')
+            .doc(davet.userId)
+            .collection('gunler')
+            .doc(dateString);
+        batch.delete(workDayRef);
+      }
+    }
+
+    await batch.commit();
+  }
+
+  /// Daveti reddedenden tekrar bekleme durumuna alır
+  Future<void> resetDavet(String davetId) async {
+    final doc = await _firestore.collection('davetler').doc(davetId).get();
+    if (!doc.exists) return;
+    await doc.reference.update({
+      'status': DavetStatus.pending.name,
+      'isAccepted': false,
+      'isPending': true,
+      'isDeclined': false,
+    });
+  }
+
+  /// Davetin detaylarını günceller ve ücret değişirse takvime (WorkDay) yansıtır
+  Future<void> updateDavetDetails(String davetId, double newUcret, int newGrupId, double newMultiplier) async {
+    final doc = await _firestore.collection('davetler').doc(davetId).get();
+    if (!doc.exists) return;
+
+    final davet = Davet.fromFirestore(doc);
+    final batch = _firestore.batch();
+
+    batch.update(doc.reference, {
+      'ucret': newUcret,
+      'grupId': newGrupId,
+      'multiplier': newMultiplier,
+    });
+
+    if (davet.status == DavetStatus.accepted && davet.ucret != newUcret) {
+      final sayimDoc = await _firestore.collection('sayimlar').doc(davet.sayimId).get();
+      if (sayimDoc.exists) {
+        final sayim = Sayim.fromFirestore(sayimDoc);
+        final dateString = "${sayim.date.year}-${sayim.date.month.toString().padLeft(2, '0')}-${sayim.date.day.toString().padLeft(2, '0')}";
+        final workDayRef = _firestore
+            .collection('personel_takvimi')
+            .doc(davet.userId)
+            .collection('gunler')
+            .doc(dateString);
+        batch.update(workDayRef, {'payment': newUcret});
+      }
+    }
+
+    await batch.commit();
+  }
+
+  /// Reddedilmiş daveti tekrar bekleyen durumuna alır
+  Future<void> reinviteDavet(String davetId) async {
+    await _firestore.collection('davetler').doc(davetId).update({
+      'status': DavetStatus.pending.name,
+      'respondedAt': FieldValue.delete(),
+      'lastReminderAt': Timestamp.now(),
+    });
   }
 }
 

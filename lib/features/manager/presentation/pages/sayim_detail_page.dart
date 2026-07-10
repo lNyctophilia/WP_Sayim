@@ -5,8 +5,10 @@ import '../../../../core/models/davet.dart';
 import '../../../../core/models/sayim.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/davet_service.dart';
+import '../../../../core/services/sayim_service.dart';
 import '../../../../core/services/language_service.dart';
 import 'add_person_to_sayim_page.dart';
+import 'edit_sayim_page.dart';
 
 class SayimDetailPage extends StatefulWidget {
   final Sayim sayim;
@@ -29,6 +31,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
   late TabController _tabController;
   final DavetService _davetService = DavetService();
   final AuthService _authService = AuthService();
+  final SayimService _sayimService = SayimService();
   
   // Önbellek: Her seferinde Firestore'dan çekmemek için
   final Map<String, AppUser> _userCache = {};
@@ -56,88 +59,158 @@ class _SayimDetailPageState extends State<SayimDetailPage>
     return user;
   }
 
+  Future<void> _confirmDeleteSayim() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.background,
+        title: Text(isTr ? 'Sayımı Sil' : 'Delete Count', style: const TextStyle(color: AppColors.textPrimary)),
+        content: Text(
+          isTr 
+            ? 'Bu sayımı ve bağlantılı tüm davet/takvim kayıtlarını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.'
+            : 'Are you sure you want to delete this count and all related invitations/calendar records? This action cannot be undone.',
+          style: const TextStyle(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(isTr ? 'İptal' : 'Cancel', style: const TextStyle(color: AppColors.textHint)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(isTr ? 'Sil' : 'Delete', style: const TextStyle(color: AppColors.danger)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      if (mounted) {
+        showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
+      }
+      await _sayimService.deleteSayimFull(widget.sayim.id);
+      if (mounted) {
+        Navigator.pop(context); // loading pop
+        Navigator.pop(context); // page pop
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isTr ? 'Sayım başarıyla silindi.' : 'Count deleted successfully.')));
+      }
+    }
+  }
+
   bool get isTr => widget.lang.currentLang == 'tr';
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: AppColors.textPrimary, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          isTr ? 'Sayım Detayı' : 'Count Details',
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
+    return StreamBuilder<List<Davet>>(
+      stream: _davetService.getDavetlerBySayim(widget.sayim.id),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            backgroundColor: AppColors.background,
+            body: Center(child: CircularProgressIndicator(color: AppColors.accentLight)),
+          );
+        }
+        if (snapshot.hasError) {
+          return Scaffold(
+            backgroundColor: AppColors.background,
+            body: Center(child: Text(isTr ? 'Hata oluştu' : 'An error occurred')),
+          );
+        }
+
+        final davetler = snapshot.data ?? [];
+        final accepted = davetler.where((d) => d.isAccepted).toList();
+        final pending = davetler.where((d) => d.isPending).toList();
+        final declined = davetler.where((d) => d.isDeclined).toList();
+
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: true,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                  color: AppColors.textPrimary, size: 20),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              isTr ? 'Sayım Detayı' : 'Count Details',
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            actions: [
+              if (widget.currentUser.id == widget.sayim.createdBy) ...[
+                IconButton(
+                  icon: const Icon(Icons.edit_rounded, color: AppColors.textPrimary, size: 20),
+                  tooltip: isTr ? 'Düzenle' : 'Edit',
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => EditSayimPage(
+                          sayim: widget.sayim,
+                          existingDavets: davetler,
+                          currentUser: widget.currentUser,
+                          lang: widget.lang,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_rounded, color: AppColors.danger, size: 20),
+                  tooltip: isTr ? 'Sayımı Sil' : 'Delete Count',
+                  onPressed: _confirmDeleteSayim,
+                ),
+              ],
+            ],
+            bottom: TabBar(
+              controller: _tabController,
+              labelColor: AppColors.accentLight,
+              unselectedLabelColor: AppColors.textHint,
+              indicatorColor: AppColors.accentLight,
+              indicatorSize: TabBarIndicatorSize.label,
+              labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              tabs: [
+                Tab(text: isTr ? 'Kabul' : 'Accepted'),
+                Tab(text: isTr ? 'Bekliyor' : 'Pending'),
+                Tab(text: isTr ? 'Red' : 'Declined'),
+              ],
+            ),
           ),
-        ),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppColors.accentLight,
-          unselectedLabelColor: AppColors.textHint,
-          indicatorColor: AppColors.accentLight,
-          indicatorSize: TabBarIndicatorSize.label,
-          labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-          tabs: [
-            Tab(text: isTr ? 'Kabul' : 'Accepted'),
-            Tab(text: isTr ? 'Bekliyor' : 'Pending'),
-            Tab(text: isTr ? 'Red' : 'Declined'),
-          ],
-        ),
-      ),
-      body: StreamBuilder<List<Davet>>(
-        stream: _davetService.getDavetlerBySayim(widget.sayim.id),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-                child: CircularProgressIndicator(color: AppColors.accentLight));
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text(isTr ? 'Hata oluştu' : 'An error occurred'));
-          }
-
-          final davetler = snapshot.data ?? [];
-          
-          final accepted = davetler.where((d) => d.isAccepted).toList();
-          final pending = davetler.where((d) => d.isPending).toList();
-          final declined = davetler.where((d) => d.isDeclined).toList();
-
-          return TabBarView(
+          body: TabBarView(
             controller: _tabController,
             children: [
               _buildDavetList(accepted, DavetStatus.accepted),
               _buildDavetList(pending, DavetStatus.pending),
               _buildDavetList(declined, DavetStatus.declined),
             ],
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.accentLight,
-        foregroundColor: Colors.white,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => AddPersonToSayimPage(
-                sayim: widget.sayim,
-                currentUser: widget.currentUser,
-                lang: widget.lang,
-              ),
-            ),
-          );
-        },
-        icon: const Icon(Icons.person_add_rounded),
-        label: Text(isTr ? 'Kişi Ekle' : 'Add Person'),
-      ),
+          ),
+          floatingActionButton: widget.currentUser.id == widget.sayim.createdBy 
+            ? FloatingActionButton.extended(
+                backgroundColor: AppColors.accentLight,
+                foregroundColor: Colors.white,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AddPersonToSayimPage(
+                        sayim: widget.sayim,
+                        currentUser: widget.currentUser,
+                        lang: widget.lang,
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.person_add_rounded),
+                label: Text(isTr ? 'Kişi Ekle' : 'Add Person'),
+              ) 
+            : null,
+        );
+      },
     );
   }
 
@@ -151,6 +224,8 @@ class _SayimDetailPageState extends State<SayimDetailPage>
       );
     }
 
+    final isCreator = widget.currentUser.id == widget.sayim.createdBy;
+
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
       itemCount: davetler.length,
@@ -161,6 +236,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
           future: _getUser(davet.userId),
           builder: (context, userSnapshot) {
             final userName = userSnapshot.data?.fullName ?? (isTr ? 'Yükleniyor...' : 'Loading...');
+            final grupAdi = widget.sayim.gruplar.firstWhere((g) => g.grupId == davet.grupId, orElse: () => const SayimGrup(grupId: -1, saat: '')).saat;
             
             return Container(
               decoration: BoxDecoration(
@@ -192,14 +268,14 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${isTr ? 'Ücret' : 'Wage'}: ₺${davet.ucret.toStringAsFixed(0)}',
+                          '${isTr ? 'Ücret' : 'Wage'}: ₺${davet.ucret.toStringAsFixed(0)}${grupAdi.isNotEmpty ? ' • Saat: $grupAdi' : ''}',
                           style: const TextStyle(
                               color: AppColors.textSecondary, fontSize: 13),
                         ),
                       ],
                     ),
                   ),
-                  if (status == DavetStatus.pending)
+                  if (status == DavetStatus.pending && isCreator)
                     IconButton(
                       icon: const Icon(Icons.notifications_active_rounded,
                           color: AppColors.accentLight, size: 20),
@@ -216,7 +292,23 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                         }
                       },
                     ),
-                  if (status == DavetStatus.declined)
+                  if (status == DavetStatus.declined && isCreator) ...[
+                    IconButton(
+                      icon: const Icon(Icons.refresh_rounded,
+                          color: AppColors.success, size: 20),
+                      tooltip: isTr ? 'Tekrar Davet Et' : 'Re-invite',
+                      onPressed: () async {
+                        await _davetService.resetDavet(davet.id);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(isTr ? 'Yeniden davet gönderildi' : 'Reinvited'),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      },
+                    ),
                     IconButton(
                       icon: const Icon(Icons.person_remove_rounded,
                           color: AppColors.danger, size: 20),
@@ -225,6 +317,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                         await _davetService.deleteDavet(davet.id);
                       },
                     ),
+                  ],
                 ],
               ),
             );

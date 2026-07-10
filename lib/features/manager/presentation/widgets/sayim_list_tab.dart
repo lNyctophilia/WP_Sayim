@@ -25,7 +25,7 @@ class SayimListTab extends StatelessWidget {
     return Stack(
       children: [
         StreamBuilder<List<Sayim>>(
-          stream: sayimService.getSayimlarByCreator(currentUser.id),
+          stream: sayimService.getSayimlar(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
@@ -34,9 +34,13 @@ class SayimListTab extends StatelessWidget {
 
             if (snapshot.hasError) {
               return Center(
-                child: Text(
-                  isTr ? 'Bir hata oluştu.' : 'An error occurred.',
-                  style: const TextStyle(color: AppColors.danger),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    isTr ? 'Bir hata oluştu:\n${snapshot.error}' : 'An error occurred:\n${snapshot.error}',
+                    style: const TextStyle(color: AppColors.danger),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               );
             }
