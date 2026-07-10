@@ -80,3 +80,13 @@ app.*.map.json
 
 # Web
 **/web/flutter_bootstrap.js
+
+# Custom / Firebase / Keys
+.env
+.firebaserc
+.firebase/
+firebase-debug.log
+analyze.txt
+functions/node_modules/
+functions/.env
+functions/lib/

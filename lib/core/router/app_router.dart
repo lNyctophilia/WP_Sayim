@@ -7,6 +7,7 @@ import '../services/storage_service.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/manager/presentation/pages/manager_panel_page.dart';
+import '../services/notification_service.dart';
 
 /// Ana yönlendirici widget — Auth durumuna göre Login veya Ana Ekranı gösterir
 ///
@@ -30,6 +31,8 @@ class AppRouter extends StatefulWidget {
 
 class _AppRouterState extends State<AppRouter> {
   final AuthService _authService = AuthService();
+  final NotificationService _notificationService = NotificationService();
+  bool _isNotificationInitialized = false;
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +82,12 @@ class _AppRouterState extends State<AppRouter> {
             if (!appUser.active) {
               _authService.logout();
               return _buildSplashScreen();
+            }
+
+            // Bildirim servisini başlat (Sadece bir kez)
+            if (!_isNotificationInitialized) {
+              _isNotificationInitialized = true;
+              _notificationService.initialize();
             }
 
             // Rol bazlı yönlendirme

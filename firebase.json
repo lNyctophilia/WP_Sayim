@@ -1,1 +1,15 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"wp-sayim","appId":"1:224740813185:android:a9c2d15f08bf60c42c6080","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"wp-sayim","configurations":{"android":"1:224740813185:android:a9c2d15f08bf60c42c6080","web":"1:224740813185:web:7e8779ae1b54a22c2c6080"}}}}}}
+{
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ]
+}

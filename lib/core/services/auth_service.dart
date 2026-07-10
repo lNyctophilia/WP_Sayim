@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/app_user.dart';
+import 'notification_service.dart';
 
 /// Firebase Auth servisi — pseudo-email yöntemiyle kullanıcı adı + şifre
 ///
@@ -49,6 +50,11 @@ class AuthService {
 
   /// Çıkış yap
   Future<void> logout() async {
+    try {
+      await NotificationService().clearToken();
+    } catch (e) {
+      // Token silinirken hata olsa bile çıkışa devam et
+    }
     await _auth.signOut();
   }
 

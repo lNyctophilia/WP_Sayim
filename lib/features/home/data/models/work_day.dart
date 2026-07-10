@@ -4,12 +4,14 @@ class WorkDay {
   final bool isCityCenter; // true = şehir içi, false = şehir dışı
   final double payment;
   final String note;
+  final String? sayimId;
 
   const WorkDay({
     required this.date,
     required this.isCityCenter,
     required this.payment,
     this.note = '',
+    this.sayimId,
   });
 
   WorkDay copyWith({
@@ -17,12 +19,14 @@ class WorkDay {
     bool? isCityCenter,
     double? payment,
     String? note,
+    String? sayimId,
   }) {
     return WorkDay(
       date: date ?? this.date,
       isCityCenter: isCityCenter ?? this.isCityCenter,
       payment: payment ?? this.payment,
       note: note ?? this.note,
+      sayimId: sayimId ?? this.sayimId,
     );
   }
 
@@ -32,6 +36,7 @@ class WorkDay {
       'isCityCenter': isCityCenter,
       'payment': payment,
       'note': note,
+      if (sayimId != null) 'sayimId': sayimId,
     };
   }
 
@@ -41,6 +46,7 @@ class WorkDay {
       isCityCenter: json['isCityCenter'] as bool,
       payment: (json['payment'] as num).toDouble(),
       note: json['note'] as String? ?? '',
+      sayimId: json['sayimId'] as String?,
     );
   }
 }

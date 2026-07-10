@@ -6,6 +6,7 @@ import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../widgets/user_list_tab.dart';
+import '../widgets/sayim_list_tab.dart';
 
 /// Yönetici Paneli — Tab yapısı
 /// Owner: Yönetici Yönetimi + Personel Yönetimi + Sayımlar
@@ -247,8 +248,11 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
       targetRole: UserRole.staff,
     ));
 
-    // Sayımlar sekmesi (Adım 7'de doldurulacak)
-    views.add(_buildComingSoon());
+    // Sayımlar sekmesi (Adım 7)
+    views.add(SayimListTab(
+      currentUser: widget.currentUser,
+      lang: widget.lang,
+    ));
 
     return TabBarView(
       controller: _tabController,
@@ -256,28 +260,4 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
     );
   }
 
-  Widget _buildComingSoon() {
-    final isTr = widget.lang.currentLang == 'tr';
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.construction_rounded,
-            size: 48,
-            color: AppColors.textHint.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            isTr ? 'Yakında...' : 'Coming soon...',
-            style: const TextStyle(
-              fontSize: 16,
-              color: AppColors.textHint,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

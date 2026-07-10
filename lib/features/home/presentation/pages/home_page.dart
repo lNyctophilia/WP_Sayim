@@ -10,8 +10,10 @@ import '../../data/models/work_day.dart';
 import '../../data/repositories/work_day_repository.dart';
 import '../../../settings/presentation/pages/settings_page.dart';
 import '../widgets/calendar_grid.dart';
-import '../widgets/day_entry_sheet.dart';
 import '../widgets/summary_card.dart';
+import '../../../../core/services/davet_service.dart';
+import '../../../../core/models/davet.dart';
+import '../../../staff/presentation/pages/invitations_page.dart';
 
 /// Ana Sayfa — Takvim + Özet
 class HomePage extends StatefulWidget {
@@ -44,6 +46,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late Animation<double> _inFadeAnimation;
   late Animation<double> _outFadeAnimation;
 
+  final DavetService _davetService = DavetService();
+
   // Önceki ay verileri (çıkış animasyonu için)
   int? _prevYear;
   int? _prevMonth;
@@ -53,7 +57,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _repository = WorkDayRepository(widget.storage);
+    // HomePage'e sadece giriş yapmış kullanıcılar erişebildiği için currentUser! güvenlidir.
+    _repository = WorkDayRepository(userId: widget.currentUser!.id);
     _currentYear = widget.storage.getLastViewedYear();
     _currentMonth = widget.storage.getLastViewedMonth();
     _loadData();
@@ -161,22 +166,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   void _nextMonth() {
     _changeMonth(-1);
-  }
-
-  void _openDayEntry(DateTime date, WorkDay? existing) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => DayEntrySheet(
-        date: date,
-        existingEntry: existing,
-        storage: widget.storage,
-        lang: widget.lang,
-        onSaved: _loadData,
-        onDeleted: _loadData,
-      ),
-    );
   }
 
   void _showNotePreview(DateTime date, WorkDay? existing) {
@@ -571,6 +560,66 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
               ),
               const Spacer(),
+              // Bildirim Butonu
+              StreamBuilder<List<Davet>>(
+                stream: _davetService.getDavetlerByUser(widget.currentUser!.id),
+                builder: (context, snapshot) {
+                  final pendingCount = snapshot.data
+                          ?.where((d) => d.status == DavetStatus.pending)
+                          .length ??
+                      0;
+
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => InvitationsPage(
+                                currentUser: widget.currentUser!,
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.notifications_rounded,
+                          color: AppColors.textSecondary,
+                          size: 24,
+                        ),
+                        style: IconButton.styleFrom(
+                          backgroundColor: AppColors.surface,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                      if (pendingCount > 0)
+                        Positioned(
+                          top: -2,
+                          right: -2,
+                          child: Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: const BoxDecoration(
+                              color: AppColors.danger,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              pendingCount > 9 ? '9+' : pendingCount.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                height: 1,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(width: 10),
               // Ayarlar butonu
               IconButton(
                 onPressed: _openSettings,
