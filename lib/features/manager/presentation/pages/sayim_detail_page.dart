@@ -6,6 +6,7 @@ import '../../../../core/models/sayim.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/davet_service.dart';
 import '../../../../core/services/language_service.dart';
+import 'add_person_to_sayim_page.dart';
 
 class SayimDetailPage extends StatefulWidget {
   final Sayim sayim;
@@ -123,9 +124,15 @@ class _SayimDetailPageState extends State<SayimDetailPage>
         backgroundColor: AppColors.accentLight,
         foregroundColor: Colors.white,
         onPressed: () {
-          // TODO: Yeni personel ekleme modalı/sayfası açılacak
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(isTr ? 'Yakında eklenecek' : 'Coming soon')),
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => AddPersonToSayimPage(
+                sayim: widget.sayim,
+                currentUser: widget.currentUser,
+                lang: widget.lang,
+              ),
+            ),
           );
         },
         icon: const Icon(Icons.person_add_rounded),
