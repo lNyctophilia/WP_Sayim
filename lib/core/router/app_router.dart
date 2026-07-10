@@ -59,6 +59,14 @@ class _AppRouterState extends State<AppRouter> {
               return _buildSplashScreen();
             }
 
+            if (userSnapshot.hasError) {
+              return Scaffold(
+                body: Center(
+                  child: Text('Hata: ${userSnapshot.error}'),
+                ),
+              );
+            }
+
             final appUser = userSnapshot.data;
 
             if (appUser == null) {

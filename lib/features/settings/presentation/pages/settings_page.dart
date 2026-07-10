@@ -480,7 +480,6 @@ class _SettingsPageState extends State<SettingsPage> {
           borderRadius: BorderRadius.circular(14),
         ),
       ),
-      ),
     );
   }
 
