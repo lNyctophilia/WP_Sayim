@@ -31,7 +31,6 @@ class _CreateUserDialogState extends State<CreateUserDialog> {
   final _fullNameController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _wageController = TextEditingController();
   final _authService = AuthService();
 
   bool _isLoading = false;
@@ -43,7 +42,6 @@ class _CreateUserDialogState extends State<CreateUserDialog> {
     _fullNameController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
-    _wageController.dispose();
     super.dispose();
   }
 
@@ -68,16 +66,12 @@ class _CreateUserDialogState extends State<CreateUserDialog> {
         return;
       }
 
-      final wage = double.tryParse(
-          _wageController.text.replaceAll(',', '.'));
-
       await _authService.createUser(
         username: username,
         password: _passwordController.text,
         fullName: _fullNameController.text.trim(),
         roles: [widget.targetRole],
         createdByUid: widget.currentUser.id,
-        defaultWage: wage,
       );
 
       // Oluşturan kişinin oturumunu tekrar aç
@@ -298,36 +292,7 @@ class _CreateUserDialogState extends State<CreateUserDialog> {
               ),
               const SizedBox(height: 16),
 
-              // Varsayılan Ücret (opsiyonel)
-              _buildLabel(
-                  isTr ? 'Varsayılan Ücret (opsiyonel)' : 'Default Wage (optional)'),
-              const SizedBox(height: 6),
-              TextFormField(
-                controller: _wageController,
-                textInputAction: TextInputAction.done,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
-                ],
-                onFieldSubmitted: (_) => _handleCreate(),
-                style: GoogleFonts.inter(
-                  color: AppColors.textPrimary,
-                  fontSize: 15,
-                ),
-                decoration: InputDecoration(
-                  hintText: isTr ? 'Örn: 1500' : 'e.g. 1500',
-                  prefixIcon: const Icon(Icons.payments_outlined,
-                      color: AppColors.textSecondary, size: 20),
-                  prefixText: '₺ ',
-                  prefixStyle: GoogleFonts.inter(
-                    color: AppColors.accentLight,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
+
 
               // Hata mesajı
               if (_errorMessage != null)

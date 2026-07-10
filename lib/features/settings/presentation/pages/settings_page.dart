@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_config.dart';
 import '../../../../core/services/language_service.dart';
@@ -202,6 +203,11 @@ class _SettingsPageState extends State<SettingsPage> {
             color: AppColors.cityOuter,
             icon: Icons.flight_takeoff_rounded,
           ),
+          const SizedBox(height: 8),
+
+          // ─── Hesap ──────────────────────────────────────
+          _buildSectionHeader(widget.lang.tr('account')),
+          _buildLogoutTile(),
           const SizedBox(height: 8),
 
           // ─── Genel ─────────────────────────────────────
@@ -470,6 +476,81 @@ class _SettingsPageState extends State<SettingsPage> {
           color: AppColors.textHint,
         ),
         onTap: _deleteAllData,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+      ),
+      ),
+    );
+  }
+
+  Widget _buildLogoutTile() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: AppColors.danger.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(
+            Icons.logout_rounded,
+            color: AppColors.danger,
+            size: 22,
+          ),
+        ),
+        title: Text(
+          widget.lang.tr('logout'),
+          style: const TextStyle(
+            fontSize: 15,
+            color: AppColors.danger,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        trailing: const Icon(
+          Icons.chevron_right_rounded,
+          color: AppColors.textHint,
+        ),
+        onTap: () async {
+          final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: AppColors.card,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Text(
+                widget.lang.tr('logout'),
+                style: const TextStyle(color: AppColors.textPrimary),
+              ),
+              content: Text(
+                widget.lang.tr('logout_confirm'),
+                style: const TextStyle(color: AppColors.textSecondary),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: Text(widget.lang.tr('cancel')),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+                  child: Text(widget.lang.tr('logout')),
+                ),
+              ],
+            ),
+          );
+
+          if (confirmed == true && mounted) {
+            await FirebaseAuth.instance.signOut();
+            // AppRouter automatically listens to auth state changes and redirects to LoginPage
+          }
+        },
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
         ),

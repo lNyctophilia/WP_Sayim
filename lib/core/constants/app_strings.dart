@@ -131,6 +131,7 @@ class AppStrings {
       'tr': 'Giriş başarısız. Lütfen tekrar deneyin.',
       'en': 'Login failed. Please try again.'
     },
+    'account': {'tr': 'Hesap', 'en': 'Account'},
     'logout': {'tr': 'Çıkış Yap', 'en': 'Sign Out'},
     'logout_confirm': {
       'tr': 'Çıkış yapmak istediğinize emin misiniz?',

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
+import '../../../../core/models/app_user.dart';
 
 /// Login ekranı — kullanıcı adı + şifre ile giriş
 class LoginPage extends StatefulWidget {
@@ -198,33 +199,80 @@ class _LoginPageState extends State<LoginPage>
   }
 
   Widget _buildLogo() {
-    return Container(
-      width: 80,
-      height: 80,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.accentLight,
-            AppColors.accent,
+    return GestureDetector(
+      onLongPress: _createTestAdmin,
+      child: Container(
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.accentLight,
+              AppColors.accent,
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.accentLight.withValues(alpha: 0.3),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
           ],
         ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.accentLight.withValues(alpha: 0.3),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: const Icon(
-        Icons.inventory_2_rounded,
-        size: 40,
-        color: Colors.white,
+        child: const Icon(
+          Icons.inventory_2_rounded,
+          size: 40,
+          color: Colors.white,
+        ),
       ),
     );
+  }
+
+  Future<void> _createTestAdmin() async {
+    setState(() => _isLoading = true);
+    try {
+      final exists = await _authService.isUsernameTaken('admin');
+      if (!exists) {
+        await _authService.createUser(
+          username: 'admin',
+          password: '123456',
+          fullName: 'Sistem Yöneticisi',
+          roles: [UserRole.owner],
+          createdByUid: 'system',
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Test Admin oluşturuldu: admin / 123456'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Admin kullanıcısı zaten mevcut!'),
+              backgroundColor: AppColors.accentLight,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Admin oluşturulamadı: $e'),
+            backgroundColor: AppColors.danger,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Widget _buildForm() {

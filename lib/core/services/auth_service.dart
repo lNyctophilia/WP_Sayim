@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/app_user.dart';
@@ -66,45 +67,48 @@ class AuthService {
     final email = _toEmail(username);
 
     // 1. Firebase Auth'ta hesap oluştur
-    // NOT: Mevcut kullanıcının oturumu kapanmasın diye
-    // secondary app instance kullanıyoruz
-    final secondaryApp = FirebaseAuth.instance;
-
-    // Mevcut kullanıcıyı kaydet
-    final currentUser = _auth.currentUser;
-
-    final credential = await secondaryApp.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
+    // Mevcut kullanıcının oturumu kapanmasın diye (Firebase limitasyonu),
+    // geçici bir FirebaseApp örneği kullanıyoruz.
+    final tempApp = await Firebase.initializeApp(
+      name: 'TempAuthApp_${DateTime.now().millisecondsSinceEpoch}',
+      options: Firebase.app().options,
     );
+    
+    final tempAuth = FirebaseAuth.instanceFor(app: tempApp);
 
-    final newUserId = credential.user!.uid;
+    try {
+      final credential = await tempAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-    // Oluşturan kişinin oturumunu geri aç (createUser mevcut oturumu kapatır)
-    if (currentUser != null) {
-      // Mevcut kullanıcının token'ı ile tekrar giriş yap
-      // Bu bir bilinen Firebase limitasyonu — workaround olarak
-      // Cloud Functions kullanılabilir ama şimdilik basit tutalım
+      final newUserId = credential.user!.uid;
+
+      // İşimiz bitti, geçici uygulamayı sil.
+      await tempApp.delete();
+
+      // 2. Firestore'a kullanıcı bilgisini kaydet
+      final appUser = AppUser(
+        id: newUserId,
+        username: username.trim().toLowerCase(),
+        fullName: fullName,
+        roles: roles,
+        defaultWage: defaultWage,
+        createdBy: createdByUid,
+        active: true,
+        createdAt: DateTime.now(),
+      );
+
+      await _firestore
+          .collection('users')
+          .doc(newUserId)
+          .set(appUser.toFirestore());
+
+      return appUser;
+    } catch (e) {
+      await tempApp.delete();
+      rethrow;
     }
-
-    // 2. Firestore'a kullanıcı bilgisini kaydet
-    final appUser = AppUser(
-      id: newUserId,
-      username: username.trim().toLowerCase(),
-      fullName: fullName,
-      roles: roles,
-      defaultWage: defaultWage,
-      createdBy: createdByUid,
-      active: true,
-      createdAt: DateTime.now(),
-    );
-
-    await _firestore
-        .collection('users')
-        .doc(newUserId)
-        .set(appUser.toFirestore());
-
-    return appUser;
   }
 
   // ─── Kullanıcı Bilgisi ─────────────────────────────────────
