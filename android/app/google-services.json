@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "224740813185",
+    "project_id": "wp-sayim",
+    "storage_bucket": "wp-sayim.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:224740813185:android:087a5fc4267345002c6080",
+        "android_client_info": {
+          "package_name": "com.example.daytrack"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBeFAJPcLyEExlaWKjWooe8w4K_431He8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
+// TODO: flutterfire configure çalıştırdıktan sonra aşağıdaki satırı uncomment edin:
+// import 'firebase_options.dart';
 import 'core/services/language_service.dart';
 import 'core/services/storage_service.dart';
 import 'core/theme/app_theme.dart';
@@ -7,6 +10,11 @@ import 'features/home/presentation/pages/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Firebase başlat
+  // TODO: flutterfire configure çalıştırdıktan sonra options parametresini ekleyin:
+  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp();
 
   // Durum çubuğu şeffaf
   SystemChrome.setSystemUIOverlayStyle(
