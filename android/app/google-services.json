@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:224740813185:android:087a5fc4267345002c6080",
+        "mobilesdk_app_id": "1:224740813185:android:a9c2d15f08bf60c42c6080",
         "android_client_info": {
-          "package_name": "com.example.daytrack"
+          "package_name": "com.wpsayim.app"
         }
       },
       "oauth_client": [],

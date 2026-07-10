@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
-// TODO: flutterfire configure çalıştırdıktan sonra aşağıdaki satırı uncomment edin:
-// import 'firebase_options.dart';
+import 'firebase_options.dart';
 import 'core/services/language_service.dart';
 import 'core/services/storage_service.dart';
 import 'core/theme/app_theme.dart';
-import 'features/home/presentation/pages/home_page.dart';
+import 'core/router/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Firebase başlat
-  // TODO: flutterfire configure çalıştırdıktan sonra options parametresini ekleyin:
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Durum çubuğu şeffaf
   SystemChrome.setSystemUIOverlayStyle(
@@ -73,7 +70,7 @@ class _DayTrackAppState extends State<DayTrackApp> {
       title: 'WP Sayım',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      home: HomePage(
+      home: AppRouter(
         storage: widget.storage,
         lang: widget.lang,
       ),

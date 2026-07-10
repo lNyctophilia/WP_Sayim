@@ -94,6 +94,66 @@ class AppStrings {
       'tr': 'Safari\'nin alt menüsündeki "Paylaş" ikonuna dokunun ve "Ana Ekrana Ekle" seçeneğini seçin.',
       'en': 'Tap the "Share" icon in Safari\'s bottom menu and select "Add to Home Screen".'
     },
+
+    // Login
+    'login_subtitle': {
+      'tr': 'Hesabınıza giriş yapın',
+      'en': 'Sign in to your account'
+    },
+    'login_username_hint': {'tr': 'Kullanıcı adı', 'en': 'Username'},
+    'login_password_hint': {'tr': 'Şifre', 'en': 'Password'},
+    'login_button': {'tr': 'Giriş Yap', 'en': 'Sign In'},
+    'login_username_required': {
+      'tr': 'Kullanıcı adı gerekli',
+      'en': 'Username is required'
+    },
+    'login_password_required': {
+      'tr': 'Şifre gerekli',
+      'en': 'Password is required'
+    },
+    'login_invalid_credentials': {
+      'tr': 'Kullanıcı adı veya şifre hatalı',
+      'en': 'Invalid username or password'
+    },
+    'login_account_disabled': {
+      'tr': 'Bu hesap devre dışı bırakılmış',
+      'en': 'This account has been disabled'
+    },
+    'login_too_many_attempts': {
+      'tr': 'Çok fazla deneme. Lütfen biraz bekleyin.',
+      'en': 'Too many attempts. Please wait a moment.'
+    },
+    'login_error': {
+      'tr': 'Giriş yapılırken bir hata oluştu',
+      'en': 'An error occurred during login'
+    },
+    'login_failed': {
+      'tr': 'Giriş başarısız. Lütfen tekrar deneyin.',
+      'en': 'Login failed. Please try again.'
+    },
+    'logout': {'tr': 'Çıkış Yap', 'en': 'Sign Out'},
+    'logout_confirm': {
+      'tr': 'Çıkış yapmak istediğinize emin misiniz?',
+      'en': 'Are you sure you want to sign out?'
+    },
+
+    // User Management
+    'username_taken': {
+      'tr': 'Bu kullanıcı adı zaten alınmış',
+      'en': 'This username is already taken'
+    },
+    'password_too_weak': {
+      'tr': 'Şifre çok zayıf',
+      'en': 'Password is too weak'
+    },
+    'user_created_success': {
+      'tr': 'Kullanıcı başarıyla oluşturuldu',
+      'en': 'User created successfully'
+    },
+    'user_create_error': {
+      'tr': 'Kullanıcı oluşturulurken bir hata oluştu',
+      'en': 'An error occurred while creating user'
+    },
   };
 
   static const List<String> monthKeys = [

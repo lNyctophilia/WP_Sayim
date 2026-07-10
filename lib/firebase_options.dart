@@ -45,7 +45,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyBxQrbpgkVPWkou0HiMGGf_cpQ5UK29LQU',
-    appId: '1:224740813185:web:6ce7acd8133dd8852c6080',
+    appId: '1:224740813185:web:7e8779ae1b54a22c2c6080',
     messagingSenderId: '224740813185',
     projectId: 'wp-sayim',
     authDomain: 'wp-sayim.firebaseapp.com',
@@ -54,12 +54,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCBeFAJPcLyEExlaWKjWooe8w4K_431He8',
-    appId: '1:224740813185:android:087a5fc4267345002c6080',
+    appId: '1:224740813185:android:a9c2d15f08bf60c42c6080',
     messagingSenderId: '224740813185',
     projectId: 'wp-sayim',
     storageBucket: 'wp-sayim.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBxwwpDoMO7U2W2pIF_kUITXBb90G4Tzkc',
     appId: '1:224740813185:ios:4ddd81a54a5020352c6080',

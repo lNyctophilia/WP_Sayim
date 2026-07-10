@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/models/app_user.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../data/models/monthly_data.dart';
@@ -16,11 +17,13 @@ import '../widgets/summary_card.dart';
 class HomePage extends StatefulWidget {
   final StorageService storage;
   final LanguageService lang;
+  final AppUser? currentUser;
 
   const HomePage({
     super.key,
     required this.storage,
     required this.lang,
+    this.currentUser,
   });
 
   @override
