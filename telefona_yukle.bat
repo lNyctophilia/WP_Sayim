@@ -1,15 +1,16 @@
 @echo off
-title Day Track - Telefona Yukle
+title WP Sayim - Telefona Yukle
 echo.
 echo   ============================================
-echo     Day Track - Release Telefona Yukleniyor
+echo     WP Sayim - Release Telefona Yukleniyor
 echo   ============================================
 echo   Telefonun baglanip kilidinin acik oldugundan
-echo   emin olun.
+echo   emin olun. (Gerekirse telefon ekranindan 
+echo   yukleme iznini onaylamaniz gerekebilir)
 echo.
 
 echo   [1/2] Yeni versiyon derleniyor, lutfen bekleyin...
-flutter build apk --release
+call flutter build apk --release
 
 if errorlevel 1 (
     echo.
@@ -20,12 +21,13 @@ if errorlevel 1 (
 
 echo.
 echo   [2/2] Telefona yukleniyor...
-flutter install --release
+call flutter install --release
 
 if errorlevel 1 (
     echo.
     echo   [HATA] Yukleme basarisiz!
     echo   Telefon bagli mi? USB debugging acik mi?
+    echo   Ekranda yukleme uyarisi ciktiysa onayladiniz mi?
     pause
     exit /b 1
 )

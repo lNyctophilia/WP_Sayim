@@ -11,13 +11,11 @@ import '../../../../core/services/storage_service.dart';
 class SettingsPage extends StatefulWidget {
   final StorageService storage;
   final LanguageService lang;
-  final VoidCallback onDataDeleted;
 
   const SettingsPage({
     super.key,
     required this.storage,
     required this.lang,
-    required this.onDataDeleted,
   });
 
   @override
@@ -25,91 +23,8 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  late TextEditingController _cityInnerController;
-  late TextEditingController _cityOuterController;
-
   static String get _appVersion => AppConfig.version;
   static String get _developerName => AppConfig.developerName;
-
-  @override
-  void initState() {
-    super.initState();
-    _cityInnerController = TextEditingController(
-      text: _formatValue(widget.storage.getCityInnerPayment()),
-    );
-    _cityOuterController = TextEditingController(
-      text: _formatValue(widget.storage.getCityOuterPayment()),
-    );
-  }
-
-  String _formatValue(double value) {
-    if (value == value.truncateToDouble()) {
-      return value.toInt().toString();
-    }
-    return value.toString();
-  }
-
-  @override
-  void dispose() {
-    _savePayments();
-    _cityInnerController.dispose();
-    _cityOuterController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _savePayments() async {
-    final inner =
-        double.tryParse(_cityInnerController.text.replaceAll(',', '.'));
-    final outer =
-        double.tryParse(_cityOuterController.text.replaceAll(',', '.'));
-
-    if (inner != null) await widget.storage.setCityInnerPayment(inner);
-    if (outer != null) await widget.storage.setCityOuterPayment(outer);
-  }
-
-  Future<void> _deleteAllData() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.card,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          widget.lang.tr('delete_all_data'),
-          style: const TextStyle(color: AppColors.textPrimary),
-        ),
-        content: Text(
-          widget.lang.tr('delete_all_confirm'),
-          style: const TextStyle(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(widget.lang.tr('cancel')),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: Text(widget.lang.tr('delete')),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      await widget.storage.deleteAllData();
-      widget.onDataDeleted();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(widget.lang.tr('data_deleted')),
-            backgroundColor: AppColors.card,
-          ),
-        );
-      }
-    }
-  }
 
   void _showIOSInstallPopup() {
     showDialog(
@@ -189,36 +104,11 @@ class _SettingsPageState extends State<SettingsPage> {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
-          // ─── Varsayılan Ücretler ────────────────────────
-          _buildSectionHeader(widget.lang.tr('default_payments')),
-          _buildPaymentTile(
-            label: widget.lang.tr('city_inner_payment'),
-            controller: _cityInnerController,
-            color: AppColors.cityInner,
-            icon: Icons.location_city_rounded,
-          ),
-          _buildPaymentTile(
-            label: widget.lang.tr('city_outer_payment'),
-            controller: _cityOuterController,
-            color: AppColors.cityOuter,
-            icon: Icons.flight_takeoff_rounded,
-          ),
-          const SizedBox(height: 8),
-
-          // ─── Hesap ──────────────────────────────────────
-          _buildSectionHeader(widget.lang.tr('account')),
-          _buildLogoutTile(),
-          const SizedBox(height: 8),
-
           // ─── Genel ─────────────────────────────────────
           _buildSectionHeader(widget.lang.tr('general')),
           _buildLanguageTile(),
+          _buildLogoutTile(),
           if (kIsWeb) _buildIOSInstallTile(),
-          const SizedBox(height: 8),
-
-          // ─── Veri ──────────────────────────────────────
-          _buildSectionHeader(widget.lang.tr('data')),
-          _buildDeleteDataTile(),
           const SizedBox(height: 24),
 
           // ─── Hakkında ──────────────────────────────────
@@ -241,85 +131,6 @@ class _SettingsPageState extends State<SettingsPage> {
           color: AppColors.accentLight,
           letterSpacing: 1.2,
         ),
-      ),
-    );
-  }
-
-  Widget _buildPaymentTile({
-    required String label,
-    required TextEditingController controller,
-    required Color color,
-    required IconData icon,
-  }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                SizedBox(
-                  height: 36,
-                  child: TextField(
-                    controller: controller,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
-                    ],
-                    onChanged: (_) => _savePayments(),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      prefixText:
-                          '${widget.lang.tr('currency_symbol')} ',
-                      prefixStyle: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: color,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: AppColors.surface,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -436,46 +247,6 @@ class _SettingsPageState extends State<SettingsPage> {
           color: AppColors.textHint,
         ),
         onTap: _showIOSInstallPopup,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDeleteDataTile() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppColors.danger.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Icon(
-            Icons.delete_forever_rounded,
-            color: AppColors.danger,
-            size: 22,
-          ),
-        ),
-        title: Text(
-          widget.lang.tr('delete_all_data'),
-          style: const TextStyle(
-            fontSize: 15,
-            color: AppColors.danger,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        trailing: const Icon(
-          Icons.chevron_right_rounded,
-          color: AppColors.textHint,
-        ),
-        onTap: _deleteAllData,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
         ),
