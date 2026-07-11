@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_config.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
+import '../../../../core/services/auth_service.dart';
 
 /// Ayarlar Sayfası
 class SettingsPage extends StatefulWidget {
@@ -316,8 +317,7 @@ class _SettingsPageState extends State<SettingsPage> {
           );
 
           if (confirmed == true && mounted) {
-            Navigator.of(context).popUntil((route) => route.isFirst);
-            await FirebaseAuth.instance.signOut();
+            await AuthService().logout();
           }
         },
         shape: RoundedRectangleBorder(
