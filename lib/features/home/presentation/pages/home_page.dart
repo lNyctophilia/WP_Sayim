@@ -15,6 +15,7 @@ import '../../../../core/services/davet_service.dart';
 import '../../../../core/models/davet.dart';
 import '../../../staff/presentation/pages/invitations_page.dart';
 import '../../../manager/presentation/widgets/manager_drawer.dart';
+import '../widgets/custom_top_bar.dart';
 
 /// Ana Sayfa — Takvim + Özet
 class HomePage extends StatefulWidget {
@@ -391,7 +392,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             children: [
               // Üst bar — farklı renk, yuvarlak alt köşeler
               Builder(
-                builder: (context) => _buildTopBar(context),
+                builder: (context) => CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
               ),
               // Takvim + Ay navigasyonu + Özet — kaydırılabilir, ortalanmış
               Expanded(
@@ -530,133 +531,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildTopBar(BuildContext context) {
-    final hasDrawer = widget.currentUser != null && (widget.currentUser!.isOwner || widget.currentUser!.isManager);
-    
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(20),
-        ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 12, 14),
-          child: Row(
-            children: [
-              // App ikon veya Drawer ikonu
-              InkWell(
-                onTap: hasDrawer ? () => Scaffold.of(context).openDrawer() : null,
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: AppColors.accentLight.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    hasDrawer ? Icons.menu_rounded : Icons.calendar_month_rounded,
-                    color: AppColors.accentLight,
-                    size: 20,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              // App isim — ayrı yazılış
-              const Text(
-                'WP Sayim',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                  letterSpacing: -0.3,
-                ),
-              ),
-              const Spacer(),
-              // Bildirim Butonu
-              StreamBuilder<List<Davet>>(
-                stream: _davetService.getDavetlerByUser(widget.currentUser!.id),
-                builder: (context, snapshot) {
-                  final pendingCount = snapshot.data
-                          ?.where((d) => d.status == DavetStatus.pending)
-                          .length ??
-                      0;
-
-                  return Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => InvitationsPage(
-                                currentUser: widget.currentUser!,
-                              ),
-                            ),
-                          );
-                        },
-                        icon: const Icon(
-                          Icons.notifications_rounded,
-                          color: AppColors.textSecondary,
-                          size: 24,
-                        ),
-                        style: IconButton.styleFrom(
-                          backgroundColor: AppColors.surface,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                      if (pendingCount > 0)
-                        Positioned(
-                          top: -2,
-                          right: -2,
-                          child: Container(
-                            padding: const EdgeInsets.all(5),
-                            decoration: const BoxDecoration(
-                              color: AppColors.danger,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text(
-                              pendingCount > 9 ? '9+' : pendingCount.toString(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                height: 1,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  );
-                },
-              ),
-              const SizedBox(width: 10),
-              // Ayarlar butonu
-              IconButton(
-                onPressed: _openSettings,
-                icon: const Icon(
-                  Icons.settings_rounded,
-                  color: AppColors.textSecondary,
-                  size: 24,
-                ),
-                style: IconButton.styleFrom(
-                  backgroundColor: AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildMonthNavigator(int year, int month) {
     return Padding(

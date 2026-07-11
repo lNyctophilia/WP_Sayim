@@ -259,12 +259,49 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          userName,
-                          style: const TextStyle(
-                              color: AppColors.textPrimary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 15),
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                userName,
+                                style: const TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 15),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (userSnapshot.hasData && userSnapshot.data != null) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: userSnapshot.data!.isOwner 
+                                      ? AppColors.danger.withValues(alpha: 0.1)
+                                      : userSnapshot.data!.isManager 
+                                          ? AppColors.accentLight.withValues(alpha: 0.1) 
+                                          : AppColors.divider.withValues(alpha: 0.5),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  userSnapshot.data!.isOwner 
+                                      ? 'Admin' 
+                                      : userSnapshot.data!.isManager 
+                                          ? (isTr ? 'Yönetici' : 'Manager') 
+                                          : (isTr ? 'Personel' : 'Staff'),
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: userSnapshot.data!.isOwner 
+                                        ? AppColors.danger
+                                        : userSnapshot.data!.isManager 
+                                            ? AppColors.accentLight 
+                                            : AppColors.textSecondary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                         const SizedBox(height: 4),
                         Text(

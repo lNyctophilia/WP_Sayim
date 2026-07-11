@@ -3,11 +3,22 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_settings.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/settings_service.dart';
+import '../../../../core/models/app_user.dart';
+import '../../../../core/services/storage_service.dart';
+import '../../../home/presentation/widgets/custom_top_bar.dart';
+import '../../../manager/presentation/widgets/manager_drawer.dart';
 
 class GlobalSettingsPage extends StatefulWidget {
   final LanguageService lang;
+  final AppUser currentUser;
+  final StorageService storage;
 
-  const GlobalSettingsPage({super.key, required this.lang});
+  const GlobalSettingsPage({
+    super.key,
+    required this.lang,
+    required this.currentUser,
+    required this.storage,
+  });
 
   @override
   State<GlobalSettingsPage> createState() => _GlobalSettingsPageState();
@@ -102,23 +113,35 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.card,
-        elevation: 0,
-        leading: const BackButton(color: AppColors.textPrimary),
-        title: Text(
-          isTr ? 'Genel Ayarlar' : 'Global Settings',
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+      drawer: ManagerDrawer(
+        currentUser: widget.currentUser,
+        lang: widget.lang,
+        storage: widget.storage,
       ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.accentLight))
-          : SingleChildScrollView(
+      body: Column(
+        children: [
+          CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+            child: Row(
+              children: [
+                const BackButton(color: AppColors.textPrimary),
+                Text(
+                  isTr ? 'Genel Ayarlar' : 'Global Settings',
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(color: AppColors.accentLight))
+                : SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Form(
                 key: _formKey,
@@ -188,6 +211,9 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
                 ),
               ),
             ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -7,7 +7,8 @@ import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../widgets/user_list_tab.dart';
 import '../widgets/sayim_list_tab.dart';
-import '../../../settings/presentation/pages/global_settings_page.dart';
+import '../../../../features/home/presentation/widgets/custom_top_bar.dart';
+import '../widgets/manager_drawer.dart';
 
 /// Yönetici Paneli — Tab yapısı
 /// Owner: Yönetici Yönetimi + Personel Yönetimi + Sayımlar
@@ -88,9 +89,14 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      drawer: ManagerDrawer(
+        currentUser: widget.currentUser,
+        lang: widget.lang,
+        storage: widget.storage,
+      ),
       body: Column(
         children: [
-          _buildTopBar(),
+          CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
           _buildTabBar(),
           Expanded(child: _buildTabContent()),
         ],
@@ -98,112 +104,6 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
     );
   }
 
-  Widget _buildTopBar() {
-    final isTr = widget.lang.currentLang == 'tr';
-    final roleText = widget.currentUser.isOwner
-        ? (isTr ? 'Sahip' : 'Owner')
-        : (isTr ? 'Yönetici' : 'Manager');
-
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(20),
-        ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 12, 14),
-          child: Row(
-            children: [
-              // App ikon
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.accentLight.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.admin_panel_settings_rounded,
-                  color: AppColors.accentLight,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 10),
-              // Kullanıcı bilgisi
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.currentUser.fullName,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      roleText,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.accentLight.withValues(alpha: 0.8),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Genel Ayarlar butonu (Sadece Owner)
-              if (widget.currentUser.isOwner)
-                Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: IconButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => GlobalSettingsPage(lang: widget.lang),
-                        ),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.settings_rounded,
-                      color: AppColors.textSecondary,
-                      size: 24,
-                    ),
-                    style: IconButton.styleFrom(
-                      backgroundColor: AppColors.surface,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
-              // Çıkış butonu
-              IconButton(
-                onPressed: _handleLogout,
-                icon: const Icon(
-                  Icons.logout_rounded,
-                  color: AppColors.textSecondary,
-                  size: 24,
-                ),
-                style: IconButton.styleFrom(
-                  backgroundColor: AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildTabBar() {
     final isTr = widget.lang.currentLang == 'tr';

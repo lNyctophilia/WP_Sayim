@@ -6,6 +6,7 @@ import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../presentation/pages/manager_panel_page.dart';
 import '../../../settings/presentation/pages/global_settings_page.dart';
+import '../../../home/presentation/pages/home_page.dart';
 
 class ManagerDrawer extends StatelessWidget {
   final AppUser currentUser;
@@ -64,6 +65,28 @@ class ManagerDrawer extends StatelessWidget {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
+                _buildSectionTitle(isTr ? 'Personel Paneli' : 'Staff Panel'),
+                
+                ListTile(
+                  leading: const Icon(Icons.calendar_month_rounded, color: AppColors.textSecondary),
+                  title: Text(isTr ? 'Takvim / İş Takip' : 'Calendar / Dashboard', style: const TextStyle(color: AppColors.textPrimary)),
+                  subtitle: Text(isTr ? 'Personel Ana Ekranı' : 'Staff Home Screen', style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
+                  onTap: () {
+                    Navigator.pop(context); // Close drawer
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => HomePage(
+                          currentUser: currentUser,
+                          storage: storage,
+                          lang: lang,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                
+                const Divider(color: AppColors.divider),
                 _buildSectionTitle(isTr ? 'Yönetici Araçları' : 'Manager Tools'),
                 
                 ListTile(
@@ -98,7 +121,11 @@ class ManagerDrawer extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => GlobalSettingsPage(lang: lang),
+                          builder: (_) => GlobalSettingsPage(
+                            lang: lang,
+                            currentUser: currentUser,
+                            storage: storage,
+                          ),
                         ),
                       );
                     },
@@ -108,15 +135,6 @@ class ManagerDrawer extends StatelessWidget {
             ),
           ),
           
-          const Divider(color: AppColors.divider),
-          ListTile(
-            leading: const Icon(Icons.logout_rounded, color: AppColors.danger),
-            title: Text(isTr ? 'Çıkış Yap' : 'Logout', style: const TextStyle(color: AppColors.danger, fontWeight: FontWeight.bold)),
-            onTap: () async {
-              Navigator.pop(context); // Close drawer
-              await AuthService().logout();
-            },
-          ),
           const SizedBox(height: 16),
         ],
       ),
