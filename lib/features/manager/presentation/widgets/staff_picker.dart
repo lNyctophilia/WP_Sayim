@@ -49,10 +49,11 @@ class StaffPicker extends StatefulWidget {
 }
 
 class _StaffPickerState extends State<StaffPicker> {
-  late List<SelectedUserConfig> _configs;
+  List<SelectedUserConfig> _configs = [];
   bool _selectAll = false;
   final SettingsService _settingsService = SettingsService();
   AppSettings _settings = AppSettings();
+  bool _isLoadingSettings = true;
 
   @override
   void initState() {
@@ -63,7 +64,11 @@ class _StaffPickerState extends State<StaffPicker> {
   Future<void> _loadSettings() async {
     _settings = await _settingsService.getSettingsOnce();
     _initConfigs();
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {
+        _isLoadingSettings = false;
+      });
+    }
   }
 
   @override
@@ -154,6 +159,15 @@ class _StaffPickerState extends State<StaffPicker> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoadingSettings) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: CircularProgressIndicator(color: AppColors.accentLight),
+        ),
+      );
+    }
+
     if (_configs.isEmpty) {
       return Center(
         child: Padding(
