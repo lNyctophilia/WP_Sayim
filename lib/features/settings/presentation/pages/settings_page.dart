@@ -6,6 +6,7 @@ import '../../../../core/constants/app_config.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/auth_service.dart';
+import '../../../../core/router/app_router.dart';
 
 /// Ayarlar Sayfası
 class SettingsPage extends StatefulWidget {
@@ -317,8 +318,20 @@ class _SettingsPageState extends State<SettingsPage> {
           );
 
           if (confirmed == true && mounted) {
-            Navigator.of(context).popUntil((route) => route.isFirst);
+            // First log out
             await AuthService().logout();
+            
+            if (mounted) {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (_) => AppRouter(
+                    storage: widget.storage,
+                    lang: widget.lang,
+                  ),
+                ),
+                (route) => false,
+              );
+            }
           }
         },
         shape: RoundedRectangleBorder(
