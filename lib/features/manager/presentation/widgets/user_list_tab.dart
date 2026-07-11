@@ -5,6 +5,7 @@ import '../../../../core/models/app_user.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
 import 'create_user_dialog.dart';
+import 'edit_user_dialog.dart';
 
 /// Kullanıcı listesi sekmesi — Yönetici veya Personel listesi
 /// [targetRole] ile hangi roldeki kullanıcıları göstereceğini belirler
@@ -66,6 +67,20 @@ class _UserListTabState extends State<UserListTab>
         lang: widget.lang,
         targetRole: widget.targetRole,
         onUserCreated: _loadUsers,
+      ),
+    );
+  }
+
+  void _showEditUserDialog(AppUser targetUser) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => EditUserDialog(
+        currentUser: widget.currentUser,
+        lang: widget.lang,
+        targetUser: targetUser,
+        onUserEdited: _loadUsers,
       ),
     );
   }
@@ -243,6 +258,7 @@ class _UserListTabState extends State<UserListTab>
                 color: AppColors.danger.withValues(alpha: 0.3), width: 1),
       ),
       child: ListTile(
+        onTap: () => _showEditUserDialog(user),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: Container(
           width: 44,

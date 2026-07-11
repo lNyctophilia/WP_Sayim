@@ -98,6 +98,7 @@ class AuthService {
         id: newUserId,
         username: username.trim().toLowerCase(),
         fullName: fullName,
+        password: password,
         roles: roles,
         defaultWage: defaultWage,
         createdBy: createdByUid,
@@ -158,6 +159,23 @@ class AuthService {
   /// Kullanıcıyı veritabanından tamamen sil
   Future<void> deleteUser(String uid) async {
     await _firestore.collection('users').doc(uid).delete();
+  }
+
+  /// Admin/Owner yetkisiyle kullanıcı bilgilerini güncelle
+  Future<void> updateUserAdmin({
+    required String uid,
+    String? fullName,
+    String? username,
+    String? password,
+  }) async {
+    final Map<String, dynamic> updates = {};
+    if (fullName != null && fullName.isNotEmpty) updates['fullName'] = fullName;
+    if (username != null && username.isNotEmpty) updates['username'] = username;
+    if (password != null && password.isNotEmpty) updates['password'] = password;
+
+    if (updates.isNotEmpty) {
+      await _firestore.collection('users').doc(uid).update(updates);
+    }
   }
 
   /// Şifre değiştir (kendi şifresini)

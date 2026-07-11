@@ -34,9 +34,75 @@ class SayimService {
     return docRef.id;
   }
 
-  /// Var olan sayımı günceller
+  /// Var olan sayımı günceller ve bağlı davetleri/takvim kayıtlarını senkronize eder
   Future<void> updateSayim(Sayim sayim) async {
-    await _firestore.collection('sayimlar').doc(sayim.id).update(sayim.toFirestore());
+    final oldSayimDoc = await _firestore.collection('sayimlar').doc(sayim.id).get();
+    if (!oldSayimDoc.exists) return;
+    
+    final oldSayim = Sayim.fromFirestore(oldSayimDoc);
+    final batch = _firestore.batch();
+    
+    // 1. Sayımı güncelle
+    batch.update(_firestore.collection('sayimlar').doc(sayim.id), sayim.toFirestore());
+
+    // 2. Davetleri bul
+    final davetlerQuery = await _firestore
+        .collection('davetler')
+        .where('sayimId', isEqualTo: sayim.id)
+        .get();
+
+    for (var davetDoc in davetlerQuery.docs) {
+      final davetData = davetDoc.data();
+      
+      // Şehir tipi değiştiyse daveti güncelle
+      if (oldSayim.sehirTipi != sayim.sehirTipi) {
+        batch.update(davetDoc.reference, {'sehirIciDisi': sayim.sehirTipi.name});
+      }
+
+      // Kabul edildiyse takvimleri senkronize et
+      if (davetData['status'] == 'accepted') {
+        final userId = davetData['userId'] as String;
+        final grupId = davetData['grupId'] as int;
+        final ucret = (davetData['ucret'] as num).toDouble();
+        
+        final grup = sayim.gruplar.firstWhere(
+          (g) => g.grupId == grupId,
+          orElse: () => const SayimGrup(grupId: 1, saat: ''),
+        );
+        final combinedNote = '${sayim.note} ${grup.saat}'.trim();
+
+        final oldDateString = "${oldSayim.date.year}-${oldSayim.date.month.toString().padLeft(2, '0')}-${oldSayim.date.day.toString().padLeft(2, '0')}";
+        final newDateString = "${sayim.date.year}-${sayim.date.month.toString().padLeft(2, '0')}-${sayim.date.day.toString().padLeft(2, '0')}";
+
+        final oldWorkDayRef = _firestore
+            .collection('personel_takvimi')
+            .doc(userId)
+            .collection('gunler')
+            .doc(oldDateString);
+            
+        final newWorkDayRef = _firestore
+            .collection('personel_takvimi')
+            .doc(userId)
+            .collection('gunler')
+            .doc(newDateString);
+
+        if (oldDateString != newDateString) {
+          batch.delete(oldWorkDayRef);
+        }
+
+        final workDay = {
+          'date': Timestamp.fromDate(sayim.date),
+          'isCityCenter': sayim.sehirTipi == SehirTipi.ici,
+          'payment': ucret,
+          'note': combinedNote,
+          'sayimId': sayim.id,
+        };
+
+        batch.set(newWorkDayRef, workDay, SetOptions(merge: true));
+      }
+    }
+
+    await batch.commit();
   }
 
   /// Sayımı kapatır

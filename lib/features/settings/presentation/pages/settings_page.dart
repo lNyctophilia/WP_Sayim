@@ -317,6 +317,7 @@ class _SettingsPageState extends State<SettingsPage> {
           );
 
           if (confirmed == true && mounted) {
+            Navigator.of(context).popUntil((route) => route.isFirst);
             await AuthService().logout();
           }
         },
@@ -353,7 +354,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const SizedBox(height: 12),
           const Text(
-            'WP Sayım',
+            'WP Sayim',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,

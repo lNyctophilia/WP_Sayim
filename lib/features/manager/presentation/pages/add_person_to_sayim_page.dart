@@ -93,7 +93,12 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
           ucret: config.ucret,
           createdAt: now,
         );
-        await _davetService.createDavet(davet);
+        final davetId = await _davetService.createDavet(davet);
+        
+        // Eğer yönetici kendini eklediyse otomatik kabul et
+        if (config.user.id == widget.currentUser.id) {
+          await _davetService.acceptDavet(davetId);
+        }
       }
 
       // 2. Sayım'ın invitedUserIds listesini güncelle

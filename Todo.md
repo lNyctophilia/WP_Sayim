@@ -5,3 +5,4 @@
 - şuan bildirim kabul veya red edilince sayımı oluşturan kişiye bildirim gidiyo mu kontrol et
 - sayım bilgileri güncellenirken sıkıntı oluyo bazen giden davetler güncellenmiyo bazen yöneticilerin önizlediği yerde güncellenmiyo
 - kabul edenleri silme gelsin sayım düzenleme harici ve silindikten sonra kullanıcıya bilgi gitsin kabul ettiğin sayım iptal edildi diye
+- admin şifreleri görebilcek ve değiştirebilicek, ayrıca kullanıcı adlarınıda ve isimleride yani personellerin bilgilerini güncelleme eklensin

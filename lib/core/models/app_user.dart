@@ -8,6 +8,7 @@ class AppUser {
   final String id;
   final String username;
   final String fullName;
+  final String? password;
   final List<UserRole> roles;
   final double? defaultWage;
   final String? createdBy;
@@ -18,6 +19,7 @@ class AppUser {
     required this.id,
     required this.username,
     required this.fullName,
+    this.password,
     required this.roles,
     this.defaultWage,
     this.createdBy,
@@ -37,6 +39,7 @@ class AppUser {
       id: doc.id,
       username: data['username'] as String? ?? '',
       fullName: data['fullName'] as String? ?? '',
+      password: data['password'] as String?,
       roles: (data['roles'] as List<dynamic>?)
               ?.map((r) => UserRole.values.firstWhere(
                     (e) => e.name == r,
@@ -56,6 +59,7 @@ class AppUser {
     return {
       'username': username,
       'fullName': fullName,
+      if (password != null) 'password': password,
       'roles': roles.map((r) => r.name).toList(),
       'defaultWage': defaultWage,
       'createdBy': createdBy,
@@ -68,6 +72,7 @@ class AppUser {
     String? id,
     String? username,
     String? fullName,
+    String? password,
     List<UserRole>? roles,
     double? defaultWage,
     String? createdBy,
@@ -78,6 +83,7 @@ class AppUser {
       id: id ?? this.id,
       username: username ?? this.username,
       fullName: fullName ?? this.fullName,
+      password: password ?? this.password,
       roles: roles ?? this.roles,
       defaultWage: defaultWage ?? this.defaultWage,
       createdBy: createdBy ?? this.createdBy,

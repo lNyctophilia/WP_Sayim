@@ -312,7 +312,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                       ],
                     ),
                   ),
-                  if (status == DavetStatus.pending && isCreator)
+                  if (status == DavetStatus.pending && isCreator) ...[
                     IconButton(
                       icon: const Icon(Icons.notifications_active_rounded,
                           color: AppColors.accentLight, size: 20),
@@ -329,6 +329,25 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                         }
                       },
                     ),
+                    IconButton(
+                      icon: const Icon(Icons.person_remove_rounded,
+                          color: AppColors.danger, size: 20),
+                      tooltip: isTr ? 'İptal Et' : 'Cancel',
+                      onPressed: () async {
+                        await _davetService.deleteDavet(davet.id);
+                      },
+                    ),
+                  ],
+                  if (status == DavetStatus.accepted && isCreator) ...[
+                    IconButton(
+                      icon: const Icon(Icons.person_remove_rounded,
+                          color: AppColors.danger, size: 20),
+                      tooltip: isTr ? 'Kaldır' : 'Remove',
+                      onPressed: () async {
+                        await _davetService.deleteDavet(davet.id);
+                      },
+                    ),
+                  ],
                   if (status == DavetStatus.declined && isCreator) ...[
                     IconButton(
                       icon: const Icon(Icons.refresh_rounded,
