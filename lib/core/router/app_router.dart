@@ -6,7 +6,6 @@ import '../services/language_service.dart';
 import '../services/storage_service.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
-import '../../features/manager/presentation/pages/manager_panel_page.dart';
 import '../services/notification_service.dart';
 
 /// Ana yönlendirici widget — Auth durumuna göre Login veya Ana Ekranı gösterir

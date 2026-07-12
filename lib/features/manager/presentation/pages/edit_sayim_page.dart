@@ -82,7 +82,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
             role: davet.role,
             grupId: davet.grupId,
             ucret: davet.ucret,
-            multiplier: davet.multiplier ?? 1.0,
+            multiplier: davet.multiplier,
           ));
         } catch (_) {}
       }
@@ -161,7 +161,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
           await _davetService.deleteDavet(davet.id);
         } else {
           final config = _selectedUsers[configIndex];
-          if (config.ucret != davet.ucret || config.grupId != davet.grupId || (config.multiplier ?? 1.0) != (davet.multiplier ?? 1.0)) {
+          if (config.ucret != davet.ucret || config.grupId != davet.grupId || (config.multiplier ?? 1.0) != davet.multiplier) {
             await _davetService.updateDavetDetails(davet.id, config.ucret, config.grupId, config.multiplier ?? 1.0);
           }
         }

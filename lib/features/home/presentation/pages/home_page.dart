@@ -11,9 +11,6 @@ import '../../data/repositories/work_day_repository.dart';
 import '../../../settings/presentation/pages/settings_page.dart';
 import '../widgets/calendar_grid.dart';
 import '../widgets/summary_card.dart';
-import '../../../../core/services/davet_service.dart';
-import '../../../../core/models/davet.dart';
-import '../../../staff/presentation/pages/invitations_page.dart';
 import '../../../manager/presentation/widgets/manager_drawer.dart';
 import '../widgets/custom_top_bar.dart';
 
@@ -48,7 +45,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late Animation<double> _inFadeAnimation;
   late Animation<double> _outFadeAnimation;
 
-  final DavetService _davetService = DavetService();
 
   // Önceki ay verileri (çıkış animasyonu için)
   int? _prevYear;
@@ -354,18 +350,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  void _openSettings() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => SettingsPage(
-          storage: widget.storage,
-          lang: widget.lang,
-        ),
-      ),
-    );
-    // Ayarlardan döndüğünde verileri yenile (ücret değişmiş olabilir)
-    _loadData();
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -21,9 +21,11 @@ service cloud.firestore {
     match /users/{userId} {
       // Anyone logged in can read users
       allow read: if request.auth != null;
-      // Owner can write. Manager can write if creating a staff.
-      // Simplify: managers and owners can write. (App logic protects owner deletion)
-      allow create, update, delete: if isOwner() || isManager();
+      // Owner and Manager can do full update/create/delete
+      // A regular user can only update their own fcmToken
+      allow create, delete: if isOwner() || isManager();
+      allow update: if isOwner() || isManager() || 
+                    (request.auth.uid == userId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fcmToken']));
     }
 
     match /sayimlar/{sayimId} {
