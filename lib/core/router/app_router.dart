@@ -54,17 +54,22 @@ class _AppRouterState extends State<AppRouter> {
         }
 
         // Kullanıcı giriş yapmış — rolünü kontrol et
-        return FutureBuilder<AppUser?>(
-          future: _authService.getUserData(snapshot.data!.uid),
+        return StreamBuilder<AppUser?>(
+          stream: _authService.getUserDataStream(snapshot.data!.uid),
           builder: (context, userSnapshot) {
             if (userSnapshot.connectionState == ConnectionState.waiting) {
               return _buildSplashScreen();
             }
 
             if (userSnapshot.hasError) {
+              // Hata durumunda (ör: çevrimdışıyken cache yoksa) otomatik çıkış YAPMA!
+              // Kullanıcıyı sadece bir hata ekranında beklet.
               return Scaffold(
                 body: Center(
-                  child: Text('Hata: ${userSnapshot.error}'),
+                  child: Text(
+                    'Bağlantı hatası veya yetki sorunu: ${userSnapshot.error}\nLütfen internet bağlantınızı kontrol edin.',
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               );
             }
@@ -72,15 +77,20 @@ class _AppRouterState extends State<AppRouter> {
             final appUser = userSnapshot.data;
 
             if (appUser == null) {
-              // Firestore'da kullanıcı verisi yok — çıkış yap
-              _authService.logout();
+              // Firestore'da kullanıcı verisi gerçekten yok (silinmiş)
+              // Sadece o zaman çıkış yap.
+              Future.microtask(() => _authService.logout());
               return _buildSplashScreen();
             }
 
             // Aktif olmayan hesapsa girişine izin verme
             if (!appUser.active) {
-              _authService.logout();
-              return _buildSplashScreen();
+              Future.microtask(() => _authService.logout());
+              return Scaffold(
+                body: Center(
+                  child: Text('Hesabınız askıya alınmış.'),
+                ),
+              );
             }
 
             // Bildirim servisini başlat (Sadece bir kez)

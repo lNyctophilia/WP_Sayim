@@ -127,6 +127,14 @@ class AuthService {
     return AppUser.fromFirestore(doc);
   }
 
+  /// UID ile Firestore'dan kullanıcı bilgisini gerçek zamanlı dinle
+  Stream<AppUser?> getUserDataStream(String uid) {
+    return _firestore.collection('users').doc(uid).snapshots().map((doc) {
+      if (!doc.exists) return null;
+      return AppUser.fromFirestore(doc);
+    });
+  }
+
   /// Şu an oturum açmış kullanıcının AppUser verisini getir
   Future<AppUser?> getCurrentUser() async {
     final user = _auth.currentUser;

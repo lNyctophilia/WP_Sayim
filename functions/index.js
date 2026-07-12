@@ -35,6 +35,12 @@ exports.sendDavetNotification = onDocumentCreated("davetler/{davetId}", async (e
         title: "Yeni Sayım Daveti",
         body: `Seni "${sayimName}" isimli sayıma davet ettiler. Lütfen uygulamaya girip onay ver.`
       },
+      android: {
+        priority: "high",
+        notification: {
+          channelId: "sayim_notifications"
+        }
+      },
       data: {
         type: "davet",
         davetId: event.params.davetId,
@@ -91,6 +97,12 @@ exports.sendDavetResponseNotification = onDocumentUpdated("davetler/{davetId}", 
         title: "Davet Yanıtı",
         body: `${staffName}, "${sayimName}" sayım davetini ${statusStr}.`
       },
+      android: {
+        priority: "high",
+        notification: {
+          channelId: "sayim_notifications"
+        }
+      },
       data: {
         type: "davet_response",
         davetId: event.params.davetId,
@@ -130,6 +142,12 @@ exports.sendDavetCancelledNotification = onDocumentDeleted("davetler/{davetId}",
       notification: {
         title: "Sayım İptali",
         body: `Kabul ettiğiniz "${sayimName}" sayımı için katılımınız iptal edildi veya sayım silindi.`
+      },
+      android: {
+        priority: "high",
+        notification: {
+          channelId: "sayim_notifications"
+        }
       },
       data: {
         type: "davet_cancelled",
