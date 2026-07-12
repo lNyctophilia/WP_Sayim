@@ -14,3 +14,5 @@
 - sayfa yenileme eklensin takvim ekranına aşağı kaydırınca takvimi falan yenilesin o ekrandaki bilgileri
 - kral şimdi bi kişi en son hangi ekranda kapattıysa uygulamayı açınca tekrar o ekranda açılsın panel olarak yani takvimdeyse takvim yönetici paneliyse orda falan gibi, fakat ayarlar hariç ayarlardayken kapattıysa bile ondan önce hangisinde kapatıldıysa orda başlasın
 - kral yöneticilerin bildirim panelinde işte kabul etti mesajları falanda gözüksün sola kaydırınca o bildirimi okundu yapsın sağa kaydırınca okunmadı olarak ayarlansın, ayrıca normal personellerdede kabul ettiklerinde mesela kabul ettin gibi bildirim geçmişi gözüksün yani
+- sayım silindiğinde eğer davet gönderildiyse silinsin davet bildirimi
+- icon değiş
