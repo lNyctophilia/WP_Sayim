@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/app_user.dart';
 import 'notification_service.dart';
 
@@ -41,6 +42,14 @@ class AuthService {
 
       if (credential.user == null) return null;
 
+      final String sessionId = DateTime.now().millisecondsSinceEpoch.toString();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('session_id', sessionId);
+      
+      await _firestore.collection('users').doc(credential.user!.uid).update({
+        'sessionId': sessionId,
+      });
+
       // Firestore'dan kullanıcı bilgisini getir
       return await getUserData(credential.user!.uid);
     } on FirebaseAuthException {
@@ -49,13 +58,19 @@ class AuthService {
   }
 
   /// Çıkış yap
-  Future<void> logout() async {
+  Future<void> logout([bool isKicked = false]) async {
     try {
-      await NotificationService().clearToken();
+      if (!isKicked) {
+        await NotificationService().clearToken();
+      }
     } catch (e) {
       // Token silinirken hata olsa bile çıkışa devam et
     }
     await _auth.signOut();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('session_id');
+    } catch (_) {}
   }
 
   // ─── Kullanıcı Oluşturma (Yönetici/Owner tarafından) ───────

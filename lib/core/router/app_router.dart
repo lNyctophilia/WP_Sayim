@@ -31,7 +31,7 @@ class AppRouter extends StatefulWidget {
 class _AppRouterState extends State<AppRouter> {
   final AuthService _authService = AuthService();
   final NotificationService _notificationService = NotificationService();
-  bool _isNotificationInitialized = false;
+  String? _initializedUid;
 
   @override
   Widget build(BuildContext context) {
@@ -93,9 +93,28 @@ class _AppRouterState extends State<AppRouter> {
               );
             }
 
-            // Bildirim servisini başlat (Sadece bir kez)
-            if (!_isNotificationInitialized) {
-              _isNotificationInitialized = true;
+            // Oturum çakışması kontrolü
+            final localSessionId = widget.storage.getSessionId();
+            if (appUser.sessionId != null && localSessionId != null && appUser.sessionId != localSessionId) {
+              // Farklı bir cihazda giriş yapılmış, bu cihazı oturumdan at (Kicked = true)
+              Future.microtask(() => _authService.logout(true));
+              return Scaffold(
+                body: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Text(
+                      'Hesabınıza başka bir cihazdan giriş yapıldı.\nGüvenliğiniz için bu cihazdaki oturumunuz kapatıldı.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.redAccent, fontSize: 16),
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            // Bildirim servisini başlat (Sadece yeni bir kullanıcı geldiğinde)
+            if (_initializedUid != appUser.id) {
+              _initializedUid = appUser.id;
               _notificationService.initialize();
             }
 

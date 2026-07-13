@@ -11,6 +11,7 @@ class StorageService {
   static const String _prefsCityOuter = 'city_outer_payment';
   static const String _prefsLastYear = 'last_viewed_year';
   static const String _prefsLastMonth = 'last_viewed_month';
+  static const String _prefsSessionId = 'session_id';
 
   late SharedPreferences _prefs;
 
@@ -24,6 +25,18 @@ class StorageService {
 
   Future<void> setLanguage(String lang) async {
     await _prefs.setString(_prefsLang, lang);
+  }
+
+  // ─── Oturum (Session) ─────────────────────────────────────
+
+  String? getSessionId() => _prefs.getString(_prefsSessionId);
+
+  Future<void> setSessionId(String? sessionId) async {
+    if (sessionId == null) {
+      await _prefs.remove(_prefsSessionId);
+    } else {
+      await _prefs.setString(_prefsSessionId, sessionId);
+    }
   }
 
   // ─── Varsayılan Ücretler ──────────────────────────────────

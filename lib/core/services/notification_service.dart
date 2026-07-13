@@ -67,7 +67,8 @@ class NotificationService {
       await _firestore.collection('users').doc(user.uid).update({
         'fcmToken': FieldValue.delete(),
       });
-      await _messaging.deleteToken();
+      // Cihazdaki tokenı tamamen silmiyoruz (yeni girişte sorun yaşamamak için)
+      // await _messaging.deleteToken();
     } catch (e) {
       debugPrint('FCM Token silinirken hata: $e');
     }

@@ -14,6 +14,7 @@ class AppUser {
   final String? createdBy;
   final bool active;
   final DateTime createdAt;
+  final String? sessionId;
 
   const AppUser({
     required this.id,
@@ -25,6 +26,7 @@ class AppUser {
     this.createdBy,
     this.active = true,
     required this.createdAt,
+    this.sessionId,
   });
 
   /// En yüksek yetki seviyesi
@@ -51,6 +53,7 @@ class AppUser {
       createdBy: data['createdBy'] as String?,
       active: data['active'] as bool? ?? true,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      sessionId: data['sessionId'] as String?,
     );
   }
 
@@ -65,6 +68,7 @@ class AppUser {
       'createdBy': createdBy,
       'active': active,
       'createdAt': Timestamp.fromDate(createdAt),
+      if (sessionId != null) 'sessionId': sessionId,
     };
   }
 
@@ -78,6 +82,7 @@ class AppUser {
     String? createdBy,
     bool? active,
     DateTime? createdAt,
+    String? sessionId,
   }) {
     return AppUser(
       id: id ?? this.id,
@@ -89,6 +94,7 @@ class AppUser {
       createdBy: createdBy ?? this.createdBy,
       active: active ?? this.active,
       createdAt: createdAt ?? this.createdAt,
+      sessionId: sessionId ?? this.sessionId,
     );
   }
 }
