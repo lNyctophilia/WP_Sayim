@@ -189,3 +189,18 @@ exports.syncUserWithAuth = onDocumentUpdated("users/{userId}", async (event) => 
     }
   }
 });
+
+// 5. Kullanıcı dokümanı (AppUser) silindiğinde Firebase Auth'tan da sil
+exports.deleteUserFromAuth = onDocumentDeleted("users/{userId}", async (event) => {
+  const userId = event.params.userId;
+  try {
+    await admin.auth().deleteUser(userId);
+    console.log(`Successfully deleted auth user: ${userId}`);
+  } catch (error) {
+    if (error.code === 'auth/user-not-found') {
+      console.log(`Auth user ${userId} already deleted or does not exist.`);
+    } else {
+      console.error(`Error deleting auth user: ${userId}`, error);
+    }
+  }
+});
