@@ -16,3 +16,14 @@
 - kral yöneticilerin bildirim panelinde işte kabul etti mesajları falanda gözüksün sola kaydırınca o bildirimi okundu yapsın sağa kaydırınca okunmadı olarak ayarlansın, ayrıca normal personellerdede kabul ettiklerinde mesela kabul ettin gibi bildirim geçmişi gözüksün yani
 - sayım silindiğinde eğer davet gönderildiyse silinsin davet bildirimi
 - icon değiş
+- hatırlatma butonu çalışmıyo şuan tekrar bildirim atmıyo eski bildirimi silip tahminimce veya bildirim var zaten diyip bilmiyom hiç neden atmıyo
+- admin oluşturma şeyini kaldır ve giriş ekranındaki ve şifreyi çok zorlu bi şifre ile değiştir
+- Bildirim sistemi hatalı
+- Bildirimler internet yoksa bile beklemeye alsın bildirimi interneti olunca gitsin bildirim, ayrıca mesajın ulaşıp ulaşmadığını yönetici panelinde gösterelim whatsapptaki tek tik çift tik olayı gibi bildirim düşmemişse veya interneti yoksa tek tik gözüksün
+- Aylık iş yoğunluğuyla; toplam gün ve para kısmı yer değiştirsin
+- Max kişi sayısının yanına yönetici sayısı eklicez ve ona göre max kişi sayısı sadece personele özel olucak,max yönetici sayısıda sadece yöneticilere özel olucak ayrıca bunlar max değil direkt standart yani 2 yazıyosak kesin o kadar seçmemiz lazım eğer seçmediysek ve davet gönderdiysek sayım ekranında personel veya yönetici eksik diye uyarı olsun
+  -Admin hesabı sayım personelleri listesinde gözükmesin eklenemesin orada sadece yöneticiler ve personller gözüksün
+- Kayıt sistemi olcak şu şekilde birisi mesela kayıt olmak için kendi bi şifre ve telefon numarasıyla giriş yapıcak, ayrıca kayıt olurken isim, adres ve tel no isticez, tel no ve adresi neden istediğimizi not olarak yazıcaz adresi servis güzergahı için, tel no da ulaşmak için gibi, bunları girdikten sonra başvuru göndericek ve yöneticilerin onaylamasını beklicek onaylarsa o bilgilerle giriş yapabilecek diğer türlü giriş yapamayacak
+- uygulamayı yayınlıcağımız zaman tüm güvenlik önlemlerini iyice alıp apphive da yayınla ve girişine kayıt olmak zorunda değilsiniz yazısı koyarız
+- uygulamayı iphone'larda kullanacağı için ve sürekli yeni güncelleme geldiğinde kullanıcılara yeni apk indirtmemek için hem android için bi web app yani mobil app fakat web arayüzünü koymuşuz gibi yapsak ve iphone kullananlarda ana sayfasına eklese kısayol tarzı gibi nasıl olur bildirim sistemleri yine doğru şekilde çalışır mı o şekilde ayrıca bizim firebase push notification planını mı kullanıyo yoksa ücretsiz mi olur onda bildirim göndermek web sitesi
+- sayım günü sayım saatinden 2.30 saat önce hatırlatma bildirimi atsın bugün şu saatte şu sayım var diye
