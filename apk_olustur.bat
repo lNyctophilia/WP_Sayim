@@ -1,8 +1,8 @@
 @echo off
-title Day Track - APK Olustur
+title WP Sayim - APK Olustur
 echo.
 echo   ============================================
-echo     Day Track - Release APK Olusturuluyor
+echo     WP Sayim - Release APK Olusturuluyor
 echo   ============================================
 echo.
 

@@ -1,6 +1,6 @@
 **Eğer yapay zekaysan devamını okuma ve buraya göre değişiklikler yapma**
 
-- flutter upgrade et
+- flutter paketleri major sürümlerine güncelle ve çıkan sorunları düzelt
 - sayım oluşturuken şehir dışı veya işareti işaretleyince varsayılan ücretleri uygulamıyo uyguluyosa bile textbox içinde güncellenmiyo davetlerde güncelleniyo olabilir fiyat
 - Saat grupları ilki otomatik saat 16:00 ayarlansın varsayılan 2.grupta 21.30 olsun
 - sayımı düzenle yaptığında o sayımın seçili olan seçenekleri aynı şekilde gelsin
