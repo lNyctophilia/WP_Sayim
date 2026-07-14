@@ -19,9 +19,19 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage(function(payload) {
   console.log('[firebase-messaging-sw.js] Arka plan bildirimi alındı:', payload);
 
-  const notificationTitle = payload.notification?.title || 'WP Sayım';
+  // Firebase, eğer payload içinde 'notification' objesi varsa (ki Cloud Functions'ta var) 
+  // arka planda varsayılan olarak zaten bir bildirim gösterir!
+  // Biz de burada tekrar showNotification çağırırsak ÇİFT bildirim gider.
+  // Bu yüzden, eğer notification varsa işlemi Firebase'e bırakıyoruz.
+  if (payload.notification) {
+    console.log('[firebase-messaging-sw.js] Bildirim zaten Firebase tarafından gösterilecek, atlanıyor.');
+    return;
+  }
+
+  // Sadece "data" mesajı gelirse özel bildirim göster (Gelecekte gerekirse diye kalsın)
+  const notificationTitle = payload.data?.title || 'WP Sayım';
   const notificationOptions = {
-    body: payload.notification?.body || 'Yeni bir bildiriminiz var.',
+    body: payload.data?.body || 'Yeni bir bildiriminiz var.',
     icon: '/icons/Icon-192.png',
     badge: '/icons/Icon-192.png',
     data: payload.data,
