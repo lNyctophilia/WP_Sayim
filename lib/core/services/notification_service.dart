@@ -50,9 +50,24 @@ class NotificationService {
       }
       if (token != null) {
         await _updateToken(token);
+        
+        // Başarılı olursa eski hatayı temizle
+        await _firestore.collection('users').doc(user.uid).set(
+          {'fcmError': FieldValue.delete()},
+          SetOptions(merge: true),
+        );
       }
     } catch (e) {
       debugPrint('FCM Token alınırken hata: $e');
+      // Mobil cihazın console ekranını göremediğimiz için, hatayı Firestore'a kaydediyoruz!
+      try {
+        await _firestore.collection('users').doc(user.uid).set(
+          {'fcmError': e.toString()},
+          SetOptions(merge: true),
+        );
+      } catch (innerError) {
+        debugPrint('Hata veritabanına yazılamadı: $innerError');
+      }
     }
   }
 
