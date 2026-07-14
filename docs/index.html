@@ -36,6 +36,59 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <!-- PWA Force Auto-Update Script (Bulletproof Version Check) -->
+  <script>
+    function checkAppVersionAndRefresh() {
+      // version.json dosyasını cache'e takılmadan çekmek için t parametresi ekliyoruz
+      fetch('/WP_Sayim/version.json?t=' + new Date().getTime())
+        .then(response => response.json())
+        .then(data => {
+          const latestVersion = data.version;
+          const currentVersion = localStorage.getItem('app_version');
+
+          if (currentVersion && currentVersion !== latestVersion) {
+            console.log('[PWA Update] Yeni versiyon bulundu! Caches temizleniyor...', latestVersion);
+            
+            // 1. Yeni sürümü kaydet
+            localStorage.setItem('app_version', latestVersion);
+            
+            // 2. Service Worker'ı devre dışı bırak
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                  // Firebase SW haricindeki ana PWA Service Worker'ı sil
+                  if(registration.active && registration.active.scriptURL.includes('flutter_service_worker')) {
+                    registration.unregister();
+                  }
+                }
+              });
+            }
+            
+            // 3. Tüm PWA Çerezlerini ve Önbelleği Sil
+            if (window.caches) {
+              caches.keys().then(function(names) {
+                for (let name of names) {
+                  caches.delete(name);
+                }
+              }).then(() => {
+                // 4. Sayfayı tertemiz yenile
+                window.location.reload(true);
+              });
+            } else {
+              window.location.reload(true);
+            }
+          } else if (!currentVersion) {
+            // İlk açılışta versiyonu kaydet
+            localStorage.setItem('app_version', latestVersion);
+          }
+        })
+        .catch(err => console.log('Version check failed:', err));
+    }
+
+    // Uygulama yüklendiğinde versiyonu kontrol et
+    window.addEventListener('load', checkAppVersionAndRefresh);
+  </script>
+
   <!-- Service Worker Interceptor for FCM on GitHub Pages -->
   <script>
     if ('serviceWorker' in navigator) {

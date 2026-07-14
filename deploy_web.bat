@@ -15,6 +15,11 @@ if errorlevel 1 (
 echo Build basarili!
 echo.
 
+REM 1.5. Versiyon dosyasi olustur (PWA Cache guncelleme icin)
+set TIMESTAMP=%date%-%time%
+set TIMESTAMP=%TIMESTAMP: =_%
+echo {"version": "%TIMESTAMP%"} > build\web\version.json
+
 REM 2. docs klasorunu temizle ve yeni build'i kopyala
 echo [2/4] Build dosyalari docs/ klasorune kopyalaniyor...
 if exist docs rmdir /s /q docs
