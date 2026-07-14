@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import '../../../staff/presentation/pages/invitations_page.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
 import '../../../../core/services/language_service.dart';
@@ -59,6 +61,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _repository = WorkDayRepository(userId: widget.currentUser!.id);
     _currentYear = widget.storage.getLastViewedYear();
     _currentMonth = widget.storage.getLastViewedMonth();
+    _monthlyData = MonthlyData.empty(_currentYear, _currentMonth);
+    
+    // Bildirim tıklamasından gelip gelmediğimizi kontrol et (Web Deep Linking)
+    if (kIsWeb && Uri.base.queryParameters['open_notifications'] == 'true') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => InvitationsPage(
+              currentUser: widget.currentUser!,
+            ),
+          ),
+        );
+      });
+    }
+
     _loadData();
   }
 
