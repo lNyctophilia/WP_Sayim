@@ -36,18 +36,27 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <!-- Service Worker Registration for FCM (Fixes base-href issue on GitHub Pages) -->
+  <!-- Service Worker Interceptor for FCM on GitHub Pages -->
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function () {
-        // base-href klasörümüz WP_Sayim olduğu için path'i manuel belirtiyoruz
-        navigator.serviceWorker.register('/WP_Sayim/firebase-messaging-sw.js')
-          .then((registration) => {
-            console.log('Service Worker registration successful with scope: ', registration.scope);
-          }, (err) => {
-            console.log('Service Worker registration failed: ', err);
-          });
-      });
+      // Firebase'in arka planda yapmaya çalıştığı /firebase-messaging-sw.js isteğini yakalayıp 
+      // GitHub Pages dizinimize (WP_Sayim) yönlendiriyoruz.
+      const originalRegister = navigator.serviceWorker.register;
+      navigator.serviceWorker.register = function(url, options) {
+        if (url === '/firebase-messaging-sw.js' || url.includes('firebase-messaging-sw.js')) {
+          console.log('[SW Interceptor] Firebase SW isteği yakalandı. Yönlendiriliyor...');
+          url = '/WP_Sayim/firebase-messaging-sw.js';
+          
+          // Scope'un da root dizin yerine WP_Sayim altında olması gerekiyor, 
+          // yoksa GitHub Pages güvenlik hatası verir (Max scope allowed).
+          if (options && options.scope) {
+            options.scope = '/WP_Sayim/firebase-cloud-messaging-push-scope';
+          } else if (!options) {
+            options = { scope: '/WP_Sayim/firebase-cloud-messaging-push-scope' };
+          }
+        }
+        return originalRegister.call(navigator.serviceWorker, url, options);
+      };
     }
   </script>
 

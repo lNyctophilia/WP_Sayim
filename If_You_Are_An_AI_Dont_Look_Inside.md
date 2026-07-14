@@ -28,3 +28,4 @@
 - uygulamayı yayınlıcağımız zaman tüm güvenlik önlemlerini iyice alıp apphive da yayınla ve girişine kayıt olmak zorunda değilsiniz yazısı koyarız
 - uygulamayı iphone'larda kullanacağı için ve sürekli yeni güncelleme geldiğinde kullanıcılara yeni apk indirtmemek için hem android için bi web app yani mobil app fakat web arayüzünü koymuşuz gibi yapsak ve iphone kullananlarda ana sayfasına eklese kısayol tarzı gibi nasıl olur bildirim sistemleri yine doğru şekilde çalışır mı o şekilde ayrıca bizim firebase push notification planını mı kullanıyo yoksa ücretsiz mi olur onda bildirim göndermek web sitesi
 - sayım günü sayım saatinden 2.30 saat önce hatırlatma bildirimi atsın bugün şu saatte şu sayım var diye
+- personel silindiğinde personelin olduğu sayımların bilgilerindende gidiyo onu düzeltelim oralarda yine eski bilgiler gözüksün
