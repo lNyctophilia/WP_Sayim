@@ -43,7 +43,7 @@ exports.sendDavetNotification = onDocumentCreated("davetler/{davetId}", async (e
       },
       webpush: {
         fcmOptions: {
-          link: "https://lnyctophilia.github.io/WP_Sayim/"
+          link: "https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true"
         }
       },
       data: {
@@ -110,7 +110,7 @@ exports.sendDavetResponseNotification = onDocumentUpdated("davetler/{davetId}", 
       },
       webpush: {
         fcmOptions: {
-          link: "https://lnyctophilia.github.io/WP_Sayim/"
+          link: "https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true"
         }
       },
       data: {
@@ -161,7 +161,7 @@ exports.sendDavetCancelledNotification = onDocumentDeleted("davetler/{davetId}",
       },
       webpush: {
         fcmOptions: {
-          link: "https://lnyctophilia.github.io/WP_Sayim/"
+          link: "https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true"
         }
       },
       data: {
