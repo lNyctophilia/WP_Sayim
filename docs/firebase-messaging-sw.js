@@ -55,7 +55,8 @@ self.addEventListener('notificationclick', function(event) {
           return client.focus();
         }
       }
-      return clients.openWindow('./');
+      // Eğer uygulama arka planda hiç açık değilse, sıfırdan başlat
+      return clients.openWindow('/WP_Sayim/');
     })
   );
 });
