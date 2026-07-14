@@ -1,55 +1,59 @@
-# **📅 DayTrack — Work Day Tracker**
+# **📅 WP Sayım — Personel Yönetim ve Takip Sistemi**
 
-A sleek, dark-themed mobile app for tracking daily shifts, earnings, and notes with a monthly calendar view.
-
----
-
-📸 **Screenshots**
-
-<!-- Add your screenshots here -->
-<!-- ![Screenshots](screenshot_url) -->
+Günlük vardiyaları, kazançları ve notları aylık takvim görünümünde takip etmek için geliştirilmiş, karanlık temalı şık bir yönetim uygulaması.
 
 ---
 
-🎬 **Demo**
+**🌐 Web Uygulaması**
 
-<!-- Add your demo video here -->
-<!-- ![Demo](video_url) -->
+Uygulamamız artık kurulum gerektirmeyen bir web uygulaması olarak çalışmaktadır.
 
----
-
-**📱 Compatibility**
-
-- **Android Versions:** Android 5.0 (Lollipop) and above.
+👉 **[Uygulamaya Git: WP Sayım](https://lnyctophilia.github.io/WP_Sayim/)**
 
 ---
 
-**🛠️ Technical Details**
+**📱 Uyumluluk**
 
-- **Framework:** Flutter (Dart)
-
-- **Architecture:** Feature-First + Clean Architecture
-
-- **Storage:** Local JSON + SharedPreferences
-
-- **Theme:** Dark navy Material 3
+- **Web:** Tüm modern tarayıcılar (Chrome, Safari, Edge, Firefox)
+- **PWA (Ana Ekrana Ekle):** Android, iOS ve Masaüstü sistemlerde tam uyumlu.
 
 ---
 
-**📥 Download & Installation**
+**🛠️ Teknik Detaylar**
 
-- Download the latest APK from the [📥 Releases](https://github.com/lNyctophilia/WP_Sayim/releases) section.
-
-- Install on your Android device.
-
----
-
-**📜 License**
-
-- MIT License.
+- **Altyapı:** Flutter (Dart) - Web Build
+- **Mimari:** Feature-First + Clean Architecture
+- **Veritabanı ve Kimlik Doğrulama:** Firebase Authentication + Cloud Firestore
+- **Bildirimler:** Firebase Cloud Messaging (FCM) Web Push
+- **Tema:** Koyu Lacivert (Material 3)
 
 ---
 
-**👨‍💻 Developer**
+**📥 Kurulum (Ana Ekrana Ekleme)**
 
-- Made by **lNyctophilia**
+Uygulamayı telefonunuza indirmek yerine, doğrudan tarayıcınız üzerinden ana ekranınıza ekleyebilirsiniz. Bu sayede cihazınızda yer kaplamaz ve her zaman güncel kalır.
+
+**Android (Chrome):**
+
+1. Siteyi Chrome'da açın.
+2. Sağ üstteki üç nokta menüsüne (⋮) dokunun.
+3. "Ana ekrana ekle" seçeneğini seçin.
+
+**iPhone / iPad (Safari):**
+
+1. Siteyi Safari'de açın.
+2. Alt menüdeki Paylaş (⬆) ikonuna dokunun.
+3. "Ana Ekrana Ekle" seçeneğini seçin.
+   _(Not: Bildirim alabilmek için iOS 16.4 veya üzeri gereklidir)_
+
+---
+
+**📜 Lisans**
+
+- MIT Lisansı.
+
+---
+
+**👨‍💻 Geliştirici**
+
+- Geliştiren: **lNyctophilia**

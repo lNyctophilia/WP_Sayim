@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import '../services/auth_service.dart';
 import '../models/app_user.dart';
 import '../services/language_service.dart';
@@ -116,6 +117,35 @@ class _AppRouterState extends State<AppRouter> {
             if (_initializedUid != appUser.id) {
               _initializedUid = appUser.id;
               _notificationService.initialize();
+              
+              // Uygulama açıkken (ön plandayken) gelen bildirimleri dinle
+              FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+                if (message.notification != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            message.notification!.title ?? 'Bildirim',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(message.notification!.body ?? ''),
+                        ],
+                      ),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: Colors.blueAccent.shade700,
+                      duration: const Duration(seconds: 4),
+                      action: SnackBarAction(
+                        label: 'Tamam',
+                        textColor: Colors.white,
+                        onPressed: () {},
+                      ),
+                    ),
+                  );
+                }
+              });
             }
 
             // Rol bazlı yönlendirme
