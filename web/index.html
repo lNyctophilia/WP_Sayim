@@ -58,6 +58,26 @@
         return originalRegister.call(navigator.serviceWorker, url, options);
       };
     }
+
+    // PWA Otomatik Güncelleme (Cache Temizleme Derdine Son!)
+    // Yeni bir sürüm yayınlandığında Service Worker güncellenir ve sayfayı otomatik yeniler.
+    if ('serviceWorker' in navigator) {
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          console.log('[PWA] Yeni sürüm algılandı, sayfa otomatik güncelleniyor...');
+          window.location.reload();
+        }
+      });
+      
+      // Uygulama her açıldığında arka planda yeni sürüm var mı diye kontrol et
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.update();
+        });
+      });
+    }
   </script>
 
   <!--
