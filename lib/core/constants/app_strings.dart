@@ -88,11 +88,52 @@ class AppStrings {
     'saved': {'tr': 'Kaydedildi', 'en': 'Saved'},
     'no_note': {'tr': 'Not yok', 'en': 'No note'},
     'no_entry': {'tr': 'Kayıt yok', 'en': 'No entry'},
-    'install_ios': {'tr': 'iPhone\'a Yükle', 'en': 'Install on iPhone'},
-    'install_ios_title': {'tr': 'Ana Ekrana Ekle', 'en': 'Add to Home Screen'},
-    'install_ios_desc': {
-      'tr': 'Safari\'nin alt menüsündeki "Paylaş" ikonuna dokunun ve "Ana Ekrana Ekle" seçeneğini seçin.',
-      'en': 'Tap the "Share" icon in Safari\'s bottom menu and select "Add to Home Screen".'
+    'install_guide': {'tr': 'Ana Ekrana Ekle', 'en': 'Add to Home Screen'},
+    'install_guide_title': {
+      'tr': 'Uygulamayı Ana Ekrana Ekle',
+      'en': 'Add App to Home Screen'
+    },
+    'install_guide_subtitle': {
+      'tr': 'Cihazınıza göre aşağıdaki adımları takip edin:',
+      'en': 'Follow the steps below for your device:'
+    },
+    'install_android_title': {'tr': 'Android (Chrome)', 'en': 'Android (Chrome)'},
+    'install_android_step1': {
+      'tr': '1. Chrome\'da sağ üstteki üç nokta menüsüne (⋮) dokunun',
+      'en': '1. Tap the three-dot menu (⋮) in Chrome\'s top right'
+    },
+    'install_android_step2': {
+      'tr': '2. "Ana ekrana ekle" seçeneğini seçin',
+      'en': '2. Select "Add to Home screen"'
+    },
+    'install_android_step3': {
+      'tr': '3. Açılan pencerede "Ekle" butonuna basın',
+      'en': '3. Tap "Add" in the popup'
+    },
+    'install_android_step4': {
+      'tr': '✅ Artık ana ekranınızda uygulama ikonu görünecek!',
+      'en': '✅ The app icon will now appear on your home screen!'
+    },
+    'install_ios_title': {'tr': 'iPhone / iPad (Safari)', 'en': 'iPhone / iPad (Safari)'},
+    'install_ios_step1': {
+      'tr': '1. Safari\'nin alt menüsündeki Paylaş (⬆) ikonuna dokunun',
+      'en': '1. Tap the Share (⬆) icon in Safari\'s bottom menu'
+    },
+    'install_ios_step2': {
+      'tr': '2. Aşağı kaydırıp "Ana Ekrana Ekle" seçeneğini bulun',
+      'en': '2. Scroll down and find "Add to Home Screen"'
+    },
+    'install_ios_step3': {
+      'tr': '3. Sağ üstteki "Ekle" butonuna basın',
+      'en': '3. Tap "Add" in the top right'
+    },
+    'install_ios_step4': {
+      'tr': '✅ Artık ana ekranınızda uygulama ikonu görünecek!',
+      'en': '✅ The app icon will now appear on your home screen!'
+    },
+    'install_ios_warning': {
+      'tr': '⚠️ Bildirim almak için iOS 16.4 veya üzeri gereklidir.',
+      'en': '⚠️ iOS 16.4 or later is required for notifications.'
     },
 
     // Login

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_config.dart';
 import '../../../../core/services/language_service.dart';
@@ -27,67 +26,184 @@ class _SettingsPageState extends State<SettingsPage> {
   static String get _appVersion => AppConfig.version;
   static String get _developerName => AppConfig.developerName;
 
-  void _showIOSInstallPopup() {
-    showDialog(
+  void _showInstallGuide() {
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.card,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(ctx).size.height * 0.85,
         ),
-        title: Column(
+        decoration: const BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
+            // Tutma çubuğu
             Container(
-              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
-                color: AppColors.accentLight.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.ios_share_rounded,
-                color: AppColors.accentLight,
-                size: 32,
+                color: AppColors.textHint.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              widget.lang.tr('install_ios_title'),
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w700,
-                fontSize: 20,
+            // Başlık
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.accentLight.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.add_to_home_screen_rounded,
+                      color: AppColors.accentLight,
+                      size: 30,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    widget.lang.tr('install_guide_title'),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    widget.lang.tr('install_guide_subtitle'),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
-              textAlign: TextAlign.center,
+            ),
+            const Divider(color: AppColors.divider, height: 24),
+            // İçerik — kaydırılabilir
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ─── Android Bölümü ───
+                    _buildPlatformSection(
+                      icon: Icons.android_rounded,
+                      iconColor: const Color(0xFF3DDC84),
+                      title: widget.lang.tr('install_android_title'),
+                      steps: [
+                        widget.lang.tr('install_android_step1'),
+                        widget.lang.tr('install_android_step2'),
+                        widget.lang.tr('install_android_step3'),
+                        widget.lang.tr('install_android_step4'),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    // ─── iOS Bölümü ───
+                    _buildPlatformSection(
+                      icon: Icons.apple_rounded,
+                      iconColor: AppColors.textPrimary,
+                      title: widget.lang.tr('install_ios_title'),
+                      steps: [
+                        widget.lang.tr('install_ios_step1'),
+                        widget.lang.tr('install_ios_step2'),
+                        widget.lang.tr('install_ios_step3'),
+                        widget.lang.tr('install_ios_step4'),
+                      ],
+                      warning: widget.lang.tr('install_ios_warning'),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
-        content: Text(
-          widget.lang.tr('install_ios_desc'),
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            height: 1.5,
-            fontSize: 15,
+      ),
+    );
+  }
+
+  Widget _buildPlatformSection({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required List<String> steps,
+    String? warning,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.divider, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Platform başlığı
+          Row(
+            children: [
+              Icon(icon, color: iconColor, size: 24),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
           ),
-          textAlign: TextAlign.center,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: TextButton.styleFrom(
-              backgroundColor: AppColors.surface,
-              foregroundColor: AppColors.textPrimary,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          const SizedBox(height: 14),
+          // Adımlar
+          ...steps.map((step) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Text(
+                  step,
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.5,
+                    color: step.startsWith('✅')
+                        ? AppColors.accentLight
+                        : AppColors.textSecondary,
+                    fontWeight:
+                        step.startsWith('✅') ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                ),
+              )),
+          // iOS uyarısı
+          if (warning != null) ...[
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFA726).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                warning,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFFFFA726),
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-            child: const Text(
-              'OK',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
+          ],
         ],
-        actionsAlignment: MainAxisAlignment.center,
       ),
     );
   }
@@ -109,7 +225,7 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildSectionHeader(widget.lang.tr('general')),
           _buildLanguageTile(),
           _buildLogoutTile(),
-          if (kIsWeb) _buildIOSInstallTile(),
+          if (kIsWeb) _buildInstallGuideTile(),
           const SizedBox(height: 24),
 
           // ─── Hakkında ──────────────────────────────────
@@ -215,7 +331,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildIOSInstallTile() {
+  Widget _buildInstallGuideTile() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
@@ -230,13 +346,13 @@ class _SettingsPageState extends State<SettingsPage> {
             borderRadius: BorderRadius.circular(10),
           ),
           child: const Icon(
-            Icons.apple_rounded,
+            Icons.add_to_home_screen_rounded,
             color: AppColors.accentLight,
             size: 22,
           ),
         ),
         title: Text(
-          widget.lang.tr('install_ios'),
+          widget.lang.tr('install_guide'),
           style: const TextStyle(
             fontSize: 15,
             color: AppColors.textPrimary,
@@ -247,7 +363,7 @@ class _SettingsPageState extends State<SettingsPage> {
           Icons.chevron_right_rounded,
           color: AppColors.textHint,
         ),
-        onTap: _showIOSInstallPopup,
+        onTap: _showInstallGuide,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
         ),

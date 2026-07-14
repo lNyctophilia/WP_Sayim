@@ -8,6 +8,12 @@ class NotificationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  // Firebase Console → Project Settings → Cloud Messaging → Web Push certificates
+  // "Generate key pair" ile oluşturulan VAPID Key buraya girilecek.
+  // Bu key olmadan Web Push bildirimleri çalışmaz!
+  static const String _vapidKey =
+      'BOkvHMWfKFEaXrwF-TgJ9KrrJSnNqL3tO966nz5F-esnB6SYZCfSIy6uWe9dvVTKfhPsTZ771DOsGVJY4JeDmio';
+
   /// İzin iste, token al ve Firestore'a kaydet
   Future<void> initialize() async {
     // 1. İzin İste (Özellikle iOS için gereklidir, Android 13+ için de prompt çıkar)
@@ -34,7 +40,14 @@ class NotificationService {
     if (user == null) return; // Giriş yapılmamışsa kaydetme
 
     try {
-      String? token = await _messaging.getToken();
+      String? token;
+      if (kIsWeb) {
+        // Web platformunda VAPID Key gerekli
+        token = await _messaging.getToken(vapidKey: _vapidKey);
+      } else {
+        // Android/iOS
+        token = await _messaging.getToken();
+      }
       if (token != null) {
         await _updateToken(token);
       }
