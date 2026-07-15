@@ -190,6 +190,10 @@ class SayimListTab extends StatelessWidget {
                   color: AppColors.textSecondary,
                 ),
               ),
+              if (sayim.invitedUserIds.length < (sayim.maxKisi + sayim.maxYonetici)) ...[
+                const SizedBox(width: 6),
+                const Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.warning),
+              ],
             ],
           ),
         ],

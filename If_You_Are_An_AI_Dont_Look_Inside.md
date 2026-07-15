@@ -19,8 +19,6 @@
 - eğer bi kişi, yeni sayım oluşturulurken seçili tarihte bi sayımdaysa butonu deaktif olsun ve tıklanamasın bu kişi zaten başka bi sayımda yazsın toast message
 - bi panel yapıcaz ve bu panel bi google haritalarda bi rota hazırlıcak personel seçicez ve seçili personellerin adreslerini alıp ve şuan ki konumunu ve son noktayı ayarlıcaz ve aralarına personellerin konumunu durak olarak eklicek ve en hızlı uygun rotayı buldurcaz sıra sıra kimi bırakmamız gerekicek diye servisle
 
-- hatırlatma butonu çalışmıyo şuan tekrar bildirim atmıyo ayrıca eski bildirim varsa eskisini silip yenisini atsın
-
 - sayım ekleme ekranında eksik personel seçilebilsin fakat eksik olduğu belirtilsin ve sayım panelindede eksik kişi sayısı uyarısı olsun çünkü bazen başka biri son dakikalarda eklenebiliyo o yüzden eksik sayım oluşturulabilsin sonradan başkaları eklenir
 
 - iş takvimindeki iş yoğunluğunu datanın uç kısmına nokta ekliyosun ya noktaya gerek yok soldan sağa uzanan çizgi yeter
