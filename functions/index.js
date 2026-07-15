@@ -173,8 +173,8 @@ exports.sendDavetReminderNotification = onDocumentUpdated("davetler/{davetId}", 
     const message = {
       token: fcmToken,
       notification: {
-        title: "Hatırlatma: Sayım Daveti",
-        body: `"${sayimName}" isimli sayım için davetiniz bekliyor. Lütfen uygulamaya girip onay verin.`
+        title: "Yeni Sayım Daveti",
+        body: `Seni "${sayimName}" isimli sayıma davet ettiler. Lütfen uygulamaya girip onay ver.`
       },
       android: {
         priority: "high",
@@ -197,7 +197,7 @@ exports.sendDavetReminderNotification = onDocumentUpdated("davetler/{davetId}", 
         }
       },
       data: {
-        type: "davet_reminder",
+        type: "davet",
         davetId: event.params.davetId,
         sayimId: sayimId
       }
