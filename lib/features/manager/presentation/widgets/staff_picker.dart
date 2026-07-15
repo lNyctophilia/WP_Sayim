@@ -333,8 +333,13 @@ class _StaffPickerState extends State<StaffPicker> {
                       return;
                     }
                     if (config.role == DavetRole.manager && currentY >= widget.targetYonetici) {
-                      _showLimitSnackBar('Yönetici sınırına ulaştınız!', 'Manager limit reached!');
-                      return;
+                      if (currentP < widget.targetPersonel) {
+                        config.role = DavetRole.staff;
+                        config.ucret = _calculateWage(config.role, config.multiplier);
+                      } else {
+                        _showLimitSnackBar('Yönetici sınırına ulaştınız!', 'Manager limit reached!');
+                        return;
+                      }
                     }
                   }
 
@@ -391,7 +396,7 @@ class _StaffPickerState extends State<StaffPicker> {
                     ),
                   ],
                   onChanged: (val) {
-                    if (val != null) {
+                    if (val != null && val != config.role) {
                       if (val == DavetRole.staff) {
                          int currentP = _configs.where((c) => c.isSelected && c.role == DavetRole.staff).length;
                          if (currentP >= widget.targetPersonel) {
@@ -407,6 +412,7 @@ class _StaffPickerState extends State<StaffPicker> {
                       }
                       setState(() {
                         config.role = val;
+                        config.ucret = _calculateWage(config.role, config.multiplier);
                       });
                       _notifyChanges();
                     }

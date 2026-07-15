@@ -30,3 +30,5 @@
 - sayım oluştururken genel çarpanın adı genel yövmiye veya yevmiye miydi doğrusu işte o çarpanı olsun
 - bi panel yapıcaz ve bu panel bi google haritalarda bi rota hazırlıcak personel seçicez ve seçili personellerin adreslerini alıp ve şuan ki konumunu ve son noktayı ayarlıcaz ve aralarına personellerin konumunu durak olarak eklicek ve en hızlı uygun rotayı buldurcaz sıra sıra kimi bırakmamız gerekicek diye servisle
 - yönetici panelinde admin panelindeki gibi yöneticilerde gözüksün fakat ekleme yapılamasın ordan
+
+- sayım ekleme şeyinde mesela 2 yönetici zaten seçiliyse ve başka bi yöneticiyi eklersek personel olarak seçilip eklesin, ayrıca mesela 2 yönetici seçili diyelim ve o yöneticinin bilgilerinden yönetici personel şeyine basıp yöneticiyi tekrar seçersek uyarı atıyo atmaması lazım çünkü oraya bastıysak zaten yöneticilikten çıkmış olması lazım
