@@ -318,6 +318,23 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                           color: AppColors.accentLight, size: 20),
                       tooltip: isTr ? 'Hatırlat' : 'Remind',
                       onPressed: () async {
+                        // Cooldown: 5 dakika dolmadan tekrar hatırlatma atılmasını engelle
+                        if (davet.lastReminderAt != null) {
+                          final diff = DateTime.now().difference(davet.lastReminderAt!);
+                          if (diff.inMinutes < 5) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(isTr ? 'Lütfen yeni bir hatırlatma göndermeden önce 5 dakika bekleyin.' : 'Please wait 5 minutes before sending another reminder.'),
+                                  backgroundColor: AppColors.danger,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
+                            return;
+                          }
+                        }
+
                         await _davetService.updateLastReminder(davet.id);
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
