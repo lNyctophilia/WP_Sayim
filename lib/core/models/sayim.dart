@@ -35,6 +35,7 @@ class Sayim {
   final String note;
   final DateTime date;
   final int maxKisi;
+  final int maxYonetici;
   final String createdBy;
   final SayimStatus status;
   final List<SayimGrup> gruplar;
@@ -48,6 +49,7 @@ class Sayim {
     required this.note,
     required this.date,
     this.maxKisi = 20,
+    this.maxYonetici = 2,
     required this.createdBy,
     this.status = SayimStatus.open,
     this.gruplar = const [],
@@ -62,6 +64,7 @@ class Sayim {
     String? note,
     DateTime? date,
     int? maxKisi,
+    int? maxYonetici,
     String? createdBy,
     SayimStatus? status,
     List<SayimGrup>? gruplar,
@@ -75,6 +78,7 @@ class Sayim {
       note: note ?? this.note,
       date: date ?? this.date,
       maxKisi: maxKisi ?? this.maxKisi,
+      maxYonetici: maxYonetici ?? this.maxYonetici,
       createdBy: createdBy ?? this.createdBy,
       status: status ?? this.status,
       gruplar: gruplar ?? this.gruplar,
@@ -93,6 +97,7 @@ class Sayim {
       note: data['note'] as String? ?? '',
       date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       maxKisi: data['maxKisi'] as int? ?? 20,
+      maxYonetici: data['maxYonetici'] as int? ?? 2,
       createdBy: data['createdBy'] as String? ?? '',
       status: SayimStatus.values.firstWhere(
         (e) => e.name == (data['status'] as String? ?? 'open'),
@@ -121,6 +126,7 @@ class Sayim {
       'note': note,
       'date': Timestamp.fromDate(date),
       'maxKisi': maxKisi,
+      'maxYonetici': maxYonetici,
       'createdBy': createdBy,
       'status': status.name,
       'gruplar': gruplar.map((g) => g.toMap()).toList(),

@@ -184,7 +184,7 @@ class SayimListTab extends StatelessWidget {
                   size: 14, color: AppColors.textSecondary),
               const SizedBox(width: 6),
               Text(
-                '${sayim.invitedUserIds.length}/${sayim.maxKisi}',
+                '${sayim.invitedUserIds.length}/${sayim.maxKisi + sayim.maxYonetici}',
                 style: const TextStyle(
                   fontSize: 13,
                   color: AppColors.textSecondary,

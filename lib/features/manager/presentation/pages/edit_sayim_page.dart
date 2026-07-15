@@ -37,6 +37,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
 
   final _noteController = TextEditingController();
   final _maxKisiController = TextEditingController(text: '20');
+  final _maxYoneticiController = TextEditingController(text: '2');
   DateTime _selectedDate = DateTime.now();
   
   SehirTipi _sehirTipi = SehirTipi.ici;
@@ -53,6 +54,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
     super.initState();
     _noteController.text = widget.sayim.note;
     _maxKisiController.text = widget.sayim.maxKisi.toString();
+    _maxYoneticiController.text = widget.sayim.maxYonetici.toString();
     _selectedDate = widget.sayim.date;
     _sehirTipi = widget.sayim.sehirTipi;
     _globalMultiplier = widget.sayim.globalMultiplier;
@@ -65,6 +67,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
   void dispose() {
     _noteController.dispose();
     _maxKisiController.dispose();
+    _maxYoneticiController.dispose();
     super.dispose();
   }
 
@@ -139,6 +142,33 @@ class _EditSayimPageState extends State<EditSayimPage> {
       return;
     }
 
+    final targetPersonel = int.tryParse(_maxKisiController.text) ?? 20;
+    final targetYonetici = int.tryParse(_maxYoneticiController.text) ?? 2;
+
+    int selectedPersonel = 0;
+    int selectedYonetici = 0;
+    for (var config in _selectedUsers) {
+      if (config.role == DavetRole.staff) {
+        selectedPersonel++;
+      } else if (config.role == DavetRole.manager) {
+        selectedYonetici++;
+      }
+    }
+
+    if (selectedPersonel != targetPersonel || selectedYonetici != targetYonetici) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            widget.lang.currentLang == 'tr' 
+              ? 'Seçilen personel veya yönetici sayısı standart sayı ile tam olarak eşleşmiyor!\nPersonel: $selectedPersonel/$targetPersonel, Yönetici: $selectedYonetici/$targetYonetici'
+              : 'Selected personnel or manager count does not exactly match the standard!\nPersonnel: $selectedPersonel/$targetPersonel, Manager: $selectedYonetici/$targetYonetici'
+          ),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -146,7 +176,8 @@ class _EditSayimPageState extends State<EditSayimPage> {
       final updatedSayim = widget.sayim.copyWith(
         note: _noteController.text.trim(),
         date: _selectedDate,
-        maxKisi: int.tryParse(_maxKisiController.text) ?? 20,
+        maxKisi: targetPersonel,
+        maxYonetici: targetYonetici,
         gruplar: _gruplar,
         invitedUserIds: _selectedUsers.map((e) => e.user.id).toList(),
         sehirTipi: _sehirTipi,
@@ -261,39 +292,37 @@ class _EditSayimPageState extends State<EditSayimPage> {
                           : null,
                     ),
                     const SizedBox(height: 12),
+                    InkWell(
+                      onTap: _selectDate,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.calendar_today_rounded, color: AppColors.textSecondary, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${_selectedDate.day.toString().padLeft(2, '0')}.${_selectedDate.month.toString().padLeft(2, '0')}.${_selectedDate.year}',
+                              style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     Row(
                       children: [
-                        Expanded(
-                          child: InkWell(
-                            onTap: _selectDate,
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.calendar_today_rounded, color: AppColors.textSecondary, size: 20),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    '${_selectedDate.day.toString().padLeft(2, '0')}.${_selectedDate.month.toString().padLeft(2, '0')}.${_selectedDate.year}',
-                                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
                         Expanded(
                           child: TextFormField(
                             controller: _maxKisiController,
                             keyboardType: TextInputType.number,
                             style: const TextStyle(color: AppColors.textPrimary),
                             decoration: InputDecoration(
-                              labelText: isTr ? 'Max Kişi' : 'Max Persons',
+                              labelText: isTr ? 'Standart Personel' : 'Standard Personnel',
                               labelStyle: const TextStyle(color: AppColors.textHint),
                               filled: true,
                               fillColor: AppColors.surface,
@@ -302,6 +331,25 @@ class _EditSayimPageState extends State<EditSayimPage> {
                                 borderSide: BorderSide.none,
                               ),
                               prefixIcon: const Icon(Icons.group_rounded, color: AppColors.textSecondary),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _maxYoneticiController,
+                            keyboardType: TextInputType.number,
+                            style: const TextStyle(color: AppColors.textPrimary),
+                            decoration: InputDecoration(
+                              labelText: isTr ? 'Standart Yönetici' : 'Standard Manager',
+                              labelStyle: const TextStyle(color: AppColors.textHint),
+                              filled: true,
+                              fillColor: AppColors.surface,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              prefixIcon: const Icon(Icons.manage_accounts_rounded, color: AppColors.textSecondary),
                             ),
                           ),
                         ),

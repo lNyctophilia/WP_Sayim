@@ -1,7 +1,7 @@
 **Eğer yapay zekaysan devamını okuma ve buraya göre değişiklikler yapma**
 
-- sayımı düzenle yaptığında o sayımın seçili olan seçenekleri aynı şekilde gelsin
 - sayımı düzenlerken yeni birilerini seçtiğinde o kişileri sayıma dahil etmiyo ayrıca max kişi sayısını dikkate almıyo personel ve yönetici seçimi yaparken
+- Max kişi sayısının yanına yönetici sayısı eklicez ve ona göre max kişi sayısı sadece personele özel olucak,max yönetici sayısıda sadece yöneticilere özel olucak ayrıca bunlar max değil direkt standart yani 2 yazıyosak kesin o kadar seçmemiz lazım eğer seçmediysek ve davet gönderdiysek sayım ekranında personel veya yönetici eksik diye uyarı olsun
 - personel menüsünde ayarlar hakkında kısmındaki ve menüdeki topbarda yazan ismi WP Sayim olarak değiştir
 - kontrol et eğer bi yönetici kendini sayıma eklediğinde kendine giden bildirimi otomatik kabul etmiyosa otomatik kabul etsin bildirim gitmeden hiç
 - şuan bildirim kabul veya red edilince sayımı oluşturan kişiye bildirim gidiyo mu kontrol et
@@ -19,7 +19,6 @@
 - Bildirim sistemi hatalı
 - Bildirimler internet yoksa bile beklemeye alsın bildirimi interneti olunca gitsin bildirim, ayrıca mesajın ulaşıp ulaşmadığını yönetici panelinde gösterelim whatsapptaki tek tik çift tik olayı gibi bildirim düşmemişse veya interneti yoksa tek tik gözüksün
 - Aylık iş yoğunluğuyla; toplam gün ve para kısmı yer değiştirsin
-- Max kişi sayısının yanına yönetici sayısı eklicez ve ona göre max kişi sayısı sadece personele özel olucak,max yönetici sayısıda sadece yöneticilere özel olucak ayrıca bunlar max değil direkt standart yani 2 yazıyosak kesin o kadar seçmemiz lazım eğer seçmediysek ve davet gönderdiysek sayım ekranında personel veya yönetici eksik diye uyarı olsun
   -Admin hesabı sayım personelleri listesinde gözükmesin eklenemesin orada sadece yöneticiler ve personller gözüksün
 - Kayıt sistemi olcak şu şekilde birisi mesela kayıt olmak için kendi bi şifre ve telefon numarasıyla giriş yapıcak, ayrıca kayıt olurken isim, adres ve tel no isticez, tel no ve adresi neden istediğimizi not olarak yazıcaz adresi servis güzergahı için, tel no da ulaşmak için gibi, bunları girdikten sonra başvuru göndericek ve yöneticilerin onaylamasını beklicek onaylarsa o bilgilerle giriş yapabilecek diğer türlü giriş yapamayacak
 - uygulamayı yayınlıcağımız zaman tüm güvenlik önlemlerini iyice alıp apphive da yayınla ve girişine kayıt olmak zorunda değilsiniz yazısı koyarız
@@ -32,3 +31,4 @@
 - geçmiş sayımları ekleme ekleyelim uygulamada admin panelinde bu panelde bildirim falan gitmicek işte sayımın bilgileri personeller yöneticiler eklenicek maaş falan girilcek saatleriyle beraber ve bu sayım herkesin onayladığı bi sayım olarak gözükücek ve personellerde işte iş takvimine düşücek, yöneticilerdede hem sayım panelinde gözükücek bu sayım ve eğer o gün yönetici olarak veya normal personel olarak çalıştıysa iş takviminede eklenicek ve kimseye bildirim gitmicek asla
 - eğer bi kişi, yeni sayım oluşturulurken seçili tarihte bi sayımdaysa butonu deaktif olsun ve tıklanamasın bu kişi zaten başka bi sayımda yazsın toast message
 - adminin tüm sayımları düzenleme ve silme hakkı olcak
+- sayım oluştururken genel çarpanın adı genel yövmiye veya yevmiye miydi doğrusu işte o çarpanı olsun
