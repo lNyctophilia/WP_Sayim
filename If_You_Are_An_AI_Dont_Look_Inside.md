@@ -23,6 +23,5 @@
 
 - Adminin şifresini nereden değiştiririm zor bişi yapmamız lazım
 - adminin tüm sayımları düzenleme ve silme hakkı olcak
-- Aylık iş yoğunluğuyla; toplam gün ve para kısmı yer değiştirsin
 
-- sayım oluştururken genel çarpanın adı genel yövmiye veya yevmiye miydi doğrusu işte o çarpanı olsun
+- Aylık iş yoğunluğuyla; toplam gün ve para kısmı yer değiştirsin
