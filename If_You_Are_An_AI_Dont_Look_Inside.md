@@ -2,6 +2,7 @@
 
 - kontrol et eğer bi yönetici kendini sayıma eklediğinde kendine giden bildirimi otomatik kabul etmiyosa otomatik kabul etsin bildirim gitmeden hiç
 - sayım bilgileri güncellenirken sıkıntı oluyo bazen giden davetler güncellenmiyo bazen yöneticilerin önizlediği yerde güncellenmiyo
+- Drawer kısmını kategorize et ve düzenle hem admin paneli için hem yönetici için
 - kabul edenleri silme gelsin sayım düzenleme harici ve silindikten sonra kullanıcıya bilgi gitsin kabul ettiğin sayım iptal edildi diye
 - admin şifreleri görebilcek ve değiştirebilicek, ayrıca kullanıcı adlarınıda ve isimleride yani personellerin bilgilerini güncelleme eklensin
 - kral şimdi bi kişi en son hangi ekranda kapattıysa uygulamayı açınca tekrar o ekranda açılsın panel olarak yani takvimdeyse takvim yönetici paneliyse orda falan gibi, fakat ayarlar hariç ayarlardayken kapattıysa bile ondan önce hangisinde kapatıldıysa orda başlasın
@@ -13,7 +14,6 @@
 - sayım günü sayım saatinden 2.30 saat önce hatırlatma bildirimi atsın bugün şu saatte şu sayım var diye
 - personel silindiğinde personelin olduğu sayımların bilgilerindende gidiyo onu düzeltelim oralarda yine eski bilgiler gözüksün
 - admin olarak girildiğinde iş takvimi olmasın ekranda işte bizim normalde sol panelde olan şeyler ana menüde olucak butonlar şeklinde ve onlara basınca o paneller açılcak
-- iş takvimindeki iş yoğunluğunu datanın uç kısmına nokta ekliyosun ya noktaya gerek yok çizgi yeter
 - sayım günü sayım saatinden 2.30 saat önce hatırlatma bildirimi atsın bugün şu saatte şu sayım var diye ve bu hatırlatma bildirimi ayarı ayarlar kısmından açılıp kapatılabilsin
 - geçmiş sayımları ekleme ekleyelim uygulamada admin panelinde bu panelde bildirim falan gitmicek işte sayımın bilgileri personeller yöneticiler eklenicek maaş falan girilcek saatleriyle beraber ve bu sayım herkesin onayladığı bi sayım olarak gözükücek ve personellerde işte iş takvimine düşücek, yöneticilerdede hem sayım panelinde gözükücek bu sayım ve eğer o gün yönetici olarak veya normal personel olarak çalıştıysa iş takviminede eklenicek ve kimseye bildirim gitmicek asla
 - eğer bi kişi, yeni sayım oluşturulurken seçili tarihte bi sayımdaysa butonu deaktif olsun ve tıklanamasın bu kişi zaten başka bi sayımda yazsın toast message
@@ -23,6 +23,4 @@
 
 - sayım ekleme ekranında eksik personel seçilebilsin fakat eksik olduğu belirtilsin ve sayım panelindede eksik kişi sayısı uyarısı olsun çünkü bazen başka biri son dakikalarda eklenebiliyo o yüzden eksik sayım oluşturulabilsin sonradan başkaları eklenir
 
-- Adminin şifresini nereden değiştiririm zor bişi yapmamız lazım
-
-- adminin tüm sayımları düzenleme ve silme hakkı olcak
+- iş takvimindeki iş yoğunluğunu datanın uç kısmına nokta ekliyosun ya noktaya gerek yok soldan sağa uzanan çizgi yeter

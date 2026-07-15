@@ -38,12 +38,21 @@ exports.sendDavetNotification = onDocumentCreated("davetler/{davetId}", async (e
       android: {
         priority: "high",
         notification: {
-          channelId: "sayim_notifications"
+          channelId: "sayim_notifications",
+          tag: `davet_${event.params.davetId}`
         }
       },
       webpush: {
+        headers: {
+          Topic: `davet_${event.params.davetId}`
+        },
         fcmOptions: {
           link: "https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true"
+        }
+      },
+      apns: {
+        headers: {
+          "apns-collapse-id": `davet_${event.params.davetId}`
         }
       },
       data: {
@@ -105,12 +114,21 @@ exports.sendDavetResponseNotification = onDocumentUpdated("davetler/{davetId}", 
       android: {
         priority: "high",
         notification: {
-          channelId: "sayim_notifications"
+          channelId: "sayim_notifications",
+          tag: `davet_response_${event.params.davetId}`
         }
       },
       webpush: {
+        headers: {
+          Topic: `davet_response_${event.params.davetId}`
+        },
         fcmOptions: {
           link: "https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true"
+        }
+      },
+      apns: {
+        headers: {
+          "apns-collapse-id": `davet_response_${event.params.davetId}`
         }
       },
       data: {
@@ -123,6 +141,71 @@ exports.sendDavetResponseNotification = onDocumentUpdated("davetler/{davetId}", 
     await admin.messaging().send(message);
   } catch (error) {
     console.error("Error sending response notification:", error);
+  }
+});
+
+// 2.5 Davete hatırlatma gönderildiğinde personeli bilgilendir
+exports.sendDavetReminderNotification = onDocumentUpdated("davetler/{davetId}", async (event) => {
+  const oldData = event.data.before.data();
+  const newData = event.data.after.data();
+
+  if (!oldData || !newData) return;
+
+  // Sadece lastReminderAt değişmişse
+  const oldReminder = oldData.lastReminderAt ? oldData.lastReminderAt.toMillis() : null;
+  const newReminder = newData.lastReminderAt ? newData.lastReminderAt.toMillis() : null;
+
+  if (!newReminder || oldReminder === newReminder) return;
+
+  const staffId = newData.userId;
+  const sayimId = newData.sayimId;
+
+  try {
+    const sayimDoc = await admin.firestore().collection("sayimlar").doc(sayimId).get();
+    const sayimName = sayimDoc.exists ? (sayimDoc.data().note || "Sayım") : "Sayım";
+
+    const userDoc = await admin.firestore().collection("users").doc(staffId).get();
+    if (!userDoc.exists) return;
+
+    const fcmToken = userDoc.data().fcmToken;
+    if (!fcmToken) return;
+
+    const message = {
+      token: fcmToken,
+      notification: {
+        title: "Hatırlatma: Sayım Daveti",
+        body: `"${sayimName}" isimli sayım için davetiniz bekliyor. Lütfen uygulamaya girip onay verin.`
+      },
+      android: {
+        priority: "high",
+        notification: {
+          channelId: "sayim_notifications",
+          tag: `davet_${event.params.davetId}`
+        }
+      },
+      webpush: {
+        headers: {
+          Topic: `davet_${event.params.davetId}`
+        },
+        fcmOptions: {
+          link: "https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true"
+        }
+      },
+      apns: {
+        headers: {
+          "apns-collapse-id": `davet_${event.params.davetId}`
+        }
+      },
+      data: {
+        type: "davet_reminder",
+        davetId: event.params.davetId,
+        sayimId: sayimId
+      }
+    };
+
+    await admin.messaging().send(message);
+  } catch (error) {
+    console.error("Error sending reminder notification:", error);
   }
 });
 
@@ -156,12 +239,21 @@ exports.sendDavetCancelledNotification = onDocumentDeleted("davetler/{davetId}",
       android: {
         priority: "high",
         notification: {
-          channelId: "sayim_notifications"
+          channelId: "sayim_notifications",
+          tag: `davet_${event.params.davetId}`
         }
       },
       webpush: {
+        headers: {
+          Topic: `davet_${event.params.davetId}`
+        },
         fcmOptions: {
           link: "https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true"
+        }
+      },
+      apns: {
+        headers: {
+          "apns-collapse-id": `davet_${event.params.davetId}`
         }
       },
       data: {
