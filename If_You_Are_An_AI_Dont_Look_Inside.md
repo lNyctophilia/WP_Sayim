@@ -32,3 +32,4 @@
 - iş takvimindeki iş yoğunluğunu datanın uç kısmına nokta ekliyosun ya noktaya gerek yok çizgi yeter
 - sayım günü sayım saatinden 2.30 saat önce hatırlatma bildirimi atsın bugün şu saatte şu sayım var diye ve bu hatırlatma bildirimi ayarı ayarlar kısmından açılıp kapatılabilsin
 - geçmiş sayımları ekleme ekleyelim uygulamada admin panelinde bu panelde bildirim falan gitmicek işte sayımın bilgileri personeller yöneticiler eklenicek maaş falan girilcek saatleriyle beraber ve bu sayım herkesin onayladığı bi sayım olarak gözükücek ve personellerde işte iş takvimine düşücek, yöneticilerdede hem sayım panelinde gözükücek bu sayım ve eğer o gün yönetici olarak veya normal personel olarak çalıştıysa iş takviminede eklenicek ve kimseye bildirim gitmicek asla
+- eğer bi kişi, yeni sayım oluşturulurken seçili tarihte bi sayımdaysa butonu deaktif olsun ve tıklanamasın bu kişi zaten başka bi sayımda yazsın toast message

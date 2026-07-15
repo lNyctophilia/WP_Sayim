@@ -79,6 +79,9 @@ class _StaffPickerState extends State<StaffPicker> {
         oldWidget.sayimSehirTipi != widget.sayimSehirTipi ||
         oldWidget.globalMultiplier != widget.globalMultiplier) {
       _initConfigs(preserveSelection: true, oldWidget: oldWidget);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _notifyChanges();
+      });
     }
   }
 
