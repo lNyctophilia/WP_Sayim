@@ -26,6 +26,7 @@ class AppColors {
   // Durum renkleri
   static const Color success = Color(0xFF06D6A0);
   static const Color danger = Color(0xFFEF476F);
+  static const Color warning = Color(0xFFF9A826);
 
   // Bugünün vurgu rengi
   static const Color todayBorder = Color(0xFF3A86FF);

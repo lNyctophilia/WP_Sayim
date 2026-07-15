@@ -122,6 +122,14 @@ class _SayimDetailPageState extends State<SayimDetailPage>
         final pending = davetler.where((d) => d.isPending).toList();
         final declined = davetler.where((d) => d.isDeclined).toList();
 
+        final activeDavetler = [...accepted, ...pending];
+        int currentPersonel = activeDavetler.where((d) => d.role == DavetRole.staff).length;
+        int currentYonetici = activeDavetler.where((d) => d.role == DavetRole.manager).length;
+        
+        int missingPersonel = widget.sayim.maxKisi - currentPersonel;
+        int missingYonetici = widget.sayim.maxYonetici - currentYonetici;
+        bool hasMissing = missingPersonel > 0 || missingYonetici > 0;
+
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
@@ -181,12 +189,43 @@ class _SayimDetailPageState extends State<SayimDetailPage>
               ],
             ),
           ),
-          body: TabBarView(
-            controller: _tabController,
+          body: Column(
             children: [
-              _buildDavetList(accepted, DavetStatus.accepted),
-              _buildDavetList(pending, DavetStatus.pending),
-              _buildDavetList(declined, DavetStatus.declined),
+              if (hasMissing)
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withValues(alpha: 0.1),
+                    border: Border.all(color: AppColors.warning.withValues(alpha: 0.5)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.warning_amber_rounded, color: AppColors.warning),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          isTr
+                              ? 'Eksik Kişi! ${missingPersonel > 0 ? '$missingPersonel Personel ' : ''}${missingYonetici > 0 ? '$missingYonetici Yönetici' : ''} eksik.'
+                              : 'Missing People! ${missingPersonel > 0 ? '$missingPersonel Staff ' : ''}${missingYonetici > 0 ? '$missingYonetici Manager' : ''} missing.',
+                          style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.w600, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildDavetList(accepted, DavetStatus.accepted),
+                    _buildDavetList(pending, DavetStatus.pending),
+                    _buildDavetList(declined, DavetStatus.declined),
+                  ],
+                ),
+              ),
             ],
           ),
           floatingActionButton: (widget.currentUser.id == widget.sayim.createdBy || widget.currentUser.isOwner) 

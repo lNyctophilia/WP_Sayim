@@ -126,18 +126,46 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
       }
     }
 
-    if (selectedPersonel != targetPersonel || selectedYonetici != targetYonetici) {
+    if (selectedPersonel > targetPersonel || selectedYonetici > targetYonetici) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             widget.lang.currentLang == 'tr' 
-              ? 'Seçilen personel veya yönetici sayısı standart sayı ile tam olarak eşleşmiyor!\nPersonel: $selectedPersonel/$targetPersonel, Yönetici: $selectedYonetici/$targetYonetici'
-              : 'Selected personnel or manager count does not exactly match the standard!\nPersonnel: $selectedPersonel/$targetPersonel, Manager: $selectedYonetici/$targetYonetici'
+              ? 'Standart sayıdan fazla kişi seçemezsiniz!\nPersonel: $selectedPersonel/$targetPersonel, Yönetici: $selectedYonetici/$targetYonetici'
+              : 'You cannot select more people than the standard count!\nPersonnel: $selectedPersonel/$targetPersonel, Manager: $selectedYonetici/$targetYonetici'
           ),
           backgroundColor: AppColors.danger,
         ),
       );
       return;
+    } else if (selectedPersonel < targetPersonel || selectedYonetici < targetYonetici) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: AppColors.background,
+          title: Text(widget.lang.currentLang == 'tr' ? 'Eksik Kişi Seçimi' : 'Missing Personnel', style: const TextStyle(color: AppColors.textPrimary)),
+          content: Text(
+            widget.lang.currentLang == 'tr' 
+              ? 'Sayım için hedeflenen sayıdan az kişi seçtiniz.\nEksik Personel: ${targetPersonel - selectedPersonel}\nEksik Yönetici: ${targetYonetici - selectedYonetici}\nYine de oluşturmak istiyor musunuz? (Sonradan kişi ekleyebilirsiniz)'
+              : 'You have selected fewer people than targeted.\nMissing Personnel: ${targetPersonel - selectedPersonel}\nMissing Manager: ${targetYonetici - selectedYonetici}\nDo you still want to create it? (You can add people later)',
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(widget.lang.currentLang == 'tr' ? 'İptal' : 'Cancel', style: const TextStyle(color: AppColors.textHint)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(widget.lang.currentLang == 'tr' ? 'Oluştur' : 'Create', style: const TextStyle(color: AppColors.accentLight)),
+            ),
+          ],
+        ),
+      );
+
+      if (confirm != true) {
+        return;
+      }
     }
 
     setState(() => _isLoading = true);
