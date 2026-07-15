@@ -27,7 +27,7 @@ class _GrupSelectorState extends State<GrupSelector> {
     _gruplar = List.from(widget.initialGruplar);
     if (_gruplar.isEmpty) {
       // Default to 1 group at least
-      _gruplar.add(const SayimGrup(grupId: 1, saat: '08:00'));
+      _gruplar.add(const SayimGrup(grupId: 1, saat: '16:00'));
       WidgetsBinding.instance.addPostFrameCallback((_) {
         widget.onChanged(_gruplar);
       });
@@ -41,7 +41,8 @@ class _GrupSelectorState extends State<GrupSelector> {
         if (_gruplar.isNotEmpty) {
           newId = _gruplar.map((e) => e.grupId).reduce((a, b) => a > b ? a : b) + 1;
         }
-        _gruplar.add(SayimGrup(grupId: newId, saat: '12:00'));
+        String defaultSaat = _gruplar.length == 1 ? '21:30' : '12:00';
+        _gruplar.add(SayimGrup(grupId: newId, saat: defaultSaat));
       });
       widget.onChanged(_gruplar);
     }
