@@ -483,7 +483,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const SizedBox(height: 12),
           const Text(
-            'WP Sayim',
+            'WP Sayım',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
