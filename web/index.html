@@ -60,7 +60,6 @@
           if ('serviceWorker' in navigator) {
             const registrations = await navigator.serviceWorker.getRegistrations();
             for (let registration of registrations) {
-              // Firebase SW haricindeki ana PWA Service Worker'ı sil
               if (registration.active && registration.active.scriptURL.includes('flutter_service_worker')) {
                 await registration.unregister();
               }
@@ -73,12 +72,27 @@
             await Promise.all(names.map(name => caches.delete(name)));
           }
           
-          // 3. Yeni sürümü kaydet
+          // 3. HTTP Disk Cache'i kırmak için kritik dosyaları zorla ağdan çek
+          const filesToBust = [
+            '/WP_Sayim/index.html',
+            '/WP_Sayim/flutter_service_worker.js',
+            '/WP_Sayim/main.dart.js',
+            '/WP_Sayim/flutter_bootstrap.js'
+          ];
+          for (let file of filesToBust) {
+            try {
+              await fetch(file, { cache: 'reload' });
+            } catch(e) {
+              console.log('Cache bust failed for', file, e);
+            }
+          }
+          
+          // 4. Yeni sürümü kaydet
           localStorage.setItem('app_version', latestVersion);
           
-          // 4. Kullanıcıya haber ver ve sayfayı tertemiz yenile
+          // 5. Kullanıcıya haber ver ve sayfayı URL parametresiyle yenile
           alert('Yeni bir güncelleme bulundu! Uygulama yenileniyor...');
-          window.location.reload();
+          window.location.href = window.location.pathname + '?v=' + new Date().getTime();
         } else if (!currentVersion) {
           // İlk açılışta versiyonu kaydet
           localStorage.setItem('app_version', latestVersion);
