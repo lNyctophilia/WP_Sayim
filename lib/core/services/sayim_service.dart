@@ -92,7 +92,7 @@ class SayimService {
         }
 
         final workDay = {
-          'date': Timestamp.fromDate(sayim.date),
+          'date': sayim.date.toIso8601String(),
           'isCityCenter': sayim.sehirTipi == SehirTipi.ici,
           'payment': ucret,
           'note': combinedNote,

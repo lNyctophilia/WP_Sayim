@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 /// Tek bir iş günü verisi
 class WorkDay {
   final DateTime date;
@@ -41,10 +43,20 @@ class WorkDay {
   }
 
   factory WorkDay.fromJson(Map<String, dynamic> json) {
+    DateTime parsedDate;
+    final dateVal = json['date'];
+    if (dateVal is Timestamp) {
+      parsedDate = dateVal.toDate();
+    } else if (dateVal is String) {
+      parsedDate = DateTime.parse(dateVal);
+    } else {
+      parsedDate = DateTime.now();
+    }
+
     return WorkDay(
-      date: DateTime.parse(json['date'] as String),
-      isCityCenter: json['isCityCenter'] as bool,
-      payment: (json['payment'] as num).toDouble(),
+      date: parsedDate,
+      isCityCenter: json['isCityCenter'] as bool? ?? true,
+      payment: (json['payment'] as num?)?.toDouble() ?? 0.0,
       note: json['note'] as String? ?? '',
       sayimId: json['sayimId'] as String?,
     );

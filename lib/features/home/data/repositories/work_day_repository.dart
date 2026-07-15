@@ -11,15 +11,22 @@ class WorkDayRepository {
 
   /// Bir ayın verilerini Firestore'dan getirir
   Future<MonthlyData> getMonthlyData(int year, int month) async {
-    final start = DateTime(year, month, 1);
-    final end = DateTime(year, month + 1, 1);
+    final startStr = '$year-${month.toString().padLeft(2, '0')}-01';
+    
+    int nextYear = year;
+    int nextMonth = month + 1;
+    if (nextMonth > 12) {
+      nextMonth = 1;
+      nextYear++;
+    }
+    final endStr = '$nextYear-${nextMonth.toString().padLeft(2, '0')}-01';
 
     final snapshot = await _firestore
         .collection('personel_takvimi')
         .doc(userId)
         .collection('gunler')
-        .where('date', isGreaterThanOrEqualTo: start.toIso8601String())
-        .where('date', isLessThan: end.toIso8601String())
+        .where(FieldPath.documentId, isGreaterThanOrEqualTo: startStr)
+        .where(FieldPath.documentId, isLessThan: endStr)
         .get();
 
     final days = snapshot.docs.map((doc) => WorkDay.fromJson(doc.data())).toList();
