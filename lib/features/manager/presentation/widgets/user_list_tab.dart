@@ -132,6 +132,7 @@ class _UserListTabState extends State<UserListTab>
     super.build(context);
     final isTr = widget.lang.currentLang == 'tr';
     final isManagerList = widget.targetRole == UserRole.manager;
+    final canEdit = !isManagerList || widget.currentUser.isOwner;
     final title = isManagerList
         ? (isTr ? 'Yöneticiler' : 'Managers')
         : (isTr ? 'Personel' : 'Staff');
@@ -153,8 +154,9 @@ class _UserListTabState extends State<UserListTab>
                 ),
               ),
               // Ekleme butonu
-              ElevatedButton.icon(
-                onPressed: _showCreateUserDialog,
+              if (canEdit)
+                ElevatedButton.icon(
+                  onPressed: _showCreateUserDialog,
                 icon: const Icon(Icons.person_add_rounded, size: 18),
                 label: Text(
                   isTr ? 'Ekle' : 'Add',
@@ -241,6 +243,8 @@ class _UserListTabState extends State<UserListTab>
 
   Widget _buildUserCard(AppUser user) {
     final isTr = widget.lang.currentLang == 'tr';
+    final isManagerList = widget.targetRole == UserRole.manager;
+    final canEdit = !isManagerList || widget.currentUser.isOwner;
     final roleLabel = user.isOwner
         ? (isTr ? 'Sahip' : 'Owner')
         : user.isManager
@@ -258,7 +262,7 @@ class _UserListTabState extends State<UserListTab>
                 color: AppColors.danger.withValues(alpha: 0.3), width: 1),
       ),
       child: ListTile(
-        onTap: () => _showEditUserDialog(user),
+        onTap: canEdit ? () => _showEditUserDialog(user) : null,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: Container(
           width: 44,
@@ -323,8 +327,8 @@ class _UserListTabState extends State<UserListTab>
             ),
           ],
         ),
-        trailing: // Owner kendini silemez
-            user.id != widget.currentUser.id
+        trailing: // Owner kendini silemez ve yetkisiz silemez
+            (user.id != widget.currentUser.id && canEdit)
                 ? IconButton(
                     icon: Icon(
                       Icons.delete_outline_rounded,

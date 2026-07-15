@@ -39,8 +39,7 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
   @override
   void initState() {
     super.initState();
-    final tabCount = widget.currentUser.isOwner ? 3 : 2;
-    _tabController = TabController(length: tabCount, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -108,24 +107,20 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
   Widget _buildTabBar() {
     final isTr = widget.lang.currentLang == 'tr';
 
-    final tabs = <Widget>[];
-
-    if (widget.currentUser.isOwner) {
-      tabs.add(Tab(
+    final tabs = <Widget>[
+      Tab(
         icon: const Icon(Icons.supervisor_account_rounded, size: 20),
         text: isTr ? 'Yöneticiler' : 'Managers',
-      ));
-    }
-
-    tabs.add(Tab(
-      icon: const Icon(Icons.people_rounded, size: 20),
-      text: isTr ? 'Personel' : 'Staff',
-    ));
-
-    tabs.add(Tab(
-      icon: const Icon(Icons.inventory_2_rounded, size: 20),
-      text: isTr ? 'Sayımlar' : 'Counts',
-    ));
+      ),
+      Tab(
+        icon: const Icon(Icons.people_rounded, size: 20),
+        text: isTr ? 'Personel' : 'Staff',
+      ),
+      Tab(
+        icon: const Icon(Icons.inventory_2_rounded, size: 20),
+        text: isTr ? 'Sayımlar' : 'Counts',
+      ),
+    ];
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -157,29 +152,22 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
   }
 
   Widget _buildTabContent() {
-    final views = <Widget>[];
-
-    // Owner: Yönetici listesi sekmesi
-    if (widget.currentUser.isOwner) {
-      views.add(UserListTab(
+    final views = <Widget>[
+      UserListTab(
         currentUser: widget.currentUser,
         lang: widget.lang,
         targetRole: UserRole.manager,
-      ));
-    }
-
-    // Personel listesi sekmesi
-    views.add(UserListTab(
-      currentUser: widget.currentUser,
-      lang: widget.lang,
-      targetRole: UserRole.staff,
-    ));
-
-    // Sayımlar sekmesi (Adım 7)
-    views.add(SayimListTab(
-      currentUser: widget.currentUser,
-      lang: widget.lang,
-    ));
+      ),
+      UserListTab(
+        currentUser: widget.currentUser,
+        lang: widget.lang,
+        targetRole: UserRole.staff,
+      ),
+      SayimListTab(
+        currentUser: widget.currentUser,
+        lang: widget.lang,
+      ),
+    ];
 
     return TabBarView(
       controller: _tabController,
