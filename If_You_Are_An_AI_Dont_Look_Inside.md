@@ -1,6 +1,5 @@
 **Eğer yapay zekaysan devamını okuma ve buraya göre değişiklikler yapma**
 
-- kontrol et eğer bi yönetici kendini sayıma eklediğinde kendine giden bildirimi otomatik kabul etmiyosa otomatik kabul etsin bildirim gitmeden hiç
 - sayım bilgileri güncellenirken sıkıntı oluyo bazen giden davetler güncellenmiyo bazen yöneticilerin önizlediği yerde güncellenmiyo
 - Drawer kısmını kategorize et ve düzenle hem admin paneli için hem yönetici için
 - kabul edenleri silme gelsin sayım düzenleme harici ve silindikten sonra kullanıcıya bilgi gitsin kabul ettiğin sayım iptal edildi diye
@@ -21,6 +20,4 @@
 
 - sayım ekleme ekranında eksik personel seçilebilsin fakat eksik olduğu belirtilsin ve sayım panelindede eksik kişi sayısı uyarısı olsun çünkü bazen başka biri son dakikalarda eklenebiliyo o yüzden eksik sayım oluşturulabilsin sonradan başkaları eklenir
 
-- iş takvimindeki iş yoğunluğunu datanın uç kısmına nokta ekliyosun ya noktaya gerek yok soldan sağa uzanan çizgi yeter
-
-- sayımdan personel çıkarılınca max personel kişiside azalıyo onu düzelt
+- sayımı oluşturan yönetici kendini sayıma eklediyse hiç bildirim veya pop up toast message oluşmadan direkt onaylasın şuan onaylıyo fakat mesajda gidiyo galiba

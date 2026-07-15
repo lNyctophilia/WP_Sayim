@@ -19,7 +19,17 @@ exports.sendDavetNotification = onDocumentCreated("davetler/{davetId}", async (e
   try {
     // Sayım detayını çek
     const sayimDoc = await admin.firestore().collection("sayimlar").doc(sayimId).get();
-    const sayimName = sayimDoc.exists ? (sayimDoc.data().note || "Yeni Sayım") : "Yeni Sayım";
+    if (!sayimDoc.exists) return;
+
+    const sayimData = sayimDoc.data();
+    const sayimName = sayimData.note || "Yeni Sayım";
+    const creatorId = sayimData.createdBy;
+
+    // Eğer sayımı oluşturan kişi kendini sayıma eklediyse (otomatik onaylanır), bildirim gönderme
+    if (staffId === creatorId) {
+      console.log(`Davet notification skipped: Creator ${creatorId} added themselves.`);
+      return;
+    }
 
     // Personelin user dokümanını çek
     const userDoc = await admin.firestore().collection("users").doc(staffId).get();
