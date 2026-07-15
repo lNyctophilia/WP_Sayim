@@ -190,11 +190,13 @@ class AuthService {
     String? fullName,
     String? username,
     String? password,
+    List<UserRole>? roles,
   }) async {
     final Map<String, dynamic> updates = {};
     if (fullName != null && fullName.isNotEmpty) updates['fullName'] = fullName;
     if (username != null && username.isNotEmpty) updates['username'] = username;
     if (password != null && password.isNotEmpty) updates['password'] = password;
+    if (roles != null && roles.isNotEmpty) updates['roles'] = roles.map((r) => r.name).toList();
 
     if (updates.isNotEmpty) {
       await _firestore.collection('users').doc(uid).update(updates);

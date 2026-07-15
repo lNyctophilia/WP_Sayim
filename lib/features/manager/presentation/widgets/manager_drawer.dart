@@ -4,9 +4,11 @@ import '../../../../core/models/app_user.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/auth_service.dart';
 import '../../presentation/pages/manager_panel_page.dart';
 import '../../../settings/presentation/pages/global_settings_page.dart';
 import '../../../home/presentation/pages/home_page.dart';
+import '../pages/edit_profiles_page.dart';
 
 class ManagerDrawer extends StatelessWidget {
   final AppUser currentUser;
@@ -60,6 +62,27 @@ class ManagerDrawer extends StatelessWidget {
               ),
             ),
           ),
+
+          // Profilleri Düzenle Butonu (Sadece Admin/Owner görebilir)
+          if (currentUser.isOwner) ...[
+            ListTile(
+              leading: const Icon(Icons.manage_accounts_rounded, color: AppColors.accentLight),
+              title: Text(isTr ? 'Profilleri Düzenle' : 'Edit Profiles', style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w500)),
+              onTap: () {
+                Navigator.pop(context); // Close drawer
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => EditProfilesPage(
+                      currentUser: currentUser,
+                      lang: lang,
+                    ),
+                  ),
+                );
+              },
+            ),
+            const Divider(color: AppColors.divider, height: 1),
+          ],
           
           Expanded(
             child: ListView(

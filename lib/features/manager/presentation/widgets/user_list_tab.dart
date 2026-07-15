@@ -262,7 +262,6 @@ class _UserListTabState extends State<UserListTab>
                 color: AppColors.danger.withValues(alpha: 0.3), width: 1),
       ),
       child: ListTile(
-        onTap: canEdit ? () => _showEditUserDialog(user) : null,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: Container(
           width: 44,
@@ -327,17 +326,16 @@ class _UserListTabState extends State<UserListTab>
             ),
           ],
         ),
-        trailing: // Owner kendini silemez ve yetkisiz silemez
-            (user.id != widget.currentUser.id && canEdit)
-                ? IconButton(
-                    icon: Icon(
-                      Icons.delete_outline_rounded,
-                      color: AppColors.danger.withValues(alpha: 0.7),
-                      size: 22,
-                    ),
-                    onPressed: () => _deleteUser(user),
-                  )
-                : null,
+        trailing: (user.id != widget.currentUser.id && canEdit)
+            ? IconButton(
+                icon: Icon(
+                  Icons.delete_outline_rounded,
+                  color: AppColors.danger.withValues(alpha: 0.7),
+                  size: 20,
+                ),
+                onPressed: () => _deleteUser(user),
+              )
+            : null,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
         ),
