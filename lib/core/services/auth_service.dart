@@ -206,13 +206,16 @@ class AuthService {
     await _auth.currentUser?.updatePassword(newPassword);
   }
 
-  /// Tüm kullanıcıları getir (yönetici/owner için)
+  /// Tüm kullanıcıları getir (yönetici/owner için, owner haricindekileri)
   Future<List<AppUser>> getAllUsers() async {
     final snapshot = await _firestore
         .collection('users')
         .where('active', isEqualTo: true)
         .get();
-    return snapshot.docs.map((doc) => AppUser.fromFirestore(doc)).toList();
+    return snapshot.docs
+        .map((doc) => AppUser.fromFirestore(doc))
+        .where((user) => !user.isOwner)
+        .toList();
   }
 
   /// Sadece belirli roldeki kullanıcıları getir

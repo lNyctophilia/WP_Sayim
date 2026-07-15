@@ -4,18 +4,14 @@
 - sayım bilgileri güncellenirken sıkıntı oluyo bazen giden davetler güncellenmiyo bazen yöneticilerin önizlediği yerde güncellenmiyo
 - kabul edenleri silme gelsin sayım düzenleme harici ve silindikten sonra kullanıcıya bilgi gitsin kabul ettiğin sayım iptal edildi diye
 - admin şifreleri görebilcek ve değiştirebilicek, ayrıca kullanıcı adlarınıda ve isimleride yani personellerin bilgilerini güncelleme eklensin
-- uygulamanın son sürümde kullanıldığından emin olmalıyız mesela ben yeni güncelleme yayınladıysam güncelletmemiz lazım kesin ama öyle kullanmaya devam etmemesi lazım kullanıcının arkaplanda play store'daki otomatik uygulama güncelleme mantığı yapabilir miyiz
-- sayfa yenileme eklensin takvim ekranına aşağı kaydırınca takvimi falan yenilesin o ekrandaki bilgileri
 - kral şimdi bi kişi en son hangi ekranda kapattıysa uygulamayı açınca tekrar o ekranda açılsın panel olarak yani takvimdeyse takvim yönetici paneliyse orda falan gibi, fakat ayarlar hariç ayarlardayken kapattıysa bile ondan önce hangisinde kapatıldıysa orda başlasın
 - kral yöneticilerin bildirim panelinde işte kabul etti mesajları falanda gözüksün sola kaydırınca o bildirimi okundu yapsın sağa kaydırınca okunmadı olarak ayarlansın, ayrıca normal personellerdede kabul ettiklerinde mesela kabul ettin gibi bildirim geçmişi gözüksün yani
 - sayım silindiğinde eğer davet gönderildiyse silinsin davet bildirimi
 - icon değiş
 - hatırlatma butonu çalışmıyo şuan tekrar bildirim atmıyo eski bildirimi silip tahminimce veya bildirim var zaten diyip bilmiyom hiç neden atmıyo
-
 - Bildirimler internet yoksa bile beklemeye alsın bildirimi interneti olunca gitsin bildirim, ayrıca mesajın ulaşıp ulaşmadığını yönetici panelinde gösterelim whatsapptaki tek tik çift tik olayı gibi bildirim düşmemişse veya interneti yoksa tek tik gözüksün
 - Kayıt sistemi olcak şu şekilde birisi mesela kayıt olmak için kendi bi şifre ve telefon numarasıyla giriş yapıcak, ayrıca kayıt olurken isim, adres ve tel no isticez, tel no ve adresi neden istediğimizi not olarak yazıcaz adresi servis güzergahı için, tel no da ulaşmak için gibi, bunları girdikten sonra başvuru göndericek ve yöneticilerin onaylamasını beklicek onaylarsa o bilgilerle giriş yapabilecek diğer türlü giriş yapamayacak
 - uygulamayı yayınlıcağımız zaman tüm güvenlik önlemlerini iyice alıp apphive da yayınla ve girişine kayıt olmak zorunda değilsiniz yazısı koyarız
-- uygulamayı iphone'larda kullanacağı için ve sürekli yeni güncelleme geldiğinde kullanıcılara yeni apk indirtmemek için hem android için bi web app yani mobil app fakat web arayüzünü koymuşuz gibi yapsak ve iphone kullananlarda ana sayfasına eklese kısayol tarzı gibi nasıl olur bildirim sistemleri yine doğru şekilde çalışır mı o şekilde ayrıca bizim firebase push notification planını mı kullanıyo yoksa ücretsiz mi olur onda bildirim göndermek web sitesi
 - sayım günü sayım saatinden 2.30 saat önce hatırlatma bildirimi atsın bugün şu saatte şu sayım var diye
 - personel silindiğinde personelin olduğu sayımların bilgilerindende gidiyo onu düzeltelim oralarda yine eski bilgiler gözüksün
 - admin olarak girildiğinde iş takvimi olmasın ekranda işte bizim normalde sol panelde olan şeyler ana menüde olucak butonlar şeklinde ve onlara basınca o paneller açılcak
@@ -26,6 +22,7 @@
 - bi panel yapıcaz ve bu panel bi google haritalarda bi rota hazırlıcak personel seçicez ve seçili personellerin adreslerini alıp ve şuan ki konumunu ve son noktayı ayarlıcaz ve aralarına personellerin konumunu durak olarak eklicek ve en hızlı uygun rotayı buldurcaz sıra sıra kimi bırakmamız gerekicek diye servisle
 
 - Admin hesabı sayım personelleri listesinde gözükmesin eklenemesin orada sadece yöneticiler ve personeller gözüksün
+
 - Adminin şifresini nereden değiştiririm zor bişi yapmamız lazım
 - adminin tüm sayımları düzenleme ve silme hakkı olcak
 - sayım oluştururken genel çarpanın adı genel yövmiye veya yevmiye miydi doğrusu işte o çarpanı olsun
