@@ -40,8 +40,15 @@
   <script>
     async function checkAppVersionAndRefresh() {
       try {
-        // version.json dosyasını cache'e takılmadan çekmek için t parametresi ekliyoruz
-        const response = await fetch('/WP_Sayim/version.json?t=' + new Date().getTime());
+        // version.json dosyasını cache'e takılmadan çekmek için t parametresi ve headers ekliyoruz
+        const response = await fetch('/WP_Sayim/version.json?t=' + new Date().getTime(), {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
         const data = await response.json();
         const latestVersion = data.version;
         const currentVersion = localStorage.getItem('app_version');
@@ -69,7 +76,8 @@
           // 3. Yeni sürümü kaydet
           localStorage.setItem('app_version', latestVersion);
           
-          // 4. Sayfayı tertemiz yenile
+          // 4. Kullanıcıya haber ver ve sayfayı tertemiz yenile
+          alert('Yeni bir güncelleme bulundu! Uygulama yenileniyor...');
           window.location.reload();
         } else if (!currentVersion) {
           // İlk açılışta versiyonu kaydet
@@ -82,6 +90,13 @@
 
     // Uygulama yüklendiğinde versiyonu kontrol et
     window.addEventListener('load', checkAppVersionAndRefresh);
+    
+    // Uygulama arka plandan öne geldiğinde de versiyonu kontrol et
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        checkAppVersionAndRefresh();
+      }
+    });
   </script>
 
   <!-- Service Worker Interceptor for FCM on GitHub Pages -->
