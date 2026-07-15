@@ -61,6 +61,32 @@ class _StaffPickerState extends State<StaffPicker> {
   AppSettings _settings = AppSettings();
   bool _isLoadingSettings = true;
 
+  DateTime? _lastSnackBarTime;
+  String? _lastSnackBarMsg;
+
+  void _showLimitSnackBar(String trMsg, String enMsg) {
+    final now = DateTime.now();
+    final msg = widget.isTr ? trMsg : enMsg;
+    
+    if (_lastSnackBarTime != null && 
+        msg == _lastSnackBarMsg && 
+        now.difference(_lastSnackBarTime!).inMilliseconds < 2500) {
+      return;
+    }
+
+    _lastSnackBarTime = now;
+    _lastSnackBarMsg = msg;
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: AppColors.danger,
+        duration: const Duration(milliseconds: 2500),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -303,15 +329,11 @@ class _StaffPickerState extends State<StaffPicker> {
                     int currentY = _configs.where((c) => c.isSelected && c.role == DavetRole.manager).length;
                     
                     if (config.role == DavetRole.staff && currentP >= widget.targetPersonel) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(widget.isTr ? 'Personel sınırına ulaştınız!' : 'Personnel limit reached!'), backgroundColor: AppColors.danger),
-                      );
+                      _showLimitSnackBar('Personel sınırına ulaştınız!', 'Personnel limit reached!');
                       return;
                     }
                     if (config.role == DavetRole.manager && currentY >= widget.targetYonetici) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(widget.isTr ? 'Yönetici sınırına ulaştınız!' : 'Manager limit reached!'), backgroundColor: AppColors.danger),
-                      );
+                      _showLimitSnackBar('Yönetici sınırına ulaştınız!', 'Manager limit reached!');
                       return;
                     }
                   }
@@ -373,13 +395,13 @@ class _StaffPickerState extends State<StaffPicker> {
                       if (val == DavetRole.staff) {
                          int currentP = _configs.where((c) => c.isSelected && c.role == DavetRole.staff).length;
                          if (currentP >= widget.targetPersonel) {
-                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.isTr ? 'Personel sınırına ulaştınız!' : 'Personnel limit reached!'), backgroundColor: AppColors.danger));
+                           _showLimitSnackBar('Personel sınırına ulaştınız!', 'Personnel limit reached!');
                            return;
                          }
                       } else {
                          int currentY = _configs.where((c) => c.isSelected && c.role == DavetRole.manager).length;
                          if (currentY >= widget.targetYonetici) {
-                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.isTr ? 'Yönetici sınırına ulaştınız!' : 'Manager limit reached!'), backgroundColor: AppColors.danger));
+                           _showLimitSnackBar('Yönetici sınırına ulaştınız!', 'Manager limit reached!');
                            return;
                          }
                       }
