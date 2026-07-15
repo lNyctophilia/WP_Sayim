@@ -22,3 +22,5 @@
 - sayım ekleme ekranında eksik personel seçilebilsin fakat eksik olduğu belirtilsin ve sayım panelindede eksik kişi sayısı uyarısı olsun çünkü bazen başka biri son dakikalarda eklenebiliyo o yüzden eksik sayım oluşturulabilsin sonradan başkaları eklenir
 
 - iş takvimindeki iş yoğunluğunu datanın uç kısmına nokta ekliyosun ya noktaya gerek yok soldan sağa uzanan çizgi yeter
+
+- sayımdan personel çıkarılınca max personel kişiside azalıyo onu düzelt

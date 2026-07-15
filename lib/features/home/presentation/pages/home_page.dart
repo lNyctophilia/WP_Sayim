@@ -904,20 +904,7 @@ class IntensityWavePainter extends CustomPainter {
 
     canvas.drawPath(wavePath, linePaint);
 
-    // İş gidilen noktaları işaretleme (Zirveler)
-    final dotPaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
 
-    for (int i = 0; i < points.length; i++) {
-      // Eğer o gün yoğunluk arttıysa (işe gidildiyse) küçük bir nokta koy
-      // (Bunu önceki günden büyük olmasıyla veya sıfırdan büyük olmasıyla anlayabiliriz)
-      if (i > 0 && intensities[i] > intensities[i - 1]) {
-        canvas.drawCircle(points[i], 3.0, dotPaint);
-      } else if (i == 0 && intensities[i] > 0) {
-        canvas.drawCircle(points[i], 3.0, dotPaint);
-      }
-    }
   }
 
   @override

@@ -32,6 +32,8 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
 
   List<AppUser> _availableUsers = [];
   List<SelectedUserConfig> _selectedConfigs = [];
+  int _alreadySelectedPersonel = 0;
+  int _alreadySelectedYonetici = 0;
   bool _isLoading = true;
   bool _isSaving = false;
 
@@ -54,9 +56,14 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
       // 3. Zaten davet edilmiş kullanıcıların ID'lerini bul
       final existingUserIds = davetlerList.map((d) => d.userId).toSet();
 
+      int currentPersonel = davetlerList.where((d) => d.status != DavetStatus.declined && d.role == DavetRole.staff).length;
+      int currentYonetici = davetlerList.where((d) => d.status != DavetStatus.declined && d.role == DavetRole.manager).length;
+
       // 4. Henüz davet edilmemiş kullanıcıları filtrele
       setState(() {
         _availableUsers = allUsers.where((u) => !existingUserIds.contains(u.id)).toList();
+        _alreadySelectedPersonel = currentPersonel;
+        _alreadySelectedYonetici = currentYonetici;
         _isLoading = false;
       });
     } catch (e) {
@@ -161,6 +168,10 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
                     currentUser: widget.currentUser,
                     sayimSehirTipi: widget.sayim.sehirTipi,
                     globalMultiplier: widget.sayim.globalMultiplier,
+                    targetPersonel: widget.sayim.maxKisi,
+                    targetYonetici: widget.sayim.maxYonetici,
+                    alreadySelectedPersonel: _alreadySelectedPersonel,
+                    alreadySelectedYonetici: _alreadySelectedYonetici,
                     onSelectionChanged: (configs) {
                       setState(() {
                         _selectedConfigs = configs;

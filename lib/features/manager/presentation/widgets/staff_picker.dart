@@ -35,6 +35,8 @@ class StaffPicker extends StatefulWidget {
   final List<SelectedUserConfig>? initialSelections;
   final int targetPersonel;
   final int targetYonetici;
+  final int alreadySelectedPersonel;
+  final int alreadySelectedYonetici;
 
   const StaffPicker({
     super.key,
@@ -48,6 +50,8 @@ class StaffPicker extends StatefulWidget {
     this.initialSelections,
     this.targetPersonel = 0,
     this.targetYonetici = 0,
+    this.alreadySelectedPersonel = 0,
+    this.alreadySelectedYonetici = 0,
   });
 
   @override
@@ -253,8 +257,8 @@ class _StaffPickerState extends State<StaffPicker> {
                 const SizedBox(height: 4),
                 Text(
                   widget.isTr 
-                    ? 'Personel: ${_configs.where((c) => c.isSelected && c.role == DavetRole.staff).length}/${widget.targetPersonel} | Yönetici: ${_configs.where((c) => c.isSelected && c.role == DavetRole.manager).length}/${widget.targetYonetici}'
-                    : 'Staff: ${_configs.where((c) => c.isSelected && c.role == DavetRole.staff).length}/${widget.targetPersonel} | Manager: ${_configs.where((c) => c.isSelected && c.role == DavetRole.manager).length}/${widget.targetYonetici}',
+                    ? 'Personel: ${_configs.where((c) => c.isSelected && c.role == DavetRole.staff).length + widget.alreadySelectedPersonel}/${widget.targetPersonel} | Yönetici: ${_configs.where((c) => c.isSelected && c.role == DavetRole.manager).length + widget.alreadySelectedYonetici}/${widget.targetYonetici}'
+                    : 'Staff: ${_configs.where((c) => c.isSelected && c.role == DavetRole.staff).length + widget.alreadySelectedPersonel}/${widget.targetPersonel} | Manager: ${_configs.where((c) => c.isSelected && c.role == DavetRole.manager).length + widget.alreadySelectedYonetici}/${widget.targetYonetici}',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -264,8 +268,8 @@ class _StaffPickerState extends State<StaffPicker> {
               ],
             ),
             Builder(builder: (context) {
-              int totalP = _configs.where((c) => c.role == DavetRole.staff).length;
-              int totalY = _configs.where((c) => c.role == DavetRole.manager).length;
+              int totalP = _configs.where((c) => c.role == DavetRole.staff).length + widget.alreadySelectedPersonel;
+              int totalY = _configs.where((c) => c.role == DavetRole.manager).length + widget.alreadySelectedYonetici;
               bool canSelectAll = totalP <= widget.targetPersonel && totalY <= widget.targetYonetici;
               return Row(
                 children: [
@@ -325,8 +329,8 @@ class _StaffPickerState extends State<StaffPicker> {
                 value: config.isSelected,
                 onChanged: (val) {
                   if (val == true) {
-                    int currentP = _configs.where((c) => c.isSelected && c.role == DavetRole.staff).length;
-                    int currentY = _configs.where((c) => c.isSelected && c.role == DavetRole.manager).length;
+                    int currentP = _configs.where((c) => c.isSelected && c.role == DavetRole.staff).length + widget.alreadySelectedPersonel;
+                    int currentY = _configs.where((c) => c.isSelected && c.role == DavetRole.manager).length + widget.alreadySelectedYonetici;
                     
                     if (config.role == DavetRole.staff && currentP >= widget.targetPersonel) {
                       _showLimitSnackBar('Personel sınırına ulaştınız!', 'Personnel limit reached!');
@@ -402,13 +406,13 @@ class _StaffPickerState extends State<StaffPicker> {
                   onChanged: (val) {
                     if (val != null && val != config.role) {
                       if (val == DavetRole.staff) {
-                         int currentP = _configs.where((c) => c.isSelected && c.role == DavetRole.staff).length;
+                         int currentP = _configs.where((c) => c.isSelected && c.role == DavetRole.staff).length + widget.alreadySelectedPersonel;
                          if (currentP >= widget.targetPersonel) {
                            _showLimitSnackBar('Personel sınırına ulaştınız!', 'Personnel limit reached!');
                            return;
                          }
                       } else {
-                         int currentY = _configs.where((c) => c.isSelected && c.role == DavetRole.manager).length;
+                         int currentY = _configs.where((c) => c.isSelected && c.role == DavetRole.manager).length + widget.alreadySelectedYonetici;
                          if (currentY >= widget.targetYonetici) {
                            _showLimitSnackBar('Yönetici sınırına ulaştınız!', 'Manager limit reached!');
                            return;
