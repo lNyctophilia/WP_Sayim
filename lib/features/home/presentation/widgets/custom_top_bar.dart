@@ -59,7 +59,7 @@ class CustomTopBar extends StatelessWidget {
               SizedBox(width: hasDrawer ? 30 : 10),
               // App isim — ayrı yazılış
               const Text(
-                'WP Sayim',
+                'WP Sayım',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
