@@ -5,7 +5,9 @@ import '../../../../core/constants/app_config.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/auth_service.dart';
+import '../../../../core/models/app_user.dart';
 import '../../../../core/router/app_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Ayarlar Sayfası
 class SettingsPage extends StatefulWidget {
@@ -226,6 +228,11 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildLanguageTile(),
           _buildLogoutTile(),
           if (kIsWeb) _buildInstallGuideTile(),
+          const SizedBox(height: 24),
+
+          // ─── Bildirimler ───────────────────────────────
+          _buildSectionHeader('Bildirimler'),
+          _buildReminderToggle(),
           const SizedBox(height: 24),
 
           // ─── Hakkında ──────────────────────────────────
@@ -454,6 +461,70 @@ class _SettingsPageState extends State<SettingsPage> {
           borderRadius: BorderRadius.circular(14),
         ),
       ),
+    );
+  }
+
+  Widget _buildReminderToggle() {
+    final authService = AuthService();
+    final uid = authService.currentFirebaseUser?.uid;
+    
+    if (uid == null) return const SizedBox.shrink();
+
+    return StreamBuilder<AppUser?>(
+      stream: authService.getUserDataStream(uid),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox.shrink();
+        
+        final user = snapshot.data!;
+        
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppColors.card,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: SwitchListTile(
+            activeColor: AppColors.accentLight,
+            secondary: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.accentLight.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.notifications_active_rounded,
+                color: AppColors.accentLight,
+                size: 22,
+              ),
+            ),
+            title: const Text(
+              'Sayım Hatırlatıcı', // You can use widget.lang.tr('sayim_reminder') if added to language files
+              style: TextStyle(
+                fontSize: 15,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            subtitle: const Text(
+              'Sayıma 3 saat kala bildirim alırsınız',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            value: user.sayimReminderEnabled,
+            onChanged: (bool value) async {
+              await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(uid)
+                  .update({'sayimReminderEnabled': value});
+            },
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+        );
+      },
     );
   }
 

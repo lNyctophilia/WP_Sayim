@@ -15,6 +15,7 @@ class AppUser {
   final bool active;
   final DateTime createdAt;
   final String? sessionId;
+  final bool sayimReminderEnabled;
 
   const AppUser({
     required this.id,
@@ -27,6 +28,7 @@ class AppUser {
     this.active = true,
     required this.createdAt,
     this.sessionId,
+    this.sayimReminderEnabled = true,
   });
 
   /// En yüksek yetki seviyesi
@@ -54,6 +56,7 @@ class AppUser {
       active: data['active'] as bool? ?? true,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       sessionId: data['sessionId'] as String?,
+      sayimReminderEnabled: data['sayimReminderEnabled'] as bool? ?? true,
     );
   }
 
@@ -69,6 +72,7 @@ class AppUser {
       'active': active,
       'createdAt': Timestamp.fromDate(createdAt),
       if (sessionId != null) 'sessionId': sessionId,
+      'sayimReminderEnabled': sayimReminderEnabled,
     };
   }
 
@@ -83,6 +87,7 @@ class AppUser {
     bool? active,
     DateTime? createdAt,
     String? sessionId,
+    bool? sayimReminderEnabled,
   }) {
     return AppUser(
       id: id ?? this.id,
@@ -95,6 +100,7 @@ class AppUser {
       active: active ?? this.active,
       createdAt: createdAt ?? this.createdAt,
       sessionId: sessionId ?? this.sessionId,
+      sayimReminderEnabled: sayimReminderEnabled ?? this.sayimReminderEnabled,
     );
   }
 }

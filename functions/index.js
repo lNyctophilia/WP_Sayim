@@ -1,4 +1,5 @@
 const { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } = require("firebase-functions/v2/firestore");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
 
 admin.initializeApp();
@@ -318,6 +319,110 @@ exports.deleteUserFromAuth = onDocumentDeleted("users/{userId}", async (event) =
       console.log(`Auth user ${userId} already deleted or does not exist.`);
     } else {
       console.error(`Error deleting auth user: ${userId}`, error);
+    }
+  }
+});
+
+// 6. Sayım Hatırlatıcı (Her 1 saatte bir çalışır, 3 saat kalanlara bildirim atar)
+exports.sayimAutoReminder = onSchedule("every 60 minutes", async (event) => {
+  const nowMs = Date.now();
+  
+  // Sadece açık sayımları getir
+  const sayimlarSnap = await admin.firestore().collection("sayimlar")
+    .where("status", "==", "open")
+    .get();
+
+  if (sayimlarSnap.empty) return;
+
+  for (const sayimDoc of sayimlarSnap.docs) {
+    const sayimData = sayimDoc.data();
+    if (!sayimData || !sayimData.date || !sayimData.gruplar) continue;
+    
+    // Sadece bu sayımın kabul edilmiş davetlerini getir
+    const davetlerSnap = await admin.firestore().collection("davetler")
+      .where("sayimId", "==", sayimDoc.id)
+      .where("status", "==", "accepted")
+      .get();
+
+    if (davetlerSnap.empty) continue;
+
+    for (const davetDoc of davetlerSnap.docs) {
+      const davet = davetDoc.data();
+      
+      // Daha önce bu otomatik bildirim atıldıysa geç
+      if (davet.autoReminderSent === true) continue;
+
+      // Kullanıcının grup saatini bul
+      const grup = sayimData.gruplar.find(g => g.grupId === davet.grupId);
+      if (!grup || !grup.saat) continue;
+
+      // Sayım gününün tarihi ile grup saatini birleştir
+      const sayimDate = sayimData.date.toDate();
+      const timeParts = grup.saat.split(":");
+      if (timeParts.length !== 2) continue;
+
+      sayimDate.setHours(parseInt(timeParts[0], 10));
+      sayimDate.setMinutes(parseInt(timeParts[1], 10));
+      sayimDate.setSeconds(0);
+      sayimDate.setMilliseconds(0);
+
+      // Şu anki zamana göre kaç saat kalmış hesapla
+      const diffHours = (sayimDate.getTime() - nowMs) / (1000 * 60 * 60);
+
+      // Sayımın başlamasına 2 ila 3 saat arası kalmışsa (saatlik döngüde bu aralığa 1 kere düşer)
+      if (diffHours > 2 && diffHours <= 3) {
+        // Kullanıcının hatırlatıcı ayarını kontrol et
+        const userDoc = await admin.firestore().collection("users").doc(davet.userId).get();
+        if (!userDoc.exists) continue;
+        
+        const userData = userDoc.data();
+        if (userData.sayimReminderEnabled === false) continue; // Kullanıcı ayarlarından kapatmışsa atlama
+
+        const fcmToken = userData.fcmToken;
+        if (fcmToken) {
+          const sayimName = sayimData.note || "Sayım";
+          const message = {
+            token: fcmToken,
+            notification: {
+              title: "Yaklaşan Sayım",
+              body: `Bugün saat ${grup.saat}'te "${sayimName}" sayımı var. Lütfen vaktinde orada olun.`
+            },
+            android: {
+              priority: "high",
+              notification: {
+                channelId: "sayim_notifications",
+                tag: `sayim_auto_reminder_${davetDoc.id}`
+              }
+            },
+            webpush: {
+              headers: {
+                Topic: `sayim_auto_reminder_${davetDoc.id}`
+              },
+              fcmOptions: {
+                link: "https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true"
+              }
+            },
+            apns: {
+              headers: {
+                "apns-collapse-id": `sayim_auto_reminder_${davetDoc.id}`
+              }
+            },
+            data: {
+              type: "sayim_auto_reminder",
+              davetId: davetDoc.id,
+              sayimId: sayimDoc.id
+            }
+          };
+
+          try {
+            await admin.messaging().send(message);
+            // Bildirimin atıldığını kaydet ki bir sonraki döngüde tekrar atmasın
+            await davetDoc.ref.update({ autoReminderSent: true });
+          } catch (e) {
+            console.error("Error sending scheduled reminder for davet " + davetDoc.id, e);
+          }
+        }
+      }
     }
   }
 });
