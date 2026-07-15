@@ -21,10 +21,8 @@
 - eğer bi kişi, yeni sayım oluşturulurken seçili tarihte bi sayımdaysa butonu deaktif olsun ve tıklanamasın bu kişi zaten başka bi sayımda yazsın toast message
 - bi panel yapıcaz ve bu panel bi google haritalarda bi rota hazırlıcak personel seçicez ve seçili personellerin adreslerini alıp ve şuan ki konumunu ve son noktayı ayarlıcaz ve aralarına personellerin konumunu durak olarak eklicek ve en hızlı uygun rotayı buldurcaz sıra sıra kimi bırakmamız gerekicek diye servisle
 
-- Admin hesabı sayım personelleri listesinde gözükmesin eklenemesin orada sadece yöneticiler ve personeller gözüksün
-
 - Adminin şifresini nereden değiştiririm zor bişi yapmamız lazım
 - adminin tüm sayımları düzenleme ve silme hakkı olcak
-- sayım oluştururken genel çarpanın adı genel yövmiye veya yevmiye miydi doğrusu işte o çarpanı olsun
 - Aylık iş yoğunluğuyla; toplam gün ve para kısmı yer değiştirsin
-- Giriş ekranındaki admin oluşturma butonunu kaldır
+
+- sayım oluştururken genel çarpanın adı genel yövmiye veya yevmiye miydi doğrusu işte o çarpanı olsun

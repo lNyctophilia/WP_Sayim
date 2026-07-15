@@ -346,7 +346,7 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
                           child: DropdownButtonFormField<double>(
                             value: _globalMultiplier,
                             decoration: InputDecoration(
-                              labelText: isTr ? 'Genel Çarpan' : 'Global Multiplier',
+                              labelText: isTr ? 'Yevmiye Çarpanı' : 'Global Multiplier',
                               filled: true,
                               fillColor: AppColors.surface,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
