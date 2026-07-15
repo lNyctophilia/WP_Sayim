@@ -345,6 +345,10 @@ class _StaffPickerState extends State<StaffPicker> {
 
                   setState(() {
                     config.isSelected = val ?? false;
+                    if (config.isSelected == false) {
+                      config.role = u.isManager || u.isOwner ? DavetRole.manager : DavetRole.staff;
+                      config.ucret = _calculateWage(config.role, config.multiplier);
+                    }
                     _selectAll = _configs.every((c) => c.isSelected);
                   });
                   _notifyChanges();
