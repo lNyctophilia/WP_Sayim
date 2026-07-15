@@ -82,14 +82,15 @@ class _StaffPickerState extends State<StaffPicker> {
     }
   }
 
-  double _calculateWage(DavetRole role, double multiplier) {
+  double _calculateWage(DavetRole role, double multiplier, [SehirTipi? overrideSehirTipi]) {
     double baseWage = 0.0;
+    final sehirTipi = overrideSehirTipi ?? widget.sayimSehirTipi;
     if (role == DavetRole.staff) {
-      baseWage = widget.sayimSehirTipi == SehirTipi.ici
+      baseWage = sehirTipi == SehirTipi.ici
           ? _settings.staffSehirIciWage
           : _settings.staffSehirDisiWage;
     } else {
-      baseWage = widget.sayimSehirTipi == SehirTipi.ici
+      baseWage = sehirTipi == SehirTipi.ici
           ? _settings.managerSehirIciWage
           : _settings.managerSehirDisiWage;
     }
@@ -110,6 +111,20 @@ class _StaffPickerState extends State<StaffPicker> {
           
       if (old != null) {
         bool groupExists = widget.availableGroups.any((g) => g.grupId == old.grupId);
+        
+        // Determine if ucret was manually edited by comparing it with the old auto-calculated wage
+        bool wasManuallyEdited = false;
+        if (oldWidget != null) {
+          double oldAutoWage = _calculateWage(old.role, old.multiplier, oldWidget.sayimSehirTipi);
+          if (old.ucret != oldAutoWage) {
+            wasManuallyEdited = true;
+          }
+        } else {
+          if (old.ucret != _calculateWage(old.role, old.multiplier)) {
+            wasManuallyEdited = true;
+          }
+        }
+
         // Recalculate ucret because global settings or sehirTipi might have changed
         double newMultiplier = old.multiplier;
         if (oldWidget != null && oldWidget.globalMultiplier != widget.globalMultiplier && old.multiplier == oldWidget.globalMultiplier) {
@@ -123,7 +138,7 @@ class _StaffPickerState extends State<StaffPicker> {
           grupId: groupExists ? old.grupId : defaultGrupId,
           role: old.role,
           multiplier: newMultiplier,
-          ucret: old.ucret != _calculateWage(old.role, old.multiplier) ? old.ucret : _calculateWage(old.role, newMultiplier), 
+          ucret: wasManuallyEdited ? old.ucret : _calculateWage(old.role, newMultiplier), 
           // Note: if user manually edited ucret, keep it, otherwise recalculate
         );
       }
@@ -383,6 +398,7 @@ class _StaffPickerState extends State<StaffPicker> {
             ),
             const SizedBox(height: 8),
             TextFormField(
+              key: ValueKey('wage_${config.user.id}_${widget.sayimSehirTipi}_${config.multiplier}_${config.role}'),
               initialValue: config.ucret > 0 ? config.ucret.toStringAsFixed(0) : '',
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),

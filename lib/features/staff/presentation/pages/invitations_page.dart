@@ -21,6 +21,21 @@ class InvitationsPage extends StatefulWidget {
 class _InvitationsPageState extends State<InvitationsPage> {
   final DavetService _davetService = DavetService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late Stream<List<Davet>> _davetStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _davetStream = _davetService.getDavetlerByUser(widget.currentUser.id);
+  }
+
+  Future<void> _onRefresh() async {
+    setState(() {
+      _davetStream = _davetService.getDavetlerByUser(widget.currentUser.id);
+    });
+    // Provide some visual feedback time for the refresh indicator
+    await Future.delayed(const Duration(milliseconds: 600));
+  }
 
   Future<void> _acceptDavet(Davet davet) async {
     try {
@@ -107,7 +122,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
         ),
       ),
       body: StreamBuilder<List<Davet>>(
-        stream: _davetService.getDavetlerByUser(widget.currentUser.id),
+        stream: _davetStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator(color: AppColors.accentLight));
@@ -128,36 +143,55 @@ class _InvitationsPageState extends State<InvitationsPage> {
               [];
 
           if (pendingDavetler.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.inbox_rounded,
-                    size: 64,
-                    color: AppColors.textHint.withOpacity(0.5),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Bekleyen davetiniz bulunmuyor.',
-                    style: TextStyle(
-                      color: AppColors.textHint,
-                      fontSize: 16,
+            return RefreshIndicator(
+              onRefresh: _onRefresh,
+              color: AppColors.accentLight,
+              backgroundColor: AppColors.card,
+              child: LayoutBuilder(
+                builder: (context, constraints) => SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.inbox_rounded,
+                            size: 64,
+                            color: AppColors.textHint.withOpacity(0.5),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Bekleyen davetiniz bulunmuyor.',
+                            style: TextStyle(
+                              color: AppColors.textHint,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ],
+                ),
               ),
             );
           }
 
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
+          return RefreshIndicator(
+            onRefresh: _onRefresh,
+            color: AppColors.accentLight,
+            backgroundColor: AppColors.card,
+            child: ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
             itemCount: pendingDavetler.length,
             separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final davet = pendingDavetler[index];
               return _buildDavetCard(davet);
             },
+          ),
           );
         },
       ),

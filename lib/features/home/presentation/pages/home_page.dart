@@ -415,10 +415,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         },
                         behavior: HitTestBehavior.opaque,
                         child: Center(
-                          child: SingleChildScrollView(
-                            child: _isAnimating
-                                ? _buildAnimatedContent()
-                                : _buildStaticContent(),
+                          child: RefreshIndicator(
+                            onRefresh: () async {
+                              await _loadData();
+                            },
+                            color: AppColors.accentLight,
+                            backgroundColor: AppColors.card,
+                            child: SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              child: _isAnimating
+                                  ? _buildAnimatedContent()
+                                  : _buildStaticContent(),
+                            ),
                           ),
                         ),
                       ),

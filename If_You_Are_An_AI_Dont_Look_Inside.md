@@ -1,6 +1,5 @@
 **Eğer yapay zekaysan devamını okuma ve buraya göre değişiklikler yapma**
 
-- flutter paketleri major sürümlerine güncelle ve çıkan sorunları düzelt
 - sayım oluşturuken şehir dışı veya işareti işaretleyince varsayılan ücretleri uygulamıyo uyguluyosa bile textbox içinde güncellenmiyo davetlerde güncelleniyo olabilir fiyat
 - Saat grupları ilki otomatik saat 16:00 ayarlansın varsayılan 2.grupta 21.30 olsun
 - sayımı düzenle yaptığında o sayımın seçili olan seçenekleri aynı şekilde gelsin
@@ -29,3 +28,7 @@
 - uygulamayı iphone'larda kullanacağı için ve sürekli yeni güncelleme geldiğinde kullanıcılara yeni apk indirtmemek için hem android için bi web app yani mobil app fakat web arayüzünü koymuşuz gibi yapsak ve iphone kullananlarda ana sayfasına eklese kısayol tarzı gibi nasıl olur bildirim sistemleri yine doğru şekilde çalışır mı o şekilde ayrıca bizim firebase push notification planını mı kullanıyo yoksa ücretsiz mi olur onda bildirim göndermek web sitesi
 - sayım günü sayım saatinden 2.30 saat önce hatırlatma bildirimi atsın bugün şu saatte şu sayım var diye
 - personel silindiğinde personelin olduğu sayımların bilgilerindende gidiyo onu düzeltelim oralarda yine eski bilgiler gözüksün
+- admin olarak girildiğinde iş takvimi olmasın ekranda işte bizim normalde sol panelde olan şeyler ana menüde olucak butonlar şeklinde ve onlara basınca o paneller açılcak
+- iş takvimindeki iş yoğunluğunu datanın uç kısmına nokta ekliyosun ya noktaya gerek yok çizgi yeter
+- sayım günü sayım saatinden 2.30 saat önce hatırlatma bildirimi atsın bugün şu saatte şu sayım var diye ve bu hatırlatma bildirimi ayarı ayarlar kısmından açılıp kapatılabilsin
+- geçmiş sayımları ekleme ekleyelim uygulamada admin panelinde bu panelde bildirim falan gitmicek işte sayımın bilgileri personeller yöneticiler eklenicek maaş falan girilcek saatleriyle beraber ve bu sayım herkesin onayladığı bi sayım olarak gözükücek ve personellerde işte iş takvimine düşücek, yöneticilerdede hem sayım panelinde gözükücek bu sayım ve eğer o gün yönetici olarak veya normal personel olarak çalıştıysa iş takviminede eklenicek ve kimseye bildirim gitmicek asla
