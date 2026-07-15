@@ -142,7 +142,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
               ),
             ),
             actions: [
-              if (widget.currentUser.id == widget.sayim.createdBy) ...[
+              if (widget.currentUser.id == widget.sayim.createdBy || widget.currentUser.isOwner) ...[
                 IconButton(
                   icon: const Icon(Icons.edit_rounded, color: AppColors.textPrimary, size: 20),
                   tooltip: isTr ? 'Düzenle' : 'Edit',
@@ -189,7 +189,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
               _buildDavetList(declined, DavetStatus.declined),
             ],
           ),
-          floatingActionButton: widget.currentUser.id == widget.sayim.createdBy 
+          floatingActionButton: (widget.currentUser.id == widget.sayim.createdBy || widget.currentUser.isOwner) 
             ? FloatingActionButton.extended(
                 backgroundColor: AppColors.accentLight,
                 foregroundColor: Colors.white,
@@ -224,7 +224,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
       );
     }
 
-    final isCreator = widget.currentUser.id == widget.sayim.createdBy;
+    final isCreator = widget.currentUser.id == widget.sayim.createdBy || widget.currentUser.isOwner;
 
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),

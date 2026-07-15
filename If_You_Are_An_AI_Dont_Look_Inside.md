@@ -8,7 +8,6 @@
 - kral yöneticilerin bildirim panelinde işte kabul etti mesajları falanda gözüksün sola kaydırınca o bildirimi okundu yapsın sağa kaydırınca okunmadı olarak ayarlansın, ayrıca normal personellerdede kabul ettiklerinde mesela kabul ettin gibi bildirim geçmişi gözüksün yani
 - sayım silindiğinde eğer davet gönderildiyse silinsin davet bildirimi
 - icon değiş
-- hatırlatma butonu çalışmıyo şuan tekrar bildirim atmıyo eski bildirimi silip tahminimce veya bildirim var zaten diyip bilmiyom hiç neden atmıyo
 - Bildirimler internet yoksa bile beklemeye alsın bildirimi interneti olunca gitsin bildirim, ayrıca mesajın ulaşıp ulaşmadığını yönetici panelinde gösterelim whatsapptaki tek tik çift tik olayı gibi bildirim düşmemişse veya interneti yoksa tek tik gözüksün
 - Kayıt sistemi olcak şu şekilde birisi mesela kayıt olmak için kendi bi şifre ve telefon numarasıyla giriş yapıcak, ayrıca kayıt olurken isim, adres ve tel no isticez, tel no ve adresi neden istediğimizi not olarak yazıcaz adresi servis güzergahı için, tel no da ulaşmak için gibi, bunları girdikten sonra başvuru göndericek ve yöneticilerin onaylamasını beklicek onaylarsa o bilgilerle giriş yapabilecek diğer türlü giriş yapamayacak
 - uygulamayı yayınlıcağımız zaman tüm güvenlik önlemlerini iyice alıp apphive da yayınla ve girişine kayıt olmak zorunda değilsiniz yazısı koyarız
@@ -21,7 +20,10 @@
 - eğer bi kişi, yeni sayım oluşturulurken seçili tarihte bi sayımdaysa butonu deaktif olsun ve tıklanamasın bu kişi zaten başka bi sayımda yazsın toast message
 - bi panel yapıcaz ve bu panel bi google haritalarda bi rota hazırlıcak personel seçicez ve seçili personellerin adreslerini alıp ve şuan ki konumunu ve son noktayı ayarlıcaz ve aralarına personellerin konumunu durak olarak eklicek ve en hızlı uygun rotayı buldurcaz sıra sıra kimi bırakmamız gerekicek diye servisle
 
-- Adminin şifresini nereden değiştiririm zor bişi yapmamız lazım
-- adminin tüm sayımları düzenleme ve silme hakkı olcak
+- hatırlatma butonu çalışmıyo şuan tekrar bildirim atmıyo ayrıca eski bildirim varsa eskisini silip yenisini atsın
 
-- Aylık iş yoğunluğuyla; toplam gün ve para kısmı yer değiştirsin
+- sayım ekleme ekranında eksik personel seçilebilsin fakat eksik olduğu belirtilsin ve sayım panelindede eksik kişi sayısı uyarısı olsun çünkü bazen başka biri son dakikalarda eklenebiliyo o yüzden eksik sayım oluşturulabilsin sonradan başkaları eklenir
+
+- Adminin şifresini nereden değiştiririm zor bişi yapmamız lazım
+
+- adminin tüm sayımları düzenleme ve silme hakkı olcak
