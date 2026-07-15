@@ -33,6 +33,8 @@ class StaffPicker extends StatefulWidget {
   final SehirTipi sayimSehirTipi;
   final double globalMultiplier;
   final List<SelectedUserConfig>? initialSelections;
+  final int targetPersonel;
+  final int targetYonetici;
 
   const StaffPicker({
     super.key,
@@ -44,6 +46,8 @@ class StaffPicker extends StatefulWidget {
     this.sayimSehirTipi = SehirTipi.ici,
     this.globalMultiplier = 1.0,
     this.initialSelections,
+    this.targetPersonel = 0,
+    this.targetYonetici = 0,
   });
 
   @override
@@ -209,30 +213,51 @@ class _StaffPickerState extends State<StaffPicker> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              widget.isTr ? 'Personel Seçimi' : 'Staff Selection',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.isTr ? 'Hepsini Seç' : 'Select All',
+                  widget.isTr ? 'Personel Seçimi' : 'Staff Selection',
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.textSecondary,
                   ),
                 ),
-                Checkbox(
-                  value: _selectAll,
-                  onChanged: _toggleSelectAll,
-                  activeColor: AppColors.accentLight,
+                const SizedBox(height: 4),
+                Text(
+                  widget.isTr 
+                    ? 'Personel: ${_configs.where((c) => c.isSelected && c.role == DavetRole.staff).length}/${widget.targetPersonel} | Yönetici: ${_configs.where((c) => c.isSelected && c.role == DavetRole.manager).length}/${widget.targetYonetici}'
+                    : 'Staff: ${_configs.where((c) => c.isSelected && c.role == DavetRole.staff).length}/${widget.targetPersonel} | Manager: ${_configs.where((c) => c.isSelected && c.role == DavetRole.manager).length}/${widget.targetYonetici}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.accentLight,
+                  ),
                 ),
               ],
             ),
+            Builder(builder: (context) {
+              int totalP = _configs.where((c) => c.role == DavetRole.staff).length;
+              int totalY = _configs.where((c) => c.role == DavetRole.manager).length;
+              bool canSelectAll = totalP <= widget.targetPersonel && totalY <= widget.targetYonetici;
+              return Row(
+                children: [
+                  Text(
+                    widget.isTr ? 'Hepsini Seç' : 'Select All',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: canSelectAll ? AppColors.textSecondary : AppColors.textHint,
+                    ),
+                  ),
+                  Checkbox(
+                    value: _selectAll,
+                    onChanged: canSelectAll ? _toggleSelectAll : null,
+                    activeColor: AppColors.accentLight,
+                  ),
+                ],
+              );
+            }),
           ],
         ),
         const SizedBox(height: 8),
@@ -273,6 +298,24 @@ class _StaffPickerState extends State<StaffPicker> {
               Checkbox(
                 value: config.isSelected,
                 onChanged: (val) {
+                  if (val == true) {
+                    int currentP = _configs.where((c) => c.isSelected && c.role == DavetRole.staff).length;
+                    int currentY = _configs.where((c) => c.isSelected && c.role == DavetRole.manager).length;
+                    
+                    if (config.role == DavetRole.staff && currentP >= widget.targetPersonel) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(widget.isTr ? 'Personel sınırına ulaştınız!' : 'Personnel limit reached!'), backgroundColor: AppColors.danger),
+                      );
+                      return;
+                    }
+                    if (config.role == DavetRole.manager && currentY >= widget.targetYonetici) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(widget.isTr ? 'Yönetici sınırına ulaştınız!' : 'Manager limit reached!'), backgroundColor: AppColors.danger),
+                      );
+                      return;
+                    }
+                  }
+
                   setState(() {
                     config.isSelected = val ?? false;
                     _selectAll = _configs.every((c) => c.isSelected);
@@ -327,6 +370,19 @@ class _StaffPickerState extends State<StaffPicker> {
                   ],
                   onChanged: (val) {
                     if (val != null) {
+                      if (val == DavetRole.staff) {
+                         int currentP = _configs.where((c) => c.isSelected && c.role == DavetRole.staff).length;
+                         if (currentP >= widget.targetPersonel) {
+                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.isTr ? 'Personel sınırına ulaştınız!' : 'Personnel limit reached!'), backgroundColor: AppColors.danger));
+                           return;
+                         }
+                      } else {
+                         int currentY = _configs.where((c) => c.isSelected && c.role == DavetRole.manager).length;
+                         if (currentY >= widget.targetYonetici) {
+                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.isTr ? 'Yönetici sınırına ulaştınız!' : 'Manager limit reached!'), backgroundColor: AppColors.danger));
+                           return;
+                         }
+                      }
                       setState(() {
                         config.role = val;
                       });

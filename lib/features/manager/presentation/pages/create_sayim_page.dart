@@ -281,6 +281,7 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
                           child: TextFormField(
                             controller: _maxKisiController,
                             keyboardType: TextInputType.number,
+                            onChanged: (_) => setState((){}),
                             style: const TextStyle(color: AppColors.textPrimary),
                             decoration: InputDecoration(
                               labelText: isTr ? 'Standart Personel' : 'Standard Personnel',
@@ -300,6 +301,7 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
                           child: TextFormField(
                             controller: _maxYoneticiController,
                             keyboardType: TextInputType.number,
+                            onChanged: (_) => setState((){}),
                             style: const TextStyle(color: AppColors.textPrimary),
                             decoration: InputDecoration(
                               labelText: isTr ? 'Standart Yönetici' : 'Standard Manager',
@@ -310,7 +312,7 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide.none,
                               ),
-                              prefixIcon: const Icon(Icons.manage_accounts_rounded, color: AppColors.textSecondary),
+                              prefixIcon: const Icon(Icons.supervisor_account_rounded, color: AppColors.textSecondary),
                             ),
                           ),
                         ),
@@ -389,6 +391,8 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
                       currentUser: widget.currentUser,
                       sayimSehirTipi: _sehirTipi,
                       globalMultiplier: _globalMultiplier,
+                      targetPersonel: int.tryParse(_maxKisiController.text) ?? 0,
+                      targetYonetici: int.tryParse(_maxYoneticiController.text) ?? 0,
                       onSelectionChanged: (selected) {
                         setState(() {
                           _selectedUsers = selected;

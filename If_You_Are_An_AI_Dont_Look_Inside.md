@@ -2,6 +2,7 @@
 
 - sayımı düzenlerken yeni birilerini seçtiğinde o kişileri sayıma dahil etmiyo ayrıca max kişi sayısını dikkate almıyo personel ve yönetici seçimi yaparken
 - Max kişi sayısının yanına yönetici sayısı eklicez ve ona göre max kişi sayısı sadece personele özel olucak,max yönetici sayısıda sadece yöneticilere özel olucak ayrıca bunlar max değil direkt standart yani 2 yazıyosak kesin o kadar seçmemiz lazım eğer seçmediysek ve davet gönderdiysek sayım ekranında personel veya yönetici eksik diye uyarı olsun
+- max yönetici sayısının ikonu yok, max personel sayısı kadar olsun
 - personel menüsünde ayarlar hakkında kısmındaki ve menüdeki topbarda yazan ismi WP Sayim olarak değiştir
 - kontrol et eğer bi yönetici kendini sayıma eklediğinde kendine giden bildirimi otomatik kabul etmiyosa otomatik kabul etsin bildirim gitmeden hiç
 - şuan bildirim kabul veya red edilince sayımı oluşturan kişiye bildirim gidiyo mu kontrol et
