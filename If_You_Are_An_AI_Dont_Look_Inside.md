@@ -31,5 +31,3 @@
 - eğer bi kişi, yeni sayım oluşturulurken seçili tarihte bi sayımdaysa butonu deaktif olsun ve tıklanamasın bu kişi zaten başka bi sayımda yazsın toast message
 
 - bi panel yapıcaz ve bu panel bi google haritalarda bi rota hazırlıcak personel seçicez ve seçili personellerin adreslerini alıp ve şuan ki konumunu ve son noktayı ayarlıcaz ve aralarına personellerin konumunu durak olarak eklicek ve en hızlı uygun rotayı buldurcaz sıra sıra kimi bırakmamız gerekicek diye servisle
-
-- sayımı oluşturan yönetici kendini sayıma eklediyse hiç bildirim veya pop up toast message oluşmadan direkt onaylasın şuan onaylıyo fakat mesajda gidiyo galiba

@@ -63,6 +63,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _currentMonth = widget.storage.getLastViewedMonth();
     _monthlyData = MonthlyData.empty(_currentYear, _currentMonth);
     
+    // Panel state'ini kaydet
+    widget.storage.setLastPanel('home');
+    
     // Bildirim tıklamasından gelip gelmediğimizi kontrol et (Web Deep Linking)
     if (kIsWeb && Uri.base.queryParameters['open_notifications'] == 'true') {
       WidgetsBinding.instance.addPostFrameCallback((_) {

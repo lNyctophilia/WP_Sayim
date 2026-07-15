@@ -7,6 +7,7 @@ import '../services/language_service.dart';
 import '../services/storage_service.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/manager/presentation/pages/manager_panel_page.dart';
 import '../services/notification_service.dart';
 
 /// Ana yönlendirici widget — Auth durumuna göre Login veya Ana Ekranı gösterir
@@ -158,8 +159,17 @@ class _AppRouterState extends State<AppRouter> {
 
   /// Kullanıcının rolüne göre uygun ana ekranı döndür
   Widget _buildHomeForRole(AppUser user) {
-    // Herkes (Personel, Yönetici, Owner) aynı ana ekrana (HomePage) gider.
-    // Yöneticiler HomePage içerisindeki Drawer menü üzerinden yönetici işlevlerine erişir.
+    final lastPanel = widget.storage.getLastPanel();
+
+    if (lastPanel == 'manager' && (user.isOwner || user.isManager)) {
+      return ManagerPanelPage(
+        currentUser: user,
+        storage: widget.storage,
+        lang: widget.lang,
+        onLogout: () {},
+      );
+    }
+
     return HomePage(
       storage: widget.storage,
       lang: widget.lang,

@@ -40,6 +40,9 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    
+    // Panel state'ini kaydet
+    widget.storage.setLastPanel('manager');
   }
 
   @override

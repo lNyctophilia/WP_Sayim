@@ -10,6 +10,7 @@ class StorageService {
   static const String _prefsLastYear = 'last_viewed_year';
   static const String _prefsLastMonth = 'last_viewed_month';
   static const String _prefsSessionId = 'session_id';
+  static const String _prefsLastPanel = 'last_active_panel';
 
   late SharedPreferences _prefs;
 
@@ -64,5 +65,13 @@ class StorageService {
   Future<void> setLastViewed(int year, int month) async {
     await _prefs.setInt(_prefsLastYear, year);
     await _prefs.setInt(_prefsLastMonth, month);
+  }
+
+  // ─── Son Aktif Panel ──────────────────────────────────────
+
+  String getLastPanel() => _prefs.getString(_prefsLastPanel) ?? 'home';
+
+  Future<void> setLastPanel(String panel) async {
+    await _prefs.setString(_prefsLastPanel, panel);
   }
 }

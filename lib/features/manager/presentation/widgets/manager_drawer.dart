@@ -128,7 +128,10 @@ class ManagerDrawer extends StatelessWidget {
                           onLogout: () {},
                         ),
                       ),
-                    );
+                    ).then((_) {
+                      // Geri dönüldüğünde (örneğin ana sayfaya) paneli güncelle
+                      storage.setLastPanel('home');
+                    });
                   },
                 ),
                 
