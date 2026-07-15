@@ -83,6 +83,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
             grupId: davet.grupId,
             ucret: davet.ucret,
             multiplier: davet.multiplier,
+            isSelected: true,
           ));
         } catch (_) {}
       }
@@ -379,6 +380,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
                       currentUser: widget.currentUser,
                       sayimSehirTipi: _sehirTipi,
                       globalMultiplier: _globalMultiplier,
+                      initialSelections: _selectedUsers,
                       onSelectionChanged: (selected) {
                         setState(() {
                           _selectedUsers = selected;

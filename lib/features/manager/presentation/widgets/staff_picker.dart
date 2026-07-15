@@ -32,6 +32,7 @@ class StaffPicker extends StatefulWidget {
   final AppUser currentUser;
   final SehirTipi sayimSehirTipi;
   final double globalMultiplier;
+  final List<SelectedUserConfig>? initialSelections;
 
   const StaffPicker({
     super.key,
@@ -42,6 +43,7 @@ class StaffPicker extends StatefulWidget {
     required this.currentUser,
     this.sayimSehirTipi = SehirTipi.ici,
     this.globalMultiplier = 1.0,
+    this.initialSelections,
   });
 
   @override
@@ -101,9 +103,9 @@ class _StaffPickerState extends State<StaffPicker> {
   }
 
   void _initConfigs({bool preserveSelection = false, StaffPicker? oldWidget}) {
-    final oldConfigs = preserveSelection ? _configs : <SelectedUserConfig>[];
+    final oldConfigs = preserveSelection ? _configs : (widget.initialSelections ?? <SelectedUserConfig>[]);
     _configs = widget.users.map((u) {
-      final old = preserveSelection
+      final old = (preserveSelection || widget.initialSelections != null)
           ? oldConfigs.where((c) => c.user.id == u.id).firstOrNull
           : null;
       
@@ -123,9 +125,8 @@ class _StaffPickerState extends State<StaffPicker> {
             wasManuallyEdited = true;
           }
         } else {
-          if (old.ucret != _calculateWage(old.role, old.multiplier)) {
-            wasManuallyEdited = true;
-          }
+          // It's the first load with initial selections, preserve the saved wage
+          wasManuallyEdited = true;
         }
 
         // Recalculate ucret because global settings or sehirTipi might have changed
@@ -137,7 +138,7 @@ class _StaffPickerState extends State<StaffPicker> {
         
         return SelectedUserConfig(
           user: u,
-          isSelected: old.isSelected,
+          isSelected: old.isSelected || (widget.initialSelections?.any((c) => c.user.id == u.id) ?? false),
           grupId: groupExists ? old.grupId : defaultGrupId,
           role: old.role,
           multiplier: newMultiplier,
@@ -158,6 +159,8 @@ class _StaffPickerState extends State<StaffPicker> {
         multiplier: multiplier,
       );
     }).toList();
+
+    _selectAll = _configs.isNotEmpty && _configs.every((c) => c.isSelected);
   }
 
   void _notifyChanges() {
