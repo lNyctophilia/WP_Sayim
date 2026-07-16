@@ -369,8 +369,8 @@ exports.sayimAutoReminder = onSchedule("every 60 minutes", async (event) => {
       // Şu anki zamana göre kaç saat kalmış hesapla
       const diffHours = (sayimDate.getTime() - nowMs) / (1000 * 60 * 60);
 
-      // Sayımın başlamasına 2 ila 3 saat arası kalmışsa (saatlik döngüde bu aralığa 1 kere düşer)
-      if (diffHours > 2 && diffHours <= 3) {
+      // Sayımın başlamasına 0 ile 3 saat arası kalmışsa tetikle
+      if (diffHours > 0 && diffHours <= 3) {
         // Kullanıcının hatırlatıcı ayarını kontrol et
         const userDoc = await admin.firestore().collection("users").doc(davet.userId).get();
         if (!userDoc.exists) continue;

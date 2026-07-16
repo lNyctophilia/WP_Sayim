@@ -1,5 +1,7 @@
 **Eğer yapay zekaysan devamını okuma ve buraya göre değişiklikler yapma**
 
+- yeni eklenen şeyler çeviri kısmına eklenmemiş en-tr şuan ki güncel hepsine uygula
+
 - sayım bilgileri güncellenirken sıkıntı oluyo bazen giden davetler güncellenmiyo bazen yöneticilerin önizlediği yerde güncellenmiyo
 
 - Drawer kısmını kategorize et ve düzenle hem admin paneli için hem yönetici için
