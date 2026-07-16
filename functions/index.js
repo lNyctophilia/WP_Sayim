@@ -356,18 +356,25 @@ exports.sayimAutoReminder = onSchedule("every 60 minutes", async (event) => {
       const grup = sayimData.gruplar.find(g => g.grupId === davet.grupId);
       if (!grup || !grup.saat) continue;
 
-      // Sayım gününün tarihi ile grup saatini birleştir
-      const sayimDate = sayimData.date.toDate();
-      const timeParts = grup.saat.split(":");
-      if (timeParts.length !== 2) continue;
-
-      sayimDate.setHours(parseInt(timeParts[0], 10));
-      sayimDate.setMinutes(parseInt(timeParts[1], 10));
-      sayimDate.setSeconds(0);
-      sayimDate.setMilliseconds(0);
+      // Sayım tarihini Türkiye saatiyle (UTC+3) çöz ki gün kayması olmasın
+      const sayimDateObj = sayimData.date.toDate();
+      const trtDateMs = sayimDateObj.getTime() + (3 * 60 * 60 * 1000); // TRT'ye göre günü belirle
+      const trtDateObj = new Date(trtDateMs);
+      
+      const year = trtDateObj.getUTCFullYear();
+      const month = String(trtDateObj.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(trtDateObj.getUTCDate()).padStart(2, '0');
+      
+      // Grup saati örn: "03:30", "16:00"
+      // İkisini birleştirip ISO formatında (Türkiye Saati +03:00 ile) kesin zaman yarat
+      const isoString = `${year}-${month}-${day}T${grup.saat}:00+03:00`;
+      const finalSayimDate = new Date(isoString);
 
       // Şu anki zamana göre kaç saat kalmış hesapla
-      const diffHours = (sayimDate.getTime() - nowMs) / (1000 * 60 * 60);
+      const diffHours = (finalSayimDate.getTime() - nowMs) / (1000 * 60 * 60);
+
+      console.log(`[Reminder Debug] Sayım ID: ${sayimDoc.id}, Davet ID: ${davetDoc.id}`);
+      console.log(`[Reminder Debug] Sayım Zamanı: ${isoString}, Kalan Saat: ${diffHours}`);
 
       // Sayımın başlamasına 0 ile 3 saat arası kalmışsa tetikle
       if (diffHours > 0 && diffHours <= 3) {
