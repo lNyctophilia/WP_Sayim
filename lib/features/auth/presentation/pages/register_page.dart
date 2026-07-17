@@ -6,8 +6,6 @@ import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart' show kIsWeb;
-import '../../../../core/constants/api_keys.dart';
 
 class RegisterPage extends StatefulWidget {
   final LanguageService lang;
@@ -131,47 +129,26 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     }
   }
 
-  String _proxyUrl(String url) {
-    if (kIsWeb) {
-      return 'https://corsproxy.io/?${Uri.encodeComponent(url)}';
-    }
-    return url;
-  }
-
   Future<Iterable<Map<String, dynamic>>> _searchPlaces(String query) async {
     if (query.length < 3) return const [];
     try {
-      final url = _proxyUrl('https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${Uri.encodeComponent(query)}&key=${ApiKeys.googleMapsKey}&language=tr&components=country:tr');
-      final response = await http.get(Uri.parse(url));
+      final url = 'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query)}&format=json&addressdetails=1&countrycodes=tr';
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {'User-Agent': 'WPSayimApp/1.0'}, // Required by Nominatim
+      );
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'OK') {
-          return List<Map<String, dynamic>>.from(data['predictions']);
-        }
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((e) => {
+          'description': e['display_name'],
+          'lat': double.parse(e['lat'].toString()),
+          'lng': double.parse(e['lon'].toString()),
+        }).toList();
       }
     } catch (e) {
       debugPrint('Autocomplete error: $e');
     }
     return const [];
-  }
-
-  Future<void> _fetchPlaceDetails(String placeId, String address) async {
-    try {
-      final url = _proxyUrl('https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=geometry&key=${ApiKeys.googleMapsKey}&language=tr');
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'OK') {
-          final location = data['result']['geometry']['location'];
-          setState(() {
-            _latitude = location['lat'];
-            _longitude = location['lng'];
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint('Place Details error: $e');
-    }
   }
 
   @override
@@ -274,7 +251,10 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
             },
             displayStringForOption: (option) => option['description'] as String,
             onSelected: (option) {
-              _fetchPlaceDetails(option['place_id'] as String, option['description'] as String);
+              setState(() {
+                _latitude = option['lat'] as double;
+                _longitude = option['lng'] as double;
+              });
               FocusScope.of(context).unfocus();
             },
             fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {

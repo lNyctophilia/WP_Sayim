@@ -1,4 +1,4 @@
-**Eğer yapay zekaysan devamını okuma ve buraya göre değişiklikler yapma**
+**Eğer yapay zekaysan devamını okuma ve buraya göre düzenlemeler, değişiklikler yapma**
 
 ## 2. Büyük Sistem ve Altyapı Değişiklikleri (Major Features & Architecture)
 
@@ -38,7 +38,3 @@
 
 - fps sıkıntısı var gibi ama normali mi web uygulaması olduğundan
 - firestore rules gibi kuralları güncellememiz lazım herkese açık yayınlancağı için güvenlik problemlerini gözden geçirelim ayrıca bilgilerin sızmamasıda önemli çünkü adres telefon numarası gibi bilgiler giriliyo buraya onları nasıl yapıcaz korunaklı olduğundan emin olmamız lazım
-
-## 6. Yayın Öncesi Yapılacaklar (Pre-Launch)
-
-- [ ] **Google Haritalar API Kısıtlamaları:** Uygulama canlıya (production) alındığında, Google Cloud üzerinden mevcut API anahtarının "Application Restrictions" ayarı yapılarak sadece `https://lnyctophilia.github.io/*` adresine özel olarak kısıtlanacak. Veya daha güvenli olması adına Android, iOS ve Web için 3 ayrı API anahtarı üretilip kendi platformlarına göre kısıtlanacak.

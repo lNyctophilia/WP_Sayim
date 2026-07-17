@@ -82,7 +82,6 @@ app.*.map.json
 
 # Custom / Firebase / Keys
 .env
-api_keys.dart
 .firebaserc
 .firebase/
 firebase-debug.log
