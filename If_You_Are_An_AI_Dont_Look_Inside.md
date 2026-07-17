@@ -2,17 +2,8 @@
 
 ## 2. Büyük Sistem ve Altyapı Değişiklikleri (Major Features & Architecture)
 
-- Kral girişte mesela hesap yoksa kayıt olması için bi buton olması lazım, Kayıt sistemi olcak şu şekilde birisi mesela kayıt olmak için kendi bi şifre ve telefon numarasıyla giriş yapıcak, ayrıca kayıt olurken isim, adres ve tel no, şifre isticez, tel no ve adresi neden istediğimizi not olarak yazıcaz adresi servis güzergahı için, tel no da ulaşmak için gibi, bunları girdikten sonra başvuru göndericek ve yöneticilerin onaylamasını beklicek onaylarsa o bilgilerle giriş yapabilecek diğer türlü giriş yapamayacak, ayrıca mesela herkes personel olarak başvurcak ve admin istediği kişilerin rolünü yönetici olarak değiştircek şuanki bizim hani profil düzenleme panelinden bu yüzden profil düzenleme panelinede güncelleme getirmemiz lazım, giriş ekranına güncelleme getircez ve artık yöneticilerin personeller kısmındaki kişi oluştur şeyide silincek orayada güncelleme getircez ve son olarak galiba telefon numarası ve şifre ile giriş yapcağımız için firebase auth kısmıda değişcek onları ayarlayalım plan oluşturup
-
-- kayıt başvurusu yapılan hesap onaylanmışsa o kişiye onaylandı tarzı push notifications gönderelim
-- kayıt olurken ki adres kısmı google haritalardan verisini çekmemiz gerekiyo o yüzden ordan giriş yapsa nasıl olur
-- admin hesabının şuan personeller ve yöneticiler kısmında gözükmemesi lazım onuda güncelleyelim
-
-- admin hesabına pc üzerinden web siteden giriş yaparken ilkinde oturum açmıyo hatalı olmamasına rağmen 2.de açıyo sorun nedir
-
-- güvenlik şeylerini kontrol edebilmemiz lazım bunu web sitesi olarak yayınladığımızdan ve ufakta olsa bi şirket kullanıcağından yani sıkıntı çıkmasın örneğin girişe bi hesap veya şifre 3 4 kez yanlış girince süre koyalım gibi veya başka güvenlik açısından ne gibi sıkıntılarımız var değerlendirelim projedeki tüm detayları
 - belki firebase ücretsiz plan için 3-4 ay önceki bildirimler sayımlar falan silinmeli
-- güncellemelerde iş takvimi ve bildirimlere yaptığımız gibi canlıya alınabilir mi düşün fakat kod yazma
+- güvenlik şeylerini kontrol edebilmemiz lazım bunu web sitesi olarak yayınladığımızdan ve ufakta olsa bi şirket kullanıcağından yani sıkıntı çıkmasın örneğin girişe bi hesap veya şifre 3 4 kez yanlış girince süre koyalım gibi veya başka güvenlik açısından ne gibi sıkıntılarımız var değerlendirelim projedeki tüm detayları
 - Bildirimler internet yoksa bile beklemeye alsın bildirimi interneti olunca gitsin bildirim, ayrıca mesajın ulaşıp ulaşmadığını yönetici panelinde gösterelim whatsapptaki tek tik çift tik olayı gibi bildirim düşmemişse veya interneti yoksa tek tik gözüksün, bunu yapabilmemiz mümkün mü ilk bunu söyle eğer ücretsiz planda mümkünse öyle plan yapalım
 - bi panel yapıcaz ve bu panel bi google haritalarda bi rota hazırlıcak personel seçicez ve seçili personellerin adreslerini alıp ve şuan ki konumunu ve son noktayı ayarlıcaz ve aralarına personellerin konumunu durak olarak eklicek ve en hızlı uygun rotayı buldurcaz sıra sıra kimi bırakmamız gerekicek diye servisle
 

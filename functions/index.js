@@ -491,3 +491,130 @@ exports.sendApprovalNotification = onDocumentUpdated("users/{userId}", async (ev
     }
   }
 });
+
+// 8. 30 Günden Eski, Bekleyen ve Reddedilen Davetleri Temizle (Ayın 1'inde ve 15'inde gece 04:00)
+exports.cleanupOldDavetler = onSchedule({ schedule: "0 4 1,15 * *", timeZone: "Europe/Istanbul" }, async (event) => {
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+  
+  const davetlerRef = admin.firestore().collection('davetler');
+  
+  const snapshot = await davetlerRef
+    .where("createdAt", "<", admin.firestore.Timestamp.fromDate(thirtyDaysAgo))
+    .get();
+
+  if (snapshot.empty) {
+    console.log("No old davetler found to delete.");
+    return;
+  }
+
+  let batch = admin.firestore().batch();
+  let count = 0;
+  let totalDeleted = 0;
+
+  for (const doc of snapshot.docs) {
+    const data = doc.data();
+    // Sadece beklemede olan veya reddedilmiş davetleri sil
+    if (data.status === "pending" || data.status === "declined") {
+      batch.delete(doc.ref);
+      count++;
+      totalDeleted++;
+
+      // Firestore toplu işlem limiti (500), güvenli olması için 400'de bir commit et
+      if (count >= 400) {
+        await batch.commit();
+        batch = admin.firestore().batch();
+        count = 0;
+      }
+    }
+  }
+
+  if (count > 0) {
+    await batch.commit();
+  }
+  console.log(`cleanupOldDavetler finished. Deleted ${totalDeleted} pending/declined davetler older than 30 days.`);
+});
+
+// 9. 90 Günden Eski Sayımları ve İlişkili Verileri Temizle (Ayın 1'inde ve 15'inde gece 04:00)
+exports.cleanupOldSayimlar = onSchedule({ schedule: "0 4 1,15 * *", timeZone: "Europe/Istanbul" }, async (event) => {
+  const now = new Date();
+  const ninetyDaysAgo = new Date(now.getTime() - (90 * 24 * 60 * 60 * 1000));
+  
+  const sayimlarRef = admin.firestore().collection('sayimlar');
+  
+  const snapshot = await sayimlarRef
+    .where("date", "<", admin.firestore.Timestamp.fromDate(ninetyDaysAgo))
+    .get();
+
+  if (snapshot.empty) {
+    console.log("No old sayimlar found to delete.");
+    return;
+  }
+
+  let batch = admin.firestore().batch();
+  let count = 0;
+  let totalDeletedSayim = 0;
+
+  for (const doc of snapshot.docs) {
+    const sayimId = doc.id;
+    const sayimData = doc.data();
+
+    // 1. Davetleri ve takvimleri sil
+    const davetlerSnap = await admin.firestore().collection("davetler")
+      .where("sayimId", "==", sayimId)
+      .get();
+
+    for (const davetDoc of davetlerSnap.docs) {
+      // Daveti sil
+      batch.delete(davetDoc.ref);
+      count++;
+
+      // Davet kabul edilmişse çalışanın iş takviminden de sil
+      const davetData = davetDoc.data();
+      if (davetData.status === "accepted" && sayimData.date) {
+        const userId = davetData.userId;
+        const dateObj = sayimData.date.toDate();
+        
+        // Türkiye saati bazında (UTC+3) tarihi çözümleyip YYYY-MM-DD formatını elde et
+        const trtDateMs = dateObj.getTime() + (3 * 60 * 60 * 1000);
+        const trtDateObj = new Date(trtDateMs);
+        const year = trtDateObj.getUTCFullYear();
+        const month = String(trtDateObj.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(trtDateObj.getUTCDate()).padStart(2, '0');
+        const dateString = `${year}-${month}-${day}`;
+
+        const workDayRef = admin.firestore()
+          .collection('personel_takvimi')
+          .doc(userId)
+          .collection('gunler')
+          .doc(dateString);
+        
+        batch.delete(workDayRef);
+        count++;
+      }
+
+      if (count >= 400) {
+        await batch.commit();
+        batch = admin.firestore().batch();
+        count = 0;
+      }
+    }
+
+    // 2. Sayımın kendisini sil
+    batch.delete(doc.ref);
+    count++;
+    totalDeletedSayim++;
+
+    if (count >= 400) {
+      await batch.commit();
+      batch = admin.firestore().batch();
+      count = 0;
+    }
+  }
+
+  if (count > 0) {
+    await batch.commit();
+  }
+  
+  console.log(`cleanupOldSayimlar finished. Deleted ${totalDeletedSayim} sayimlar (older than 90 days) and their related records.`);
+});
