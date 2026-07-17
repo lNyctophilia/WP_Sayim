@@ -13,6 +13,7 @@ class AppUser {
   final double? defaultWage;
   final String? createdBy;
   final bool active;
+  final bool isDeleted;
   final DateTime createdAt;
   final String? sessionId;
   final bool sayimReminderEnabled;
@@ -26,6 +27,7 @@ class AppUser {
     this.defaultWage,
     this.createdBy,
     this.active = true,
+    this.isDeleted = false,
     required this.createdAt,
     this.sessionId,
     this.sayimReminderEnabled = true,
@@ -54,6 +56,7 @@ class AppUser {
       defaultWage: (data['defaultWage'] as num?)?.toDouble(),
       createdBy: data['createdBy'] as String?,
       active: data['active'] as bool? ?? true,
+      isDeleted: data['isDeleted'] as bool? ?? false,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       sessionId: data['sessionId'] as String?,
       sayimReminderEnabled: data['sayimReminderEnabled'] as bool? ?? true,
@@ -70,6 +73,7 @@ class AppUser {
       'defaultWage': defaultWage,
       'createdBy': createdBy,
       'active': active,
+      'isDeleted': isDeleted,
       'createdAt': Timestamp.fromDate(createdAt),
       if (sessionId != null) 'sessionId': sessionId,
       'sayimReminderEnabled': sayimReminderEnabled,
@@ -85,6 +89,7 @@ class AppUser {
     double? defaultWage,
     String? createdBy,
     bool? active,
+    bool? isDeleted,
     DateTime? createdAt,
     String? sessionId,
     bool? sayimReminderEnabled,
@@ -98,6 +103,7 @@ class AppUser {
       defaultWage: defaultWage ?? this.defaultWage,
       createdBy: createdBy ?? this.createdBy,
       active: active ?? this.active,
+      isDeleted: isDeleted ?? this.isDeleted,
       createdAt: createdAt ?? this.createdAt,
       sessionId: sessionId ?? this.sessionId,
       sayimReminderEnabled: sayimReminderEnabled ?? this.sayimReminderEnabled,

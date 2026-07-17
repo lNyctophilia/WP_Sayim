@@ -40,7 +40,11 @@ class AuthService {
         password: password,
       );
 
-      if (credential.user == null) return null;
+      final appUser = await getUserData(credential.user!.uid);
+      if (appUser == null || appUser.isDeleted || !appUser.active) {
+        await logout();
+        throw FirebaseAuthException(code: 'user-disabled');
+      }
 
       final String sessionId = DateTime.now().millisecondsSinceEpoch.toString();
       final prefs = await SharedPreferences.getInstance();
@@ -50,8 +54,7 @@ class AuthService {
         'sessionId': sessionId,
       });
 
-      // Firestore'dan kullanıcı bilgisini getir
-      return await getUserData(credential.user!.uid);
+      return appUser;
     } on FirebaseAuthException {
       rethrow;
     }
@@ -179,9 +182,19 @@ class AuthService {
     await _firestore.collection('users').doc(uid).update({'active': true});
   }
 
-  /// Kullanıcıyı veritabanından tamamen sil
+  /// Kullanıcıyı veritabanından silinmiş olarak işaretle (Soft Delete)
   Future<void> deleteUser(String uid) async {
-    await _firestore.collection('users').doc(uid).delete();
+    final doc = await _firestore.collection('users').doc(uid).get();
+    if (!doc.exists) return;
+    
+    final data = doc.data();
+    final username = data?['username'] ?? '';
+    
+    await _firestore.collection('users').doc(uid).update({
+      'active': false,
+      'isDeleted': true,
+      'username': '${username}_deleted_${DateTime.now().millisecondsSinceEpoch}',
+    });
   }
 
   /// Admin/Owner yetkisiyle kullanıcı bilgilerini güncelle
