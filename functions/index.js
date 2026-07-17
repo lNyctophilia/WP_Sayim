@@ -298,6 +298,11 @@ exports.syncUserWithAuth = onDocumentUpdated("users/{userId}", async (event) => 
     updatePayload.displayName = newData.fullName;
   }
 
+  // Kullanıcı adı değişmişse (Özellikle soft delete durumlarında)
+  if (oldData.username !== newData.username && newData.username) {
+    updatePayload.email = `${newData.username.trim().toLowerCase()}@wpsayim.local`;
+  }
+
   if (Object.keys(updatePayload).length > 0) {
     try {
       await admin.auth().updateUser(event.params.userId, updatePayload);
