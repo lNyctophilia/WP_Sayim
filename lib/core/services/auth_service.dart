@@ -97,6 +97,7 @@ class AuthService {
     required String address,
     double? latitude,
     double? longitude,
+    String? fcmToken,
   }) async {
     final email = _toEmail(phone);
 
@@ -126,10 +127,8 @@ class AuthService {
 
       final userData = appUser.toFirestore();
       
-      // Bildirim token'ını al ve kaydet
-      final token = await NotificationService().getTokenForRegistration();
-      if (token != null) {
-        userData['fcmToken'] = token;
+      if (fcmToken != null) {
+        userData['fcmToken'] = fcmToken;
       }
 
       await _firestore

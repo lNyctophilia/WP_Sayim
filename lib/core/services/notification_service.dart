@@ -16,43 +16,46 @@ class NotificationService {
 
   /// İzin iste, token al ve Firestore'a kaydet
   Future<void> initialize() async {
-    // 1. İzin İste (Özellikle iOS için gereklidir, Android 13+ için de prompt çıkar)
-    NotificationSettings settings = await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    try {
+      // 1. İzin İste (Özellikle iOS için gereklidir, Android 13+ için de prompt çıkar)
+      NotificationSettings settings = await _messaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      debugPrint('Kullanıcı bildirim izni verdi.');
-      await _saveTokenToDatabase();
-      
-      // Token yenilendiğinde dinle ve güncelle
-      _messaging.onTokenRefresh.listen(_updateToken);
-    } else {
-      debugPrint('Kullanıcı bildirim iznini reddetti.');
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        debugPrint('Kullanıcı bildirim izni verdi.');
+        await _saveTokenToDatabase();
+        
+        // Token yenilendiğinde dinle ve güncelle
+        _messaging.onTokenRefresh.listen(_updateToken);
+      } else {
+        debugPrint('Kullanıcı bildirim iznini reddetti.');
+      }
+    } catch (e) {
+      debugPrint('Bildirim başlatılırken hata (Desteklenmiyor olabilir): $e');
     }
   }
 
   /// Kayıt sırasında kullanmak için (veritabanına yazmadan) token alır
   Future<String?> getTokenForRegistration() async {
-    NotificationSettings settings = await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    try {
+      NotificationSettings settings = await _messaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      try {
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         if (kIsWeb) {
           return await _messaging.getToken(vapidKey: _vapidKey);
         } else {
           return await _messaging.getToken();
         }
-      } catch (e) {
-        debugPrint('Kayıt için FCM Token alınırken hata: $e');
-        return null;
       }
+    } catch (e) {
+      debugPrint('Kayıt için FCM Token alınırken hata (Desteklenmiyor olabilir): $e');
     }
     return null;
   }

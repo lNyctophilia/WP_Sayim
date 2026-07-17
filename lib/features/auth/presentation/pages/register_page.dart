@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
+import '../../../../core/services/notification_service.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
@@ -66,6 +67,10 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // Bildirim iznini yükleme ekranı başlamadan İLK BAŞTA iste.
+    // Kullanıcı ile doğrudan etkileşim anı olduğu için PWA vs sorun çıkarmaz.
+    final token = await NotificationService().getTokenForRegistration();
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -79,6 +84,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
         address: _addressController?.text.trim() ?? '',
         latitude: _latitude,
         longitude: _longitude,
+        fcmToken: token,
       );
 
       if (mounted) {
