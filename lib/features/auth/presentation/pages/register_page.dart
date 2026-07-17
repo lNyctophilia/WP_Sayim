@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
 import 'dart:convert';
+import 'dart:async';
 import 'package:http/http.dart' as http;
 
 class RegisterPage extends StatefulWidget {
@@ -129,26 +130,46 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     }
   }
 
+  Timer? _debounce;
+  Completer<Iterable<Map<String, dynamic>>>? _completer;
+
   Future<Iterable<Map<String, dynamic>>> _searchPlaces(String query) async {
     if (query.length < 3) return const [];
-    try {
-      final url = 'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query)}&format=json&addressdetails=1&countrycodes=tr';
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {'User-Agent': 'WPSayimApp/1.0'}, // Required by Nominatim
-      );
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        return data.map((e) => {
-          'description': e['display_name'],
-          'lat': double.parse(e['lat'].toString()),
-          'lng': double.parse(e['lon'].toString()),
-        }).toList();
-      }
-    } catch (e) {
-      debugPrint('Autocomplete error: $e');
+    
+    if (_debounce?.isActive ?? false) {
+      _debounce!.cancel();
     }
-    return const [];
+    if (_completer != null && !_completer!.isCompleted) {
+      _completer!.complete(const []);
+    }
+    
+    _completer = Completer<Iterable<Map<String, dynamic>>>();
+    
+    _debounce = Timer(const Duration(milliseconds: 600), () async {
+      try {
+        final url = 'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query)}&format=json&addressdetails=1&countrycodes=tr';
+        final response = await http.get(
+          Uri.parse(url),
+          headers: {'User-Agent': 'WPSayimApp/1.0'}, 
+        );
+        if (response.statusCode == 200) {
+          final List<dynamic> data = json.decode(response.body);
+          final options = data.map((e) => {
+            'description': e['display_name'],
+            'lat': double.parse(e['lat'].toString()),
+            'lng': double.parse(e['lon'].toString()),
+          }).toList();
+          if (!_completer!.isCompleted) _completer!.complete(options);
+        } else {
+          if (!_completer!.isCompleted) _completer!.complete(const []);
+        }
+      } catch (e) {
+        debugPrint('Autocomplete error: $e');
+        if (!_completer!.isCompleted) _completer!.complete(const []);
+      }
+    });
+    
+    return _completer!.future;
   }
 
   @override
