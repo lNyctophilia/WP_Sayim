@@ -17,6 +17,9 @@ class AppUser {
   final DateTime createdAt;
   final String? sessionId;
   final bool sayimReminderEnabled;
+  final String? phone;
+  final String? address;
+  final bool isApproved;
 
   const AppUser({
     required this.id,
@@ -31,6 +34,9 @@ class AppUser {
     required this.createdAt,
     this.sessionId,
     this.sayimReminderEnabled = true,
+    this.phone,
+    this.address,
+    this.isApproved = false,
   });
 
   /// En yüksek yetki seviyesi
@@ -60,6 +66,9 @@ class AppUser {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       sessionId: data['sessionId'] as String?,
       sayimReminderEnabled: data['sayimReminderEnabled'] as bool? ?? true,
+      phone: data['phone'] as String?,
+      address: data['address'] as String?,
+      isApproved: data['isApproved'] as bool? ?? false,
     );
   }
 
@@ -77,6 +86,9 @@ class AppUser {
       'createdAt': Timestamp.fromDate(createdAt),
       if (sessionId != null) 'sessionId': sessionId,
       'sayimReminderEnabled': sayimReminderEnabled,
+      if (phone != null) 'phone': phone,
+      if (address != null) 'address': address,
+      'isApproved': isApproved,
     };
   }
 
@@ -93,6 +105,9 @@ class AppUser {
     DateTime? createdAt,
     String? sessionId,
     bool? sayimReminderEnabled,
+    String? phone,
+    String? address,
+    bool? isApproved,
   }) {
     return AppUser(
       id: id ?? this.id,
@@ -107,6 +122,9 @@ class AppUser {
       createdAt: createdAt ?? this.createdAt,
       sessionId: sessionId ?? this.sessionId,
       sayimReminderEnabled: sayimReminderEnabled ?? this.sayimReminderEnabled,
+      phone: phone ?? this.phone,
+      address: address ?? this.address,
+      isApproved: isApproved ?? this.isApproved,
     );
   }
 }

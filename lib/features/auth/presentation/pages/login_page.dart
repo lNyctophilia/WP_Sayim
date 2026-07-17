@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/models/app_user.dart';
+import 'register_page.dart';
 
 /// Login ekranı — kullanıcı adı + şifre ile giriş
 class LoginPage extends StatefulWidget {
@@ -100,6 +101,9 @@ class _LoginPageState extends State<LoginPage>
           case 'user-disabled':
             message = widget.lang.tr('login_account_disabled');
             break;
+          case 'not-approved':
+            message = widget.lang.tr('pending_approval');
+            break;
           case 'too-many-requests':
             message = widget.lang.tr('login_too_many_attempts');
             break;
@@ -178,7 +182,43 @@ class _LoginPageState extends State<LoginPage>
                     // Giriş butonu
                     _buildLoginButton(),
 
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 16),
+
+                    // Kayıt Ol butonu
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          widget.lang.tr('no_account'),
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => RegisterPage(lang: widget.lang),
+                              ),
+                            );
+                          },
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.accentLight,
+                          ),
+                          child: Text(
+                            widget.lang.tr('register'),
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 32),
 
                     // Alt bilgi
                     Text(
@@ -233,10 +273,11 @@ class _LoginPageState extends State<LoginPage>
       key: _formKey,
       child: Column(
         children: [
-          // Kullanıcı adı
+          // Kullanıcı adı (Telefon numarası)
           TextFormField(
             controller: _usernameController,
             textInputAction: TextInputAction.next,
+            keyboardType: TextInputType.phone,
             autocorrect: false,
             enableSuggestions: false,
             style: GoogleFonts.inter(

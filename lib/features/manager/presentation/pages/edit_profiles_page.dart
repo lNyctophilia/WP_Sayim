@@ -34,6 +34,8 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
   final _fullNameController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
   UserRole _selectedRole = UserRole.staff;
 
   @override
@@ -47,6 +49,8 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
     _fullNameController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
+    _phoneController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -88,6 +92,8 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
         _fullNameController.text = user.fullName;
         _usernameController.text = user.username;
         _passwordController.text = user.password ?? '';
+        _phoneController.text = user.phone ?? '';
+        _addressController.text = user.address ?? '';
         _selectedRole = user.roles.isNotEmpty ? user.roles.first : UserRole.staff;
         _errorMessage = null;
       }
@@ -122,6 +128,8 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
         username: username,
         password: _passwordController.text.isNotEmpty ? _passwordController.text : null,
         roles: [_selectedRole],
+        phone: _phoneController.text.trim().isNotEmpty ? _phoneController.text.trim() : null,
+        address: _addressController.text.trim().isNotEmpty ? _addressController.text.trim() : null,
       );
 
       // Refresh user list
@@ -248,6 +256,25 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                           ),
                           const SizedBox(height: 16),
 
+                          _buildLabel(isTr ? 'Telefon Numarası' : 'Phone Number'),
+                          const SizedBox(height: 6),
+                          _buildTextField(
+                            controller: _phoneController,
+                            hintText: isTr ? 'Örn: 05551234567' : 'e.g. 05551234567',
+                            icon: Icons.phone_outlined,
+                            keyboardType: TextInputType.phone,
+                          ),
+                          const SizedBox(height: 16),
+
+                          _buildLabel(isTr ? 'Adres' : 'Address'),
+                          const SizedBox(height: 6),
+                          _buildTextField(
+                            controller: _addressController,
+                            hintText: isTr ? 'Servis güzergahı için' : 'For service route',
+                            icon: Icons.location_on_outlined,
+                          ),
+                          const SizedBox(height: 16),
+
                           _buildLabel(isTr ? 'Şifre' : 'Password'),
                           const SizedBox(height: 6),
                           _buildTextField(
@@ -338,6 +365,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
     required String hintText,
     required IconData icon,
     bool obscureText = false,
+    TextInputType? keyboardType,
     Widget? suffixIcon,
     List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
@@ -345,6 +373,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
+      keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       validator: validator,
       style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 15),

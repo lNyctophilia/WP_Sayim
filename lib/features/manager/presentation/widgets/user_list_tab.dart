@@ -4,8 +4,6 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
-import 'create_user_dialog.dart';
-import 'edit_user_dialog.dart';
 
 /// Kullanıcı listesi sekmesi — Yönetici veya Personel listesi
 /// [targetRole] ile hangi roldeki kullanıcıları göstereceğini belirler
@@ -28,7 +26,8 @@ class UserListTab extends StatefulWidget {
 class _UserListTabState extends State<UserListTab>
     with AutomaticKeepAliveClientMixin {
   final AuthService _authService = AuthService();
-  List<AppUser> _users = [];
+  List<AppUser> _approvedUsers = [];
+  List<AppUser> _pendingUsers = [];
   bool _isLoading = true;
 
   @override
@@ -46,7 +45,8 @@ class _UserListTabState extends State<UserListTab>
       final users = await _authService.getUsersByRole(widget.targetRole);
       if (mounted) {
         setState(() {
-          _users = users;
+          _approvedUsers = users.where((u) => u.isApproved).toList();
+          _pendingUsers = users.where((u) => !u.isApproved).toList();
           _isLoading = false;
         });
       }
@@ -57,32 +57,39 @@ class _UserListTabState extends State<UserListTab>
     }
   }
 
-  void _showCreateUserDialog() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => CreateUserDialog(
-        currentUser: widget.currentUser,
-        lang: widget.lang,
-        targetRole: widget.targetRole,
-        onUserCreated: _loadUsers,
-      ),
-    );
+  Future<void> _approveUser(AppUser user) async {
+    await _authService.approveUser(user.id);
+    _loadUsers();
   }
 
-  void _showEditUserDialog(AppUser targetUser) {
-    showModalBottomSheet(
+  Future<void> _rejectUser(AppUser user) async {
+    final isTr = widget.lang.currentLang == 'tr';
+
+    final confirmed = await showDialog<bool>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => EditUserDialog(
-        currentUser: widget.currentUser,
-        lang: widget.lang,
-        targetUser: targetUser,
-        onUserEdited: _loadUsers,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(user.fullName, style: const TextStyle(color: AppColors.textPrimary)),
+        content: Text(
+          isTr ? 'Bu başvuruyu reddetmek ve silmek istediğinize emin misiniz?' : 'Are you sure you want to reject and delete this application?',
+          style: const TextStyle(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(widget.lang.tr('cancel'))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            child: Text(widget.lang.tr('reject')),
+          ),
+        ],
       ),
     );
+
+    if (confirmed == true) {
+      await _authService.rejectUser(user.id);
+      _loadUsers();
+    }
   }
 
   Future<void> _deleteUser(AppUser user) async {
@@ -92,29 +99,17 @@ class _UserListTabState extends State<UserListTab>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.card,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          user.fullName,
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(user.fullName, style: const TextStyle(color: AppColors.textPrimary, fontSize: 16)),
         content: Text(
-          isTr
-              ? 'Bu kullanıcıyı silmek istediğinize emin misiniz?'
-              : 'Are you sure you want to delete this user?',
+          isTr ? 'Bu kullanıcıyı silmek istediğinize emin misiniz?' : 'Are you sure you want to delete this user?',
           style: const TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(widget.lang.tr('cancel')),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(widget.lang.tr('cancel'))),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.danger,
-            ),
+            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
             child: Text(isTr ? 'Sil' : 'Delete'),
           ),
         ],
@@ -132,74 +127,63 @@ class _UserListTabState extends State<UserListTab>
     super.build(context);
     final isTr = widget.lang.currentLang == 'tr';
     final isManagerList = widget.targetRole == UserRole.manager;
-    final canEdit = !isManagerList || widget.currentUser.isOwner;
-    final title = isManagerList
-        ? (isTr ? 'Yöneticiler' : 'Managers')
-        : (isTr ? 'Personel' : 'Staff');
+    final title = isManagerList ? (isTr ? 'Yöneticiler' : 'Managers') : widget.lang.tr('existing_staff');
 
-    return Column(
-      children: [
-        // Başlık + Ekle butonu
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 16, 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '$title (${_users.length})',
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              // Ekleme butonu
-              if (canEdit)
-                ElevatedButton.icon(
-                  onPressed: _showCreateUserDialog,
-                icon: const Icon(Icons.person_add_rounded, size: 18),
-                label: Text(
-                  isTr ? 'Ekle' : 'Add',
-                  style: const TextStyle(fontSize: 13),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accentLight,
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Liste
-        Expanded(
-          child: _isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.accentLight,
-                  ),
-                )
-              : _users.isEmpty
-                  ? _buildEmptyState(isTr, isManagerList)
-                  : RefreshIndicator(
-                      onRefresh: _loadUsers,
-                      color: AppColors.accentLight,
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 4),
-                        itemCount: _users.length,
-                        itemBuilder: (context, index) =>
-                            _buildUserCard(_users[index]),
+    return RefreshIndicator(
+      onRefresh: _loadUsers,
+      color: AppColors.accentLight,
+      child: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.accentLight))
+          : CustomScrollView(
+              slivers: [
+                if (!isManagerList && _pendingUsers.isNotEmpty) ...[
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 16, 8),
+                      child: Text(
+                        '${widget.lang.tr('pending_approvals')} (${_pendingUsers.length})',
+                        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.warning),
                       ),
                     ),
-        ),
-      ],
+                  ),
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => _buildPendingUserCard(_pendingUsers[index]),
+                      childCount: _pendingUsers.length,
+                    ),
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Divider(color: AppColors.divider),
+                    ),
+                  ),
+                ],
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 16, 8),
+                    child: Text(
+                      '$title (${_approvedUsers.length})',
+                      style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                    ),
+                  ),
+                ),
+                _approvedUsers.isEmpty
+                    ? SliverFillRemaining(
+                        child: _buildEmptyState(isTr, isManagerList),
+                      )
+                    : SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) => Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: _buildUserCard(_approvedUsers[index]),
+                          ),
+                          childCount: _approvedUsers.length,
+                        ),
+                      ),
+              ],
+            ),
     );
   }
 
@@ -209,34 +193,108 @@ class _UserListTabState extends State<UserListTab>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            isManagerList
-                ? Icons.supervisor_account_rounded
-                : Icons.people_outline_rounded,
+            isManagerList ? Icons.supervisor_account_rounded : Icons.people_outline_rounded,
             size: 56,
             color: AppColors.textHint.withValues(alpha: 0.4),
           ),
           const SizedBox(height: 12),
           Text(
-            isManagerList
-                ? (isTr ? 'Henüz yönetici yok' : 'No managers yet')
-                : (isTr ? 'Henüz personel yok' : 'No staff yet'),
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              color: AppColors.textHint,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            isTr
-                ? 'Ekle butonuna basarak oluşturun'
-                : 'Tap Add to create one',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: AppColors.textHint.withValues(alpha: 0.7),
-            ),
+            isManagerList ? (isTr ? 'Henüz yönetici yok' : 'No managers yet') : (isTr ? 'Henüz personel yok' : 'No staff yet'),
+            style: GoogleFonts.inter(fontSize: 16, color: AppColors.textHint, fontWeight: FontWeight.w500),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPendingUserCard(AppUser user) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.warning.withValues(alpha: 0.5), width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : '?',
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.warning),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(user.fullName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                      const SizedBox(height: 4),
+                      Text(user.phone ?? '', style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (user.address != null && user.address!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(Icons.location_on_outlined, size: 16, color: AppColors.textHint),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      user.address!,
+                      style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => _rejectUser(user),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.danger,
+                      side: const BorderSide(color: AppColors.danger),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: Text(widget.lang.tr('reject')),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _approveUser(user),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.success,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 0,
+                    ),
+                    child: Text(widget.lang.tr('approve')),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -256,10 +314,7 @@ class _UserListTabState extends State<UserListTab>
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(14),
-        border: user.active
-            ? null
-            : Border.all(
-                color: AppColors.danger.withValues(alpha: 0.3), width: 1),
+        border: user.active ? null : Border.all(color: AppColors.danger.withValues(alpha: 0.3), width: 1),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -267,16 +322,12 @@ class _UserListTabState extends State<UserListTab>
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: user.active
-                ? AppColors.accentLight.withValues(alpha: 0.15)
-                : AppColors.danger.withValues(alpha: 0.1),
+            color: user.active ? AppColors.accentLight.withValues(alpha: 0.15) : AppColors.danger.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Center(
             child: Text(
-              user.fullName.isNotEmpty
-                  ? user.fullName[0].toUpperCase()
-                  : '?',
+              user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : '?',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -290,33 +341,24 @@ class _UserListTabState extends State<UserListTab>
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w600,
-            color: user.active
-                ? AppColors.textPrimary
-                : AppColors.textHint,
+            color: user.active ? AppColors.textPrimary : AppColors.textHint,
           ),
         ),
         subtitle: Row(
           children: [
             Text(
-              '@${user.username}',
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
+              user.phone ?? '@${user.username}',
+              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: user.active
-                    ? AppColors.success.withValues(alpha: 0.15)
-                    : AppColors.danger.withValues(alpha: 0.15),
+                color: user.active ? AppColors.success.withValues(alpha: 0.15) : AppColors.danger.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                user.active
-                    ? roleLabel
-                    : (isTr ? 'Pasif' : 'Inactive'),
+                user.active ? roleLabel : (isTr ? 'Pasif' : 'Inactive'),
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
@@ -328,17 +370,11 @@ class _UserListTabState extends State<UserListTab>
         ),
         trailing: (user.id != widget.currentUser.id && canEdit)
             ? IconButton(
-                icon: Icon(
-                  Icons.delete_outline_rounded,
-                  color: AppColors.danger.withValues(alpha: 0.7),
-                  size: 20,
-                ),
+                icon: Icon(Icons.delete_outline_rounded, color: AppColors.danger.withValues(alpha: 0.7), size: 20),
                 onPressed: () => _deleteUser(user),
               )
             : null,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
   }

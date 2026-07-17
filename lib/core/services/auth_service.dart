@@ -16,9 +16,9 @@ class AuthService {
 
   static const String _emailDomain = 'wpsayim.local';
 
-  /// Kullanıcı adını pseudo-email'e çevir
-  String _toEmail(String username) =>
-      '${username.trim().toLowerCase()}@$_emailDomain';
+  /// Kullanıcı adını veya telefonu pseudo-email'e çevir
+  String _toEmail(String identifier) =>
+      '${identifier.trim().toLowerCase()}@$_emailDomain';
 
   /// Şu an oturum açmış kullanıcı (Firebase User)
   User? get currentFirebaseUser => _auth.currentUser;
@@ -31,10 +31,10 @@ class AuthService {
 
   // ─── Giriş ──────────────────────────────────────────────────
 
-  /// Kullanıcı adı + şifre ile giriş yap
-  Future<AppUser?> login(String username, String password) async {
+  /// Telefon numarası (veya eski kullanıcı adı) + şifre ile giriş yap
+  Future<AppUser?> login(String identifier, String password) async {
     try {
-      final email = _toEmail(username);
+      final email = _toEmail(identifier);
       final credential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
@@ -44,6 +44,11 @@ class AuthService {
       if (appUser == null || appUser.isDeleted || !appUser.active) {
         await logout();
         throw FirebaseAuthException(code: 'user-disabled');
+      }
+
+      if (!appUser.isApproved) {
+        await logout();
+        throw FirebaseAuthException(code: 'not-approved', message: 'User is not approved yet.');
       }
 
       final String sessionId = DateTime.now().millisecondsSinceEpoch.toString();
@@ -76,9 +81,54 @@ class AuthService {
     } catch (_) {}
   }
 
-  // ─── Kullanıcı Oluşturma (Yönetici/Owner tarafından) ───────
+  // ─── Kullanıcı Oluşturma / Kayıt ──────────────────────────
 
-  /// Yeni kullanıcı hesabı oluştur
+  /// Kullanıcı kendisi kayıt olur (Approval bekler)
+  Future<AppUser> register({
+    required String phone,
+    required String password,
+    required String fullName,
+    required String address,
+  }) async {
+    final email = _toEmail(phone);
+
+    try {
+      final credential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final newUserId = credential.user!.uid;
+
+      final appUser = AppUser(
+        id: newUserId,
+        username: phone.trim().toLowerCase(), // Telefon no username olarak kullanılıyor
+        phone: phone.trim(),
+        address: address.trim(),
+        fullName: fullName.trim(),
+        password: password,
+        roles: [UserRole.staff],
+        active: true,
+        isDeleted: false,
+        isApproved: false, // Yönetici onayı bekleyecek
+        createdAt: DateTime.now(),
+      );
+
+      await _firestore
+          .collection('users')
+          .doc(newUserId)
+          .set(appUser.toFirestore());
+
+      // Kullanıcı onaylı olmadığı için hemen oturumu kapatıyoruz
+      await _auth.signOut();
+
+      return appUser;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Yeni kullanıcı hesabı oluştur (Yönetici/Owner tarafından - Legacy)
   /// [createdByUid] — Bu hesabı oluşturan yönetici/owner'ın UID'si
   Future<AppUser> createUser({
     required String username,
@@ -121,6 +171,7 @@ class AuthService {
         defaultWage: defaultWage,
         createdBy: createdByUid,
         active: true,
+        isApproved: true, // Yönetici oluşturduğu için direkt onaylı
         createdAt: DateTime.now(),
       );
 
@@ -204,16 +255,32 @@ class AuthService {
     String? username,
     String? password,
     List<UserRole>? roles,
+    String? phone,
+    String? address,
+    bool? isApproved,
   }) async {
     final Map<String, dynamic> updates = {};
     if (fullName != null && fullName.isNotEmpty) updates['fullName'] = fullName;
     if (username != null && username.isNotEmpty) updates['username'] = username;
     if (password != null && password.isNotEmpty) updates['password'] = password;
     if (roles != null && roles.isNotEmpty) updates['roles'] = roles.map((r) => r.name).toList();
+    if (phone != null) updates['phone'] = phone;
+    if (address != null) updates['address'] = address;
+    if (isApproved != null) updates['isApproved'] = isApproved;
 
     if (updates.isNotEmpty) {
       await _firestore.collection('users').doc(uid).update(updates);
     }
+  }
+
+  /// Bekleyen kaydı onayla
+  Future<void> approveUser(String uid) async {
+    await _firestore.collection('users').doc(uid).update({'isApproved': true});
+  }
+
+  /// Bekleyen kaydı reddet (Firestore'dan sil)
+  Future<void> rejectUser(String uid) async {
+    await _firestore.collection('users').doc(uid).delete();
   }
 
   /// Şifre değiştir (kendi şifresini)

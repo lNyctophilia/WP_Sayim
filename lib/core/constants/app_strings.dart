@@ -141,7 +141,7 @@ class AppStrings {
       'tr': 'Hesabınıza giriş yapın',
       'en': 'Sign in to your account'
     },
-    'login_username_hint': {'tr': 'Kullanıcı adı', 'en': 'Username'},
+    'login_username_hint': {'tr': 'Telefon Numarası', 'en': 'Phone Number'},
     'login_password_hint': {'tr': 'Şifre', 'en': 'Password'},
     'login_button': {'tr': 'Giriş Yap', 'en': 'Sign In'},
     'login_username_required': {
@@ -180,6 +180,27 @@ class AppStrings {
     },
 
     // User Management
+    'register': {'tr': 'Kayıt Ol', 'en': 'Register'},
+    'register_subtitle': {'tr': 'Yeni bir hesap oluşturun', 'en': 'Create a new account'},
+    'full_name': {'tr': 'Ad Soyad', 'en': 'Full Name'},
+    'full_name_required': {'tr': 'Ad Soyad gerekli', 'en': 'Full name is required'},
+    'phone_number': {'tr': 'Telefon Numarası', 'en': 'Phone Number'},
+    'phone_number_hint': {'tr': 'Örn: 05551234567', 'en': 'e.g. 05551234567'},
+    'phone_number_required': {'tr': 'Telefon numarası gerekli', 'en': 'Phone number is required'},
+    'phone_note': {'tr': 'İletişim kurabilmek için gereklidir.', 'en': 'Required for contact purposes.'},
+    'address': {'tr': 'Adres', 'en': 'Address'},
+    'address_hint': {'tr': 'Örn: Kadıköy / İstanbul', 'en': 'e.g. Kadikoy / Istanbul'},
+    'address_required': {'tr': 'Adres gerekli', 'en': 'Address is required'},
+    'address_note': {'tr': 'Servis güzergahı planlaması için gereklidir.', 'en': 'Required for service route planning.'},
+    'no_account': {'tr': 'Hesabınız yok mu?', 'en': 'Don\'t have an account?'},
+    'register_success': {'tr': 'Başvurunuz alındı. Yönetici onayından sonra giriş yapabilirsiniz.', 'en': 'Application received. You can login after manager approval.'},
+    'pending_approval': {'tr': 'Hesabınız henüz onaylanmamış. Lütfen yöneticinin onaylamasını bekleyin.', 'en': 'Your account is not approved yet. Please wait for manager approval.'},
+    'approve': {'tr': 'Onayla', 'en': 'Approve'},
+    'reject': {'tr': 'Reddet', 'en': 'Reject'},
+    'pending_approvals': {'tr': 'Onay Bekleyenler', 'en': 'Pending Approvals'},
+    'existing_staff': {'tr': 'Mevcut Personel', 'en': 'Existing Staff'},
+    'no_pending_approvals': {'tr': 'Onay bekleyen başvuru yok', 'en': 'No pending applications'},
+
     'username_taken': {
       'tr': 'Bu kullanıcı adı zaten alınmış',
       'en': 'This username is already taken'
