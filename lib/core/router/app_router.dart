@@ -95,9 +95,9 @@ class _AppRouterState extends State<AppRouter> {
               );
             }
 
-            // Oturum çakışması kontrolü
+            // Oturum çakışması kontrolü (Eğer aktif bir giriş işlemi yoksa)
             final localSessionId = widget.storage.getSessionId();
-            if (appUser.sessionId != null && localSessionId != null && appUser.sessionId != localSessionId) {
+            if (!AuthService.isLoggingIn && appUser.sessionId != null && localSessionId != null && appUser.sessionId != localSessionId) {
               // Farklı bir cihazda giriş yapılmış, bu cihazı oturumdan at (Kicked = true)
               Future.microtask(() => _authService.logout(true));
               return Scaffold(

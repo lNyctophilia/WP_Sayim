@@ -34,6 +34,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   String? _errorMessage;
   double? _latitude;
   double? _longitude;
+  String? _lastSelectedAddressText;
 
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
@@ -154,10 +155,35 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
         );
         if (response.statusCode == 200) {
           final List<dynamic> data = json.decode(response.body);
-          final options = data.map((e) => {
-            'description': e['display_name'],
-            'lat': double.parse(e['lat'].toString()),
-            'lng': double.parse(e['lon'].toString()),
+          final options = data.map((e) {
+            final address = e['address'] as Map<String, dynamic>?;
+            String description = e['display_name'];
+            if (address != null) {
+               final parts = <String>[];
+               if (address['road'] != null) parts.add(address['road']);
+               if (address['neighbourhood'] != null) parts.add(address['neighbourhood']);
+               if (address['suburb'] != null && address['suburb'] != address['neighbourhood']) parts.add(address['suburb']);
+               if (address['city_district'] != null) parts.add(address['city_district']);
+               if (address['city'] != null) {
+                 parts.add(address['city']);
+               } else if (address['town'] != null) {
+                 parts.add(address['town']);
+               } else if (address['village'] != null) {
+                 parts.add(address['village']);
+               }
+               if (address['province'] != null && address['province'] != address['city'] && address['province'] != address['town']) {
+                 parts.add(address['province']);
+               }
+               
+               if (parts.isNotEmpty) {
+                 description = parts.join(', ');
+               }
+            }
+            return {
+              'description': description,
+              'lat': double.parse(e['lat'].toString()),
+              'lng': double.parse(e['lon'].toString()),
+            };
           }).toList();
           if (!_completer!.isCompleted) _completer!.complete(options);
         } else {
@@ -275,6 +301,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
               setState(() {
                 _latitude = option['lat'] as double;
                 _longitude = option['lng'] as double;
+                _lastSelectedAddressText = option['description'] as String;
               });
               FocusScope.of(context).unfocus();
             },
@@ -298,17 +325,10 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) return widget.lang.tr('address_required');
-                  if (_latitude == null || _longitude == null) return widget.lang.tr('address_required'); // Force selection
-                  return null;
-                },
-                onChanged: (val) {
-                  // Invalidate coordinates if user modifies text
-                  if (_latitude != null) {
-                    setState(() {
-                      _latitude = null;
-                      _longitude = null;
-                    });
+                  if (_latitude == null || _longitude == null || value.trim() != _lastSelectedAddressText) {
+                    return widget.lang.tr('address_required'); // Force selection from list
                   }
+                  return null;
                 },
               );
             },

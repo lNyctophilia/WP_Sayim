@@ -31,8 +31,12 @@ class AuthService {
 
   // ─── Giriş ──────────────────────────────────────────────────
 
+  /// Devam eden bir giriş işlemi var mı? (Oturum çakışması race-condition'ı önlemek için)
+  static bool isLoggingIn = false;
+
   /// Telefon numarası (veya eski kullanıcı adı) + şifre ile giriş yap
   Future<AppUser?> login(String identifier, String password) async {
+    isLoggingIn = true;
     try {
       final email = _toEmail(identifier);
       final credential = await _auth.signInWithEmailAndPassword(
@@ -62,6 +66,8 @@ class AuthService {
       return appUser;
     } on FirebaseAuthException {
       rethrow;
+    } finally {
+      isLoggingIn = false;
     }
   }
 
