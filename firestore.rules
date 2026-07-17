@@ -23,7 +23,8 @@ service cloud.firestore {
       allow read: if request.auth != null;
       // Owner and Manager can do full update/create/delete
       // A regular user can only update their own fcmToken
-      allow create, delete: if isOwner() || isManager();
+      allow delete: if isOwner() || isManager();
+      allow create: if isOwner() || isManager() || (request.auth != null && request.auth.uid == userId);
       allow update: if isOwner() || isManager() || 
                     (request.auth.uid == userId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fcmToken']));
     }

@@ -1,6 +1,10 @@
 ## 2. Büyük Sistem ve Altyapı Değişiklikleri (Major Features & Architecture)
 
 - Kral girişte mesela hesap yoksa kayıt olması için bi buton olması lazım, Kayıt sistemi olcak şu şekilde birisi mesela kayıt olmak için kendi bi şifre ve telefon numarasıyla giriş yapıcak, ayrıca kayıt olurken isim, adres ve tel no, şifre isticez, tel no ve adresi neden istediğimizi not olarak yazıcaz adresi servis güzergahı için, tel no da ulaşmak için gibi, bunları girdikten sonra başvuru göndericek ve yöneticilerin onaylamasını beklicek onaylarsa o bilgilerle giriş yapabilecek diğer türlü giriş yapamayacak, ayrıca mesela herkes personel olarak başvurcak ve admin istediği kişilerin rolünü yönetici olarak değiştircek şuanki bizim hani profil düzenleme panelinden bu yüzden profil düzenleme panelinede güncelleme getirmemiz lazım, giriş ekranına güncelleme getircez ve artık yöneticilerin personeller kısmındaki kişi oluştur şeyide silincek orayada güncelleme getircez ve son olarak galiba telefon numarası ve şifre ile giriş yapcağımız için firebase auth kısmıda değişcek onları ayarlayalım plan oluşturup
+
+- kayıt başvurusu yapılan hesap onaylanmışsa o kişiye onaylandı tarzı push notifications gönderelim
+- kayıt olurken ki adres kısmı google haritalardan verisini çekmemiz gerekiyo o yüzden ordan giriş yapsa nasıl olur
+
 - güvenlik şeylerini kontrol edebilmemiz lazım bunu web sitesi olarak yayınladığımızdan ve ufakta olsa bi şirket kullanıcağından yani sıkıntı çıkmasın örneğin girişe bi hesap veya şifre 3 4 kez yanlış girince süre koyalım gibi veya başka güvenlik açısından ne gibi sıkıntılarımız var değerlendirelim projedeki tüm detayları
 - belki firebase ücretsiz plan için 3-4 ay önceki bildirimler sayımlar falan silinmeli
 - güncellemelerde iş takvimi ve bildirimlere yaptığımız gibi canlıya alınabilir mi düşün fakat kod yazma
