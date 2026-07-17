@@ -16,6 +16,15 @@ class SayimService {
     });
   }
 
+  /// Belirli bir sayımın anlık değişikliklerini dinler
+  Stream<Sayim?> getSayimStream(String sayimId) {
+    return _firestore
+        .collection('sayimlar')
+        .doc(sayimId)
+        .snapshots()
+        .map((doc) => doc.exists ? Sayim.fromFirestore(doc) : null);
+  }
+
   /// Sadece belirli bir kullanıcının oluşturduğu sayımları getirir
   Stream<List<Sayim>> getSayimlarByCreator(String creatorId) {
     return _firestore

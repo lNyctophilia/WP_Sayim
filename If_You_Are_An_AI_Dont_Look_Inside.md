@@ -14,7 +14,7 @@
 
 - icon değiş
 
-- Bildirimler internet yoksa bile beklemeye alsın bildirimi interneti olunca gitsin bildirim, ayrıca mesajın ulaşıp ulaşmadığını yönetici panelinde gösterelim whatsapptaki tek tik çift tik olayı gibi bildirim düşmemişse veya interneti yoksa tek tik gözüksün
+- Bildirimler internet yoksa bile beklemeye alsın bildirimi interneti olunca gitsin bildirim, ayrıca mesajın ulaşıp ulaşmadığını yönetici panelinde gösterelim whatsapptaki tek tik çift tik olayı gibi bildirim düşmemişse veya interneti yoksa tek tik gözüksün, bunu yapabilmemiz mümkün mü ilk bunu söyle eğer ücretsiz planda mümkünse öyle plan yapalım
 
 - Kayıt sistemi olcak şu şekilde birisi mesela kayıt olmak için kendi bi şifre ve telefon numarasıyla giriş yapıcak, ayrıca kayıt olurken isim, adres ve tel no isticez, tel no ve adresi neden istediğimizi not olarak yazıcaz adresi servis güzergahı için, tel no da ulaşmak için gibi, bunları girdikten sonra başvuru göndericek ve yöneticilerin onaylamasını beklicek onaylarsa o bilgilerle giriş yapabilecek diğer türlü giriş yapamayacak, ayrıca mesela herkes yönetici olarak başvurcak ve admin istediği kişilerin rolünü yönetici olarak değiştircek yani klasik admin panelinden yönetici ekleme personel ekleme şeyleri kalkıcak ve yeni yöntemle onaylayıp işte rolünü değiştircek admin, bu yüzden admin için rol ayarlama paneli yapılabilir
 
@@ -28,4 +28,14 @@
 
 - bi panel yapıcaz ve bu panel bi google haritalarda bi rota hazırlıcak personel seçicez ve seçili personellerin adreslerini alıp ve şuan ki konumunu ve son noktayı ayarlıcaz ve aralarına personellerin konumunu durak olarak eklicek ve en hızlı uygun rotayı buldurcaz sıra sıra kimi bırakmamız gerekicek diye servisle
 
-- sayım günü sayım saatinden 2.30 saat önce hatırlatma bildirimi atsın bugün şu saatte şu sayım var diye ve bu hatırlatma bildirimi ayarı ayarlar kısmından açılıp kapatılabilsin
+- splash screen kaldır
+
+- fps sıkıntısı var gibi ama normali mi web uygulaması olduğundan
+
+- güvenlik şeylerini kontrol edebilmemiz lazım bunu web sitesi olarak yayınladığımızdan ve ufakta olsa bi şirket kullanıcağından yani sıkıntı çıkmasın örneğin girişe bi hesap veya şifre 3 4 kez yanlış girince süre koyalım gibi veya başka güvenlik açısından ne gibi sıkıntılarımız var değerlendirelim projedeki tüm detayları
+
+- excel çıktısı vericek personellerde, drawer kısmına ekleyebiliriz ve oraya basınca bi sayım seçicek ve o sayımın excel çıktısını vericek bize ve şu şekilde olucak, sayım ismi yani konumu, tarihi, katılan yöneticiler, katılan personeller bu şekilde
+
+- ayarlar kısmındaki ana sayfaya ekleme şeyini şu şekilde düzeltelim, androidde chrome'da üç nokta basıp biraz aşağıda yükle ve kısayol oluştur var ona basıcaz, apple'da ise paylaş basıp daha fazlaya basıp ordan ana ekrana ekleye basıcaz ve onaylıcaz
+
+- admin ve yönetici panelindeki bildirimlerdeki okunan bildirimlere yapmış olduğu işlemleride ekleyelim. Şu personel silindi, şu sayım oluşturuldu gibi gibi

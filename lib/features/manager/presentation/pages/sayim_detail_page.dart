@@ -101,36 +101,62 @@ class _SayimDetailPageState extends State<SayimDetailPage>
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<Davet>>(
-      stream: _davetService.getDavetlerBySayim(widget.sayim.id),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+    return StreamBuilder<Sayim?>(
+      stream: _sayimService.getSayimStream(widget.sayim.id),
+      builder: (context, sayimSnapshot) {
+        if (sayimSnapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             backgroundColor: AppColors.background,
             body: Center(child: CircularProgressIndicator(color: AppColors.accentLight)),
           );
         }
-        if (snapshot.hasError) {
+        
+        final currentSayim = sayimSnapshot.data;
+        if (currentSayim == null) {
           return Scaffold(
             backgroundColor: AppColors.background,
-            body: Center(child: Text(isTr ? 'Hata oluştu' : 'An error occurred')),
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+            body: Center(child: Text(isTr ? 'Sayım bulunamadı veya silinmiş.' : 'Count not found or deleted.', style: const TextStyle(color: AppColors.textSecondary))),
           );
         }
 
-        final davetler = snapshot.data ?? [];
-        final accepted = davetler.where((d) => d.isAccepted).toList();
-        final pending = davetler.where((d) => d.isPending).toList();
-        final declined = davetler.where((d) => d.isDeclined).toList();
+        return StreamBuilder<List<Davet>>(
+          stream: _davetService.getDavetlerBySayim(currentSayim.id),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                backgroundColor: AppColors.background,
+                body: Center(child: CircularProgressIndicator(color: AppColors.accentLight)),
+              );
+            }
+            if (snapshot.hasError) {
+              return Scaffold(
+                backgroundColor: AppColors.background,
+                body: Center(child: Text(isTr ? 'Hata oluştu' : 'An error occurred')),
+              );
+            }
 
-        final activeDavetler = [...accepted, ...pending];
-        int currentPersonel = activeDavetler.where((d) => d.role == DavetRole.staff).length;
-        int currentYonetici = activeDavetler.where((d) => d.role == DavetRole.manager).length;
-        
-        int missingPersonel = widget.sayim.maxKisi - currentPersonel;
-        int missingYonetici = widget.sayim.maxYonetici - currentYonetici;
-        bool hasMissing = missingPersonel > 0 || missingYonetici > 0;
+            final davetler = snapshot.data ?? [];
+            final accepted = davetler.where((d) => d.isAccepted).toList();
+            final pending = davetler.where((d) => d.isPending).toList();
+            final declined = davetler.where((d) => d.isDeclined).toList();
 
-        return Scaffold(
+            final activeDavetler = [...accepted, ...pending];
+            int currentPersonel = activeDavetler.where((d) => d.role == DavetRole.staff).length;
+            int currentYonetici = activeDavetler.where((d) => d.role == DavetRole.manager).length;
+            
+            int missingPersonel = currentSayim.maxKisi - currentPersonel;
+            int missingYonetici = currentSayim.maxYonetici - currentYonetici;
+            bool hasMissing = missingPersonel > 0 || missingYonetici > 0;
+
+            return Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
             backgroundColor: Colors.transparent,
@@ -150,7 +176,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
               ),
             ),
             actions: [
-              if (widget.currentUser.id == widget.sayim.createdBy || widget.currentUser.isOwner) ...[
+              if (widget.currentUser.id == currentSayim.createdBy || widget.currentUser.isOwner) ...[
                 IconButton(
                   icon: const Icon(Icons.edit_rounded, color: AppColors.textPrimary, size: 20),
                   tooltip: isTr ? 'Düzenle' : 'Edit',
@@ -159,7 +185,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                       context,
                       MaterialPageRoute(
                         builder: (_) => EditSayimPage(
-                          sayim: widget.sayim,
+                          sayim: currentSayim,
                           existingDavets: davetler,
                           currentUser: widget.currentUser,
                           lang: widget.lang,
@@ -220,15 +246,15 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                 child: TabBarView(
                   controller: _tabController,
                   children: [
-                    _buildDavetList(accepted, DavetStatus.accepted),
-                    _buildDavetList(pending, DavetStatus.pending),
-                    _buildDavetList(declined, DavetStatus.declined),
+                    _buildDavetList(accepted, DavetStatus.accepted, currentSayim),
+                    _buildDavetList(pending, DavetStatus.pending, currentSayim),
+                    _buildDavetList(declined, DavetStatus.declined, currentSayim),
                   ],
                 ),
               ),
             ],
           ),
-          floatingActionButton: (widget.currentUser.id == widget.sayim.createdBy || widget.currentUser.isOwner) 
+          floatingActionButton: (widget.currentUser.id == currentSayim.createdBy || widget.currentUser.isOwner) 
             ? FloatingActionButton.extended(
                 backgroundColor: AppColors.accentLight,
                 foregroundColor: Colors.white,
@@ -237,7 +263,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                     context,
                     MaterialPageRoute(
                       builder: (_) => AddPersonToSayimPage(
-                        sayim: widget.sayim,
+                        sayim: currentSayim,
                         currentUser: widget.currentUser,
                         lang: widget.lang,
                       ),
@@ -249,11 +275,13 @@ class _SayimDetailPageState extends State<SayimDetailPage>
               ) 
             : null,
         );
+          },
+        );
       },
     );
   }
 
-  Widget _buildDavetList(List<Davet> davetler, DavetStatus status) {
+  Widget _buildDavetList(List<Davet> davetler, DavetStatus status, Sayim currentSayim) {
     if (davetler.isEmpty) {
       return Center(
         child: Text(
@@ -263,7 +291,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
       );
     }
 
-    final isCreator = widget.currentUser.id == widget.sayim.createdBy || widget.currentUser.isOwner;
+    final isCreator = widget.currentUser.id == currentSayim.createdBy || widget.currentUser.isOwner;
 
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
@@ -275,7 +303,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
           future: _getUser(davet.userId),
           builder: (context, userSnapshot) {
             final userName = userSnapshot.data?.fullName ?? (isTr ? 'Yükleniyor...' : 'Loading...');
-            final grupAdi = widget.sayim.gruplar.firstWhere((g) => g.grupId == davet.grupId, orElse: () => const SayimGrup(grupId: -1, saat: '')).saat;
+            final grupAdi = currentSayim.gruplar.firstWhere((g) => g.grupId == davet.grupId, orElse: () => const SayimGrup(grupId: -1, saat: '')).saat;
             
             return Container(
               decoration: BoxDecoration(

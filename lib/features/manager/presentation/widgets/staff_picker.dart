@@ -151,11 +151,14 @@ class _StaffPickerState extends State<StaffPicker> {
       if (old != null) {
         bool groupExists = widget.availableGroups.any((g) => g.grupId == old.grupId);
         
-        // Determine if ucret was manually edited by comparing it with the old auto-calculated wage
+        bool forceRecalculate = false;
         bool wasManuallyEdited = false;
+        
         if (oldWidget != null) {
-          double oldAutoWage = _calculateWage(old.role, old.multiplier, oldWidget.sayimSehirTipi);
-          if (old.ucret != oldAutoWage) {
+          if (oldWidget.sayimSehirTipi != widget.sayimSehirTipi || oldWidget.globalMultiplier != widget.globalMultiplier) {
+            forceRecalculate = true;
+          } else {
+            // Sadece kullanıcı listesi vb. değiştiyse, eski değeri koru
             wasManuallyEdited = true;
           }
         } else {
@@ -168,6 +171,8 @@ class _StaffPickerState extends State<StaffPicker> {
         if (oldWidget != null && oldWidget.globalMultiplier != widget.globalMultiplier && old.multiplier == oldWidget.globalMultiplier) {
           // If the old multiplier was exactly the old global multiplier, update it
           newMultiplier = widget.globalMultiplier;
+        } else if (oldWidget != null && oldWidget.globalMultiplier != widget.globalMultiplier) {
+          newMultiplier = widget.globalMultiplier; // Force new multiplier
         }
         
         return SelectedUserConfig(
@@ -176,8 +181,7 @@ class _StaffPickerState extends State<StaffPicker> {
           grupId: groupExists ? old.grupId : defaultGrupId,
           role: old.role,
           multiplier: newMultiplier,
-          ucret: wasManuallyEdited ? old.ucret : _calculateWage(old.role, newMultiplier), 
-          // Note: if user manually edited ucret, keep it, otherwise recalculate
+          ucret: forceRecalculate ? _calculateWage(old.role, newMultiplier) : (wasManuallyEdited ? old.ucret : _calculateWage(old.role, newMultiplier)), 
         );
       }
 

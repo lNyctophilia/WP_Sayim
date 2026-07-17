@@ -199,8 +199,8 @@ class _InvitationsPageState extends State<InvitationsPage> {
   }
 
   Widget _buildDavetCard(Davet davet) {
-    return FutureBuilder<DocumentSnapshot>(
-      future: _firestore.collection('sayimlar').doc(davet.sayimId).get(),
+    return StreamBuilder<DocumentSnapshot>(
+      stream: _firestore.collection('sayimlar').doc(davet.sayimId).snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Container(

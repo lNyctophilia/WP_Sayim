@@ -33,6 +33,31 @@ class WorkDayRepository {
     return MonthlyData(year: year, month: month, workDays: days);
   }
 
+  /// Bir ayın verilerini Firestore'dan stream olarak getirir
+  Stream<MonthlyData> getMonthlyDataStream(int year, int month) {
+    final startStr = '$year-${month.toString().padLeft(2, '0')}-01';
+    
+    int nextYear = year;
+    int nextMonth = month + 1;
+    if (nextMonth > 12) {
+      nextMonth = 1;
+      nextYear++;
+    }
+    final endStr = '$nextYear-${nextMonth.toString().padLeft(2, '0')}-01';
+
+    return _firestore
+        .collection('personel_takvimi')
+        .doc(userId)
+        .collection('gunler')
+        .where(FieldPath.documentId, isGreaterThanOrEqualTo: startStr)
+        .where(FieldPath.documentId, isLessThan: endStr)
+        .snapshots()
+        .map((snapshot) {
+      final days = snapshot.docs.map((doc) => WorkDay.fromJson(doc.data())).toList();
+      return MonthlyData(year: year, month: month, workDays: days);
+    });
+  }
+
   /// İş günü kaydet (yeni veya güncelle)
   Future<void> saveWorkDay(WorkDay workDay) async {
     // Sadece tarihi (YYYY-MM-DD) ID olarak kullanıyoruz ki her gün için tek kayıt olsun

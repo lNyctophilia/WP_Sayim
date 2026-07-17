@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/scheduler.dart';
@@ -39,6 +40,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late int _currentMonth;
   MonthlyData _monthlyData = MonthlyData.empty(2026, 1);
   bool _isLoading = true;
+  StreamSubscription<MonthlyData>? _subscription;
 
   // Manuel animasyon kontrolü (sistem ayarından bağımsız)
   AnimationController? _slideController;
@@ -84,20 +86,34 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    _subscription?.cancel();
     _slideController?.dispose();
     super.dispose();
   }
 
   Future<void> _loadData({bool silent = false}) async {
     if (!silent) setState(() => _isLoading = true);
-    final data =
-        await _repository.getMonthlyData(_currentYear, _currentMonth);
-    setState(() {
-      _monthlyData = data;
-      _isLoading = false;
+
+    _subscription?.cancel();
+
+    final completer = Completer<void>();
+
+    _subscription = _repository.getMonthlyDataStream(_currentYear, _currentMonth).listen((data) {
+      if (mounted) {
+        setState(() {
+          _monthlyData = data;
+          _isLoading = false;
+        });
+      }
+      if (!completer.isCompleted) {
+        completer.complete();
+      }
     });
+
     // Son görüntülenen ayı kaydet
     widget.storage.setLastViewed(_currentYear, _currentMonth);
+
+    return completer.future;
   }
 
   /// Animasyonlu ay değiştirme — sistem animasyon ayarını yok sayar
