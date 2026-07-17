@@ -45,8 +45,8 @@ class _UserListTabState extends State<UserListTab>
       final users = await _authService.getUsersByRole(widget.targetRole);
       if (mounted) {
         setState(() {
-          _approvedUsers = users.where((u) => u.isApproved).toList();
-          _pendingUsers = users.where((u) => !u.isApproved).toList();
+          _approvedUsers = users.where((u) => u.isApproved && !u.isOwner).toList();
+          _pendingUsers = users.where((u) => !u.isApproved && !u.isOwner).toList();
           _isLoading = false;
         });
       }

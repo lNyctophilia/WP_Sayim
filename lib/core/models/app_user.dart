@@ -19,6 +19,8 @@ class AppUser {
   final bool sayimReminderEnabled;
   final String? phone;
   final String? address;
+  final double? latitude;
+  final double? longitude;
   final bool isApproved;
 
   const AppUser({
@@ -36,6 +38,8 @@ class AppUser {
     this.sayimReminderEnabled = true,
     this.phone,
     this.address,
+    this.latitude,
+    this.longitude,
     this.isApproved = false,
   });
 
@@ -68,6 +72,8 @@ class AppUser {
       sayimReminderEnabled: data['sayimReminderEnabled'] as bool? ?? true,
       phone: data['phone'] as String?,
       address: data['address'] as String?,
+      latitude: (data['latitude'] as num?)?.toDouble(),
+      longitude: (data['longitude'] as num?)?.toDouble(),
       isApproved: data['isApproved'] as bool? ?? false,
     );
   }
@@ -88,6 +94,8 @@ class AppUser {
       'sayimReminderEnabled': sayimReminderEnabled,
       if (phone != null) 'phone': phone,
       if (address != null) 'address': address,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
       'isApproved': isApproved,
     };
   }
@@ -107,6 +115,8 @@ class AppUser {
     bool? sayimReminderEnabled,
     String? phone,
     String? address,
+    double? latitude,
+    double? longitude,
     bool? isApproved,
   }) {
     return AppUser(
@@ -124,6 +134,8 @@ class AppUser {
       sayimReminderEnabled: sayimReminderEnabled ?? this.sayimReminderEnabled,
       phone: phone ?? this.phone,
       address: address ?? this.address,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
       isApproved: isApproved ?? this.isApproved,
     );
   }

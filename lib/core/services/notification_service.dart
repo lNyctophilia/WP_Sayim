@@ -34,6 +34,29 @@ class NotificationService {
     }
   }
 
+  /// Kayıt sırasında kullanmak için (veritabanına yazmadan) token alır
+  Future<String?> getTokenForRegistration() async {
+    NotificationSettings settings = await _messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      try {
+        if (kIsWeb) {
+          return await _messaging.getToken(vapidKey: _vapidKey);
+        } else {
+          return await _messaging.getToken();
+        }
+      } catch (e) {
+        debugPrint('Kayıt için FCM Token alınırken hata: $e');
+        return null;
+      }
+    }
+    return null;
+  }
+
   /// FCM Token alıp kullanıcının Firestore dokümanına kaydetme
   Future<void> _saveTokenToDatabase() async {
     final user = _auth.currentUser;

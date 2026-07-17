@@ -438,3 +438,56 @@ exports.sayimAutoReminder = onSchedule("every 60 minutes", async (event) => {
     }
   }
 });
+
+// 7. Kullanıcı onaylandığında bildirim gönder
+exports.sendApprovalNotification = onDocumentUpdated("users/{userId}", async (event) => {
+  const oldData = event.data.before.data();
+  const newData = event.data.after.data();
+
+  if (!oldData || !newData) return;
+
+  // Check if isApproved changed from false to true
+  if (oldData.isApproved === false && newData.isApproved === true) {
+    const fcmToken = newData.fcmToken;
+    if (!fcmToken) return;
+
+    const message = {
+      token: fcmToken,
+      notification: {
+        title: "Hesabınız Onaylandı!",
+        body: "WP Sayım uygulamasına kayıt başvurunuz onaylandı. Artık giriş yapabilirsiniz."
+      },
+      android: {
+        priority: "high",
+        notification: {
+          channelId: "sayim_notifications",
+          tag: `approval_${event.params.userId}`
+        }
+      },
+      webpush: {
+        headers: {
+          Topic: `approval_${event.params.userId}`
+        },
+        fcmOptions: {
+          link: "https://lnyctophilia.github.io/WP_Sayim/"
+        }
+      },
+      apns: {
+        headers: {
+          "apns-collapse-id": `approval_${event.params.userId}`
+        }
+      },
+      data: {
+        type: "approval",
+        userId: event.params.userId
+      }
+    };
+
+    try {
+      await admin.messaging().send(message);
+      console.log(`Approval notification sent to user: ${event.params.userId}`);
+    } catch (error) {
+      console.error(`Error sending approval notification to user: ${event.params.userId}`, error);
+    }
+  }
+});

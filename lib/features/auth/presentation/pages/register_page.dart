@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
+import 'map_picker_page.dart';
 
 class RegisterPage extends StatefulWidget {
   final LanguageService lang;
@@ -29,6 +30,8 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   bool _isLoading = false;
   bool _obscurePassword = true;
   String? _errorMessage;
+  double? _latitude;
+  double? _longitude;
 
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
@@ -71,6 +74,8 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
         password: _passwordController.text,
         fullName: _fullNameController.text.trim(),
         address: _addressController.text.trim(),
+        latitude: _latitude,
+        longitude: _longitude,
       );
 
       if (mounted) {
@@ -218,6 +223,20 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
             controller: _addressController,
             hintText: widget.lang.tr('address_hint'),
             icon: Icons.location_on_outlined,
+            readOnly: true,
+            onTap: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const MapPickerPage()),
+              );
+              if (result != null && result is Map<String, dynamic>) {
+                setState(() {
+                  _addressController.text = result['address'] as String;
+                  _latitude = result['latitude'] as double;
+                  _longitude = result['longitude'] as double;
+                });
+              }
+            },
             validator: (value) => (value == null || value.trim().isEmpty) ? widget.lang.tr('address_required') : null,
           ),
           Padding(
@@ -254,6 +273,8 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     required String hintText,
     required IconData icon,
     bool obscureText = false,
+    bool readOnly = false,
+    VoidCallback? onTap,
     TextInputType? keyboardType,
     Widget? suffixIcon,
     String? Function(String?)? validator,
@@ -261,6 +282,8 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
+      readOnly: readOnly,
+      onTap: onTap,
       keyboardType: keyboardType,
       validator: validator,
       style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 15),

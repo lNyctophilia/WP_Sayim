@@ -89,6 +89,8 @@ class AuthService {
     required String password,
     required String fullName,
     required String address,
+    double? latitude,
+    double? longitude,
   }) async {
     final email = _toEmail(phone);
 
@@ -105,6 +107,8 @@ class AuthService {
         username: phone.trim().toLowerCase(), // Telefon no username olarak kullanılıyor
         phone: phone.trim(),
         address: address.trim(),
+        latitude: latitude,
+        longitude: longitude,
         fullName: fullName.trim(),
         password: password,
         roles: [UserRole.staff],
@@ -114,10 +118,18 @@ class AuthService {
         createdAt: DateTime.now(),
       );
 
+      final userData = appUser.toFirestore();
+      
+      // Bildirim token'ını al ve kaydet
+      final token = await NotificationService().getTokenForRegistration();
+      if (token != null) {
+        userData['fcmToken'] = token;
+      }
+
       await _firestore
           .collection('users')
           .doc(newUserId)
-          .set(appUser.toFirestore());
+          .set(userData);
 
       // Kullanıcı onaylı olmadığı için hemen oturumu kapatıyoruz
       await _auth.signOut();
