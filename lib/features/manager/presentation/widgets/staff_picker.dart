@@ -37,6 +37,7 @@ class StaffPicker extends StatefulWidget {
   final int targetYonetici;
   final int alreadySelectedPersonel;
   final int alreadySelectedYonetici;
+  final List<String> busyUserIds;
 
   const StaffPicker({
     super.key,
@@ -52,6 +53,7 @@ class StaffPicker extends StatefulWidget {
     this.targetYonetici = 0,
     this.alreadySelectedPersonel = 0,
     this.alreadySelectedYonetici = 0,
+    this.busyUserIds = const [],
   });
 
   @override
@@ -175,9 +177,12 @@ class _StaffPickerState extends State<StaffPicker> {
           newMultiplier = widget.globalMultiplier; // Force new multiplier
         }
         
+        
+        bool isBusy = widget.busyUserIds.contains(u.id);
+        
         return SelectedUserConfig(
           user: u,
-          isSelected: old.isSelected || (widget.initialSelections?.any((c) => c.user.id == u.id) ?? false),
+          isSelected: isBusy ? false : (old.isSelected || (widget.initialSelections?.any((c) => c.user.id == u.id) ?? false)),
           grupId: groupExists ? old.grupId : defaultGrupId,
           role: old.role,
           multiplier: newMultiplier,
@@ -188,9 +193,12 @@ class _StaffPickerState extends State<StaffPicker> {
       final role = u.isManager || u.isOwner ? DavetRole.manager : DavetRole.staff;
       final multiplier = widget.globalMultiplier;
       final autoWage = _calculateWage(role, multiplier);
+      
+      bool isBusy = widget.busyUserIds.contains(u.id);
 
       return SelectedUserConfig(
         user: u,
+        isSelected: isBusy ? false : (widget.initialSelections?.any((c) => c.user.id == u.id) ?? false),
         ucret: autoWage > 0 ? autoWage : (u.defaultWage ?? 0.0),
         role: role,
         grupId: defaultGrupId,
@@ -210,7 +218,11 @@ class _StaffPickerState extends State<StaffPicker> {
     setState(() {
       _selectAll = val;
       for (var c in _configs) {
-        c.isSelected = val;
+        if (!widget.busyUserIds.contains(c.user.id)) {
+          c.isSelected = val;
+        } else {
+          c.isSelected = false;
+        }
       }
     });
     _notifyChanges();
@@ -312,10 +324,11 @@ class _StaffPickerState extends State<StaffPicker> {
   Widget _buildUserCard(SelectedUserConfig config) {
     final u = config.user;
     final isMe = u.id == widget.currentUser.id;
+    final isBusy = widget.busyUserIds.contains(u.id);
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: isBusy ? AppColors.surface : AppColors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: config.isSelected
@@ -329,39 +342,52 @@ class _StaffPickerState extends State<StaffPicker> {
         children: [
           Row(
             children: [
-              Checkbox(
-                value: config.isSelected,
-                onChanged: (val) {
-                  if (val == true) {
-                    int currentP = _configs.where((c) => c.isSelected && c.role == DavetRole.staff).length + widget.alreadySelectedPersonel;
-                    int currentY = _configs.where((c) => c.isSelected && c.role == DavetRole.manager).length + widget.alreadySelectedYonetici;
-                    
-                    if (config.role == DavetRole.staff && currentP >= widget.targetPersonel) {
-                      _showLimitSnackBar('Personel sınırına ulaştınız!', 'Personnel limit reached!');
-                      return;
-                    }
-                    if (config.role == DavetRole.manager && currentY >= widget.targetYonetici) {
-                      if (currentP < widget.targetPersonel) {
-                        config.role = DavetRole.staff;
-                        config.ucret = _calculateWage(config.role, config.multiplier);
-                      } else {
-                        _showLimitSnackBar('Yönetici sınırına ulaştınız!', 'Manager limit reached!');
-                        return;
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: isBusy ? () {
+                  _showLimitSnackBar(
+                    'Bu kişi seçili tarihte başka bir sayımda!',
+                    'This person is already in another count on the selected date!',
+                  );
+                } : null,
+                child: AbsorbPointer(
+                  absorbing: isBusy,
+                  child: Checkbox(
+                    value: config.isSelected,
+                    onChanged: (val) {
+                      if (val == true) {
+                        int currentP = _configs.where((c) => c.isSelected && c.role == DavetRole.staff).length + widget.alreadySelectedPersonel;
+                        int currentY = _configs.where((c) => c.isSelected && c.role == DavetRole.manager).length + widget.alreadySelectedYonetici;
+                        
+                        if (config.role == DavetRole.staff && currentP >= widget.targetPersonel) {
+                          _showLimitSnackBar('Personel sınırına ulaştınız!', 'Personnel limit reached!');
+                          return;
+                        }
+                        if (config.role == DavetRole.manager && currentY >= widget.targetYonetici) {
+                          if (currentP < widget.targetPersonel) {
+                            config.role = DavetRole.staff;
+                            config.ucret = _calculateWage(config.role, config.multiplier);
+                          } else {
+                            _showLimitSnackBar('Yönetici sınırına ulaştınız!', 'Manager limit reached!');
+                            return;
+                          }
+                        }
                       }
-                    }
-                  }
 
-                  setState(() {
-                    config.isSelected = val ?? false;
-                    if (config.isSelected == false) {
-                      config.role = u.isManager || u.isOwner ? DavetRole.manager : DavetRole.staff;
-                      config.ucret = _calculateWage(config.role, config.multiplier);
-                    }
-                    _selectAll = _configs.every((c) => c.isSelected);
-                  });
-                  _notifyChanges();
-                },
-                activeColor: AppColors.accentLight,
+                      setState(() {
+                        config.isSelected = val ?? false;
+                        if (config.isSelected == false) {
+                          config.role = u.isManager || u.isOwner ? DavetRole.manager : DavetRole.staff;
+                          config.ucret = _calculateWage(config.role, config.multiplier);
+                        }
+                        _selectAll = _configs.every((c) => c.isSelected || widget.busyUserIds.contains(c.user.id));
+                      });
+                      _notifyChanges();
+                    },
+                    activeColor: AppColors.accentLight,
+                    fillColor: isBusy ? WidgetStateProperty.all(AppColors.textHint.withOpacity(0.5)) : null,
+                  ),
+                ),
               ),
               Expanded(
                 child: Column(

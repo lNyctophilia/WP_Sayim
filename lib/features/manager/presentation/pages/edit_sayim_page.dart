@@ -46,6 +46,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
   List<SayimGrup> _gruplar = [];
   List<AppUser> _allUsers = [];
   List<SelectedUserConfig> _selectedUsers = [];
+  List<String> _busyUserIds = [];
 
   bool _isLoading = false;
 
@@ -75,6 +76,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
     setState(() => _isLoading = true);
     try {
       final users = await _authService.getAllUsers();
+      final busyUsers = await _sayimService.getBusyUsersOnDate(_selectedDate, excludeSayimId: widget.sayim.id);
       
       final selected = <SelectedUserConfig>[];
       for (var davet in widget.existingDavets) {
@@ -94,6 +96,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
       setState(() {
         _allUsers = users;
         _selectedUsers = selected;
+        _busyUserIds = busyUsers;
       });
     } catch (e) {
       if (mounted) {
@@ -128,7 +131,21 @@ class _EditSayimPageState extends State<EditSayimPage> {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
+        _isLoading = true;
       });
+      try {
+        final busyUsers = await _sayimService.getBusyUsersOnDate(picked, excludeSayimId: widget.sayim.id);
+        if (mounted) {
+          setState(() {
+            _busyUserIds = busyUsers;
+            _isLoading = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
     }
   }
 
@@ -461,6 +478,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
                       initialSelections: _selectedUsers,
                       targetPersonel: int.tryParse(_maxKisiController.text) ?? 0,
                       targetYonetici: int.tryParse(_maxYoneticiController.text) ?? 0,
+                      busyUserIds: _busyUserIds,
                       onSelectionChanged: (selected) {
                         setState(() {
                           _selectedUsers = selected;

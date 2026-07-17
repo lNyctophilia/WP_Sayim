@@ -32,6 +32,7 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
 
   List<AppUser> _availableUsers = [];
   List<SelectedUserConfig> _selectedConfigs = [];
+  List<String> _busyUserIds = [];
   int _alreadySelectedPersonel = 0;
   int _alreadySelectedYonetici = 0;
   bool _isLoading = true;
@@ -48,6 +49,9 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
       // 1. Tüm kullanıcıları getir
       final allUsers = await _authService.getAllUsers();
       
+      // 1.5. Bu tarihte meşgul olan kullanıcıları getir
+      final busyUsers = await _sayimService.getBusyUsersOnDate(widget.sayim.date, excludeSayimId: widget.sayim.id);
+      
       // 2. Bu sayıma ait mevcut davetleri getir
       // Stream olduğu için ilk veriyi alıp kapatıyoruz
       final davetlerStream = _davetService.getDavetlerBySayim(widget.sayim.id);
@@ -62,6 +66,7 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
       // 4. Henüz davet edilmemiş kullanıcıları filtrele
       setState(() {
         _availableUsers = allUsers.where((u) => !existingUserIds.contains(u.id)).toList();
+        _busyUserIds = busyUsers;
         _alreadySelectedPersonel = currentPersonel;
         _alreadySelectedYonetici = currentYonetici;
         _isLoading = false;
@@ -172,6 +177,7 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
                     targetYonetici: widget.sayim.maxYonetici,
                     alreadySelectedPersonel: _alreadySelectedPersonel,
                     alreadySelectedYonetici: _alreadySelectedYonetici,
+                    busyUserIds: _busyUserIds,
                     onSelectionChanged: (configs) {
                       setState(() {
                         _selectedConfigs = configs;

@@ -158,4 +158,28 @@ class SayimService {
 
     await batch.commit();
   }
+
+  /// Belirli bir tarihteki sayımlara davet edilmiş kullanıcıların ID'lerini getirir
+  /// [excludeSayimId] verilirse o sayımı hesaba katmaz (örn. düzenleme ekranı için).
+  Future<List<String>> getBusyUsersOnDate(DateTime date, {String? excludeSayimId}) async {
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
+
+    final query = await _firestore
+        .collection('sayimlar')
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+        .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endOfDay))
+        .get();
+
+    final Set<String> busyUsers = {};
+    for (var doc in query.docs) {
+      if (excludeSayimId != null && doc.id == excludeSayimId) continue;
+      
+      final sayim = Sayim.fromFirestore(doc);
+      if (sayim.status != SayimStatus.closed) {
+        busyUsers.addAll(sayim.invitedUserIds);
+      }
+    }
+    return busyUsers.toList();
+  }
 }

@@ -42,6 +42,7 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
   List<SayimGrup> _gruplar = [];
   List<AppUser> _allUsers = [];
   List<SelectedUserConfig> _selectedUsers = [];
+  List<String> _busyUserIds = [];
 
   bool _isLoading = false;
 
@@ -63,8 +64,10 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
     setState(() => _isLoading = true);
     try {
       final users = await _authService.getAllUsers();
+      final busyUsers = await _sayimService.getBusyUsersOnDate(_selectedDate);
       setState(() {
         _allUsers = users;
+        _busyUserIds = busyUsers;
       });
     } catch (e) {
       if (mounted) {
@@ -99,7 +102,21 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
+        _isLoading = true;
       });
+      try {
+        final busyUsers = await _sayimService.getBusyUsersOnDate(picked);
+        if (mounted) {
+          setState(() {
+            _busyUserIds = busyUsers;
+            _isLoading = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
     }
   }
 
@@ -421,6 +438,7 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
                       globalMultiplier: _globalMultiplier,
                       targetPersonel: int.tryParse(_maxKisiController.text) ?? 0,
                       targetYonetici: int.tryParse(_maxYoneticiController.text) ?? 0,
+                      busyUserIds: _busyUserIds,
                       onSelectionChanged: (selected) {
                         setState(() {
                           _selectedUsers = selected;
