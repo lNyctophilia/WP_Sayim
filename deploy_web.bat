@@ -1,4 +1,5 @@
 @echo off
+cd /d "%~dp0"
 echo ===================================
 echo   WP Sayim - Web Build ve Deploy
 echo ===================================

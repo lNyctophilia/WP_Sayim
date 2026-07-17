@@ -4,7 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
-import 'map_picker_page.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import '../../../../core/constants/api_keys.dart';
 
 class RegisterPage extends StatefulWidget {
   final LanguageService lang;
@@ -22,7 +25,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _addressController = TextEditingController();
+  TextEditingController? _addressController;
   final _passwordController = TextEditingController();
   
   final _authService = AuthService();
@@ -55,7 +58,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     _animController.dispose();
     _fullNameController.dispose();
     _phoneController.dispose();
-    _addressController.dispose();
+    _addressController?.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -73,7 +76,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
         phone: _phoneController.text.trim(),
         password: _passwordController.text,
         fullName: _fullNameController.text.trim(),
-        address: _addressController.text.trim(),
+        address: _addressController?.text.trim() ?? '',
         latitude: _latitude,
         longitude: _longitude,
       );
@@ -125,6 +128,49 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           _isLoading = false;
         });
       }
+    }
+  }
+
+  String _proxyUrl(String url) {
+    if (kIsWeb) {
+      return 'https://corsproxy.io/?${Uri.encodeComponent(url)}';
+    }
+    return url;
+  }
+
+  Future<Iterable<Map<String, dynamic>>> _searchPlaces(String query) async {
+    if (query.length < 3) return const [];
+    try {
+      final url = _proxyUrl('https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${Uri.encodeComponent(query)}&key=${ApiKeys.googleMapsKey}&language=tr&components=country:tr');
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'OK') {
+          return List<Map<String, dynamic>>.from(data['predictions']);
+        }
+      }
+    } catch (e) {
+      debugPrint('Autocomplete error: $e');
+    }
+    return const [];
+  }
+
+  Future<void> _fetchPlaceDetails(String placeId, String address) async {
+    try {
+      final url = _proxyUrl('https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=geometry&key=${ApiKeys.googleMapsKey}&language=tr');
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'OK') {
+          final location = data['result']['geometry']['location'];
+          setState(() {
+            _latitude = location['lat'];
+            _longitude = location['lng'];
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Place Details error: $e');
     }
   }
 
@@ -219,25 +265,78 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           ),
           const SizedBox(height: 14),
 
-          _buildTextField(
-            controller: _addressController,
-            hintText: widget.lang.tr('address_hint'),
-            icon: Icons.location_on_outlined,
-            readOnly: true,
-            onTap: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const MapPickerPage()),
-              );
-              if (result != null && result is Map<String, dynamic>) {
-                setState(() {
-                  _addressController.text = result['address'] as String;
-                  _latitude = result['latitude'] as double;
-                  _longitude = result['longitude'] as double;
-                });
+          Autocomplete<Map<String, dynamic>>(
+            optionsBuilder: (TextEditingValue textEditingValue) async {
+              if (textEditingValue.text.isEmpty) {
+                return const Iterable<Map<String, dynamic>>.empty();
               }
+              return await _searchPlaces(textEditingValue.text);
             },
-            validator: (value) => (value == null || value.trim().isEmpty) ? widget.lang.tr('address_required') : null,
+            displayStringForOption: (option) => option['description'] as String,
+            onSelected: (option) {
+              _fetchPlaceDetails(option['place_id'] as String, option['description'] as String);
+              FocusScope.of(context).unfocus();
+            },
+            fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+              _addressController = controller;
+
+              return TextFormField(
+                controller: controller,
+                focusNode: focusNode,
+                onFieldSubmitted: (String value) => onFieldSubmitted(),
+                style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 15),
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.location_on_outlined, color: AppColors.textSecondary, size: 22),
+                  hintText: widget.lang.tr('address_hint'),
+                  filled: true,
+                  fillColor: AppColors.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) return widget.lang.tr('address_required');
+                  if (_latitude == null || _longitude == null) return widget.lang.tr('address_required'); // Force selection
+                  return null;
+                },
+                onChanged: (val) {
+                  // Invalidate coordinates if user modifies text
+                  if (_latitude != null) {
+                    setState(() {
+                      _latitude = null;
+                      _longitude = null;
+                    });
+                  }
+                },
+              );
+            },
+            optionsViewBuilder: (context, onSelected, options) {
+              return Align(
+                alignment: Alignment.topLeft,
+                child: Material(
+                  elevation: 4.0,
+                  color: AppColors.surface,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width - 64, // Accounts for padding
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      shrinkWrap: true,
+                      itemCount: options.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final option = options.elementAt(index);
+                        return ListTile(
+                          leading: const Icon(Icons.location_city, color: AppColors.accentLight),
+                          title: Text(option['description'] as String, style: const TextStyle(color: AppColors.textPrimary)),
+                          onTap: () => onSelected(option),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
           Padding(
             padding: const EdgeInsets.only(left: 12, top: 4),
