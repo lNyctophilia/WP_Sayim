@@ -8,6 +8,8 @@
 - kayıt olurken ki adres kısmı google haritalardan verisini çekmemiz gerekiyo o yüzden ordan giriş yapsa nasıl olur
 - admin hesabının şuan personeller ve yöneticiler kısmında gözükmemesi lazım onuda güncelleyelim
 
+- admin hesabına pc üzerinden web siteden giriş yaparken ilkinde oturum açmıyo hatalı olmamasına rağmen 2.de açıyo sorun nedir
+
 - güvenlik şeylerini kontrol edebilmemiz lazım bunu web sitesi olarak yayınladığımızdan ve ufakta olsa bi şirket kullanıcağından yani sıkıntı çıkmasın örneğin girişe bi hesap veya şifre 3 4 kez yanlış girince süre koyalım gibi veya başka güvenlik açısından ne gibi sıkıntılarımız var değerlendirelim projedeki tüm detayları
 - belki firebase ücretsiz plan için 3-4 ay önceki bildirimler sayımlar falan silinmeli
 - güncellemelerde iş takvimi ve bildirimlere yaptığımız gibi canlıya alınabilir mi düşün fakat kod yazma
@@ -36,3 +38,7 @@
 
 - fps sıkıntısı var gibi ama normali mi web uygulaması olduğundan
 - firestore rules gibi kuralları güncellememiz lazım herkese açık yayınlancağı için güvenlik problemlerini gözden geçirelim ayrıca bilgilerin sızmamasıda önemli çünkü adres telefon numarası gibi bilgiler giriliyo buraya onları nasıl yapıcaz korunaklı olduğundan emin olmamız lazım
+
+## 6. Yayın Öncesi Yapılacaklar (Pre-Launch)
+
+- [ ] **Google Haritalar API Kısıtlamaları:** Uygulama canlıya (production) alındığında, Google Cloud üzerinden mevcut API anahtarının "Application Restrictions" ayarı yapılarak sadece `https://lnyctophilia.github.io/*` adresine özel olarak kısıtlanacak. Veya daha güvenli olması adına Android, iOS ve Web için 3 ayrı API anahtarı üretilip kendi platformlarına göre kısıtlanacak.
