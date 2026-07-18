@@ -44,6 +44,50 @@ class SayimService {
     return docRef.id;
   }
 
+  /// Geçmiş bir sayımı oluşturur, tüm seçili kişileri 'accepted' olarak davet eder ve
+  /// iş takvimlerine ekler. Hiçbir bildirim gitmez (isPast = true).
+  Future<void> createPastSayimFull(Sayim sayim, List<Davet> davetler) async {
+    final batch = _firestore.batch();
+    
+    // 1. Sayımı oluştur
+    final sayimRef = _firestore.collection('sayimlar').doc();
+    final newSayim = sayim.copyWith(id: sayimRef.id);
+    batch.set(sayimRef, newSayim.toFirestore());
+
+    // 2. Davetleri oluştur ve takvime ekle
+    for (var davet in davetler) {
+      final davetRef = _firestore.collection('davetler').doc();
+      final newDavet = davet.copyWith(id: davetRef.id, sayimId: sayimRef.id);
+      batch.set(davetRef, newDavet.toFirestore());
+
+      // Takvime ekle (WorkDay)
+      final grup = newSayim.gruplar.firstWhere(
+        (g) => g.grupId == newDavet.grupId,
+        orElse: () => const SayimGrup(grupId: 1, saat: ''),
+      );
+      final combinedNote = '${newSayim.note} ${grup.saat}'.trim();
+      
+      final dateString = "${newSayim.date.year}-${newSayim.date.month.toString().padLeft(2, '0')}-${newSayim.date.day.toString().padLeft(2, '0')}";
+      final workDayRef = _firestore
+          .collection('personel_takvimi')
+          .doc(newDavet.userId)
+          .collection('gunler')
+          .doc(dateString);
+
+      final workDay = {
+        'date': newSayim.date.toIso8601String(),
+        'isCityCenter': newSayim.sehirTipi == SehirTipi.ici,
+        'payment': newDavet.ucret,
+        'note': combinedNote,
+        'sayimId': newSayim.id,
+      };
+
+      batch.set(workDayRef, workDay, SetOptions(merge: true));
+    }
+
+    await batch.commit();
+  }
+
   /// Var olan sayımı günceller ve bağlı davetleri/takvim kayıtlarını senkronize eder
   Future<void> updateSayim(Sayim sayim) async {
     final oldSayimDoc = await _firestore.collection('sayimlar').doc(sayim.id).get();

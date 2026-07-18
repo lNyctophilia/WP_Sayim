@@ -42,6 +42,7 @@ class Sayim {
   final List<String> invitedUserIds;
   final SehirTipi sehirTipi;
   final double globalMultiplier;
+  final bool isPast;
   final DateTime createdAt;
 
   const Sayim({
@@ -56,6 +57,7 @@ class Sayim {
     this.invitedUserIds = const [],
     this.sehirTipi = SehirTipi.ici,
     this.globalMultiplier = 1.0,
+    this.isPast = false,
     required this.createdAt,
   });
 
@@ -71,6 +73,7 @@ class Sayim {
     List<String>? invitedUserIds,
     SehirTipi? sehirTipi,
     double? globalMultiplier,
+    bool? isPast,
     DateTime? createdAt,
   }) {
     return Sayim(
@@ -85,6 +88,7 @@ class Sayim {
       invitedUserIds: invitedUserIds ?? this.invitedUserIds,
       sehirTipi: sehirTipi ?? this.sehirTipi,
       globalMultiplier: globalMultiplier ?? this.globalMultiplier,
+      isPast: isPast ?? this.isPast,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -116,6 +120,7 @@ class Sayim {
         orElse: () => SehirTipi.ici,
       ),
       globalMultiplier: (data['globalMultiplier'] as num?)?.toDouble() ?? 1.0,
+      isPast: data['isPast'] as bool? ?? false,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -133,6 +138,7 @@ class Sayim {
       'invitedUserIds': invitedUserIds,
       'sehirTipi': sehirTipi.name,
       'globalMultiplier': globalMultiplier,
+      'isPast': isPast,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }

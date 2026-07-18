@@ -9,6 +9,7 @@ import '../../presentation/pages/manager_panel_page.dart';
 import '../../../settings/presentation/pages/global_settings_page.dart';
 import '../../../home/presentation/pages/home_page.dart';
 import '../pages/edit_profiles_page.dart';
+import '../pages/create_past_sayim_page.dart';
 
 class ManagerDrawer extends StatelessWidget {
   final AppUser currentUser;
@@ -138,6 +139,23 @@ class ManagerDrawer extends StatelessWidget {
                 if (currentUser.isOwner) ...[
                   const Divider(color: AppColors.divider),
                   _buildSectionTitle(isTr ? 'Sistem Araçları' : 'System Tools'),
+                  
+                  ListTile(
+                    leading: const Icon(Icons.history_edu_rounded, color: AppColors.textSecondary),
+                    title: Text(isTr ? 'Geçmiş Sayım Ekle' : 'Add Past Count', style: const TextStyle(color: AppColors.textPrimary)),
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CreatePastSayimPage(
+                            currentUser: currentUser,
+                            lang: lang,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                   
                   ListTile(
                     leading: const Icon(Icons.settings_suggest_rounded, color: AppColors.textSecondary),

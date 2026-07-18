@@ -9,6 +9,11 @@ exports.sendDavetNotification = onDocumentCreated("davetler/{davetId}", async (e
   const davetData = event.data.data();
   if (!davetData) return;
 
+  if (davetData.isPast === true) {
+    console.log(`Davet notification skipped: Past sayim (davet ${event.params.davetId}).`);
+    return;
+  }
+
   const staffId = davetData.userId;
   const sayimId = davetData.sayimId;
   
@@ -85,6 +90,8 @@ exports.sendDavetResponseNotification = onDocumentUpdated("davetler/{davetId}", 
   const newData = event.data.after.data();
 
   if (!oldData || !newData) return;
+
+  if (newData.isPast === true) return;
 
   // Sadece status değiştiyse ve pending'den çıkmışsa
   if (oldData.status === newData.status) return;
