@@ -2,12 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/sayim.dart';
 import '../models/davet.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'notification_service.dart';
 
 class SayimService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final NotificationService _notificationService = NotificationService();
 
   /// Tüm sayımları getirir (tarihe göre azalan sırada)
   Stream<List<Sayim>> getSayimlar() {
@@ -45,18 +43,6 @@ class SayimService {
   /// Yeni bir sayım oluşturur ve ID'sini döner
   Future<String> createSayim(Sayim sayim) async {
     final docRef = await _firestore.collection('sayimlar').add(sayim.toFirestore());
-    
-    // İşlem logu oluştur
-    final userId = _auth.currentUser?.uid ?? sayim.createdBy;
-    if (userId.isNotEmpty) {
-      await _notificationService.logSystemAction(
-        userId: userId,
-        title: 'Sayım Oluşturuldu',
-        body: '"${sayim.note}" isimli sayımı başarıyla oluşturdunuz.',
-        type: 'system_log',
-        relatedId: docRef.id,
-      );
-    }
     
     return docRef.id;
   }
@@ -174,18 +160,6 @@ class SayimService {
     }
 
     await batch.commit();
-
-    // İşlem logu oluştur
-    final userId = _auth.currentUser?.uid ?? sayim.createdBy;
-    if (userId.isNotEmpty) {
-      await _notificationService.logSystemAction(
-        userId: userId,
-        title: 'Sayım Güncellendi',
-        body: '"${sayim.note}" isimli sayım detaylarını güncellediniz.',
-        type: 'system_log',
-        relatedId: sayim.id,
-      );
-    }
   }
 
   /// Sayımı kapatır
@@ -230,18 +204,6 @@ class SayimService {
     batch.delete(sayimDoc.reference);
 
     await batch.commit();
-
-    // İşlem logu oluştur
-    final userId = _auth.currentUser?.uid;
-    if (userId != null) {
-      await _notificationService.logSystemAction(
-        userId: userId,
-        title: 'Sayım Silindi',
-        body: '"${sayim.note}" isimli sayımı ve bağlı tüm kayıtları tamamen sildiniz.',
-        type: 'system_log_danger',
-        relatedId: sayimId,
-      );
-    }
   }
 
   /// Belirli bir tarihteki sayımlara davet edilmiş kullanıcıların ID'lerini getirir
