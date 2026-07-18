@@ -1,7 +1,6 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:file_saver/file_saver.dart';
 import 'package:excel/excel.dart' as ex;
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -39,14 +38,6 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
     setState(() => _isLoading = true);
     
     try {
-      // 1. İzin İsteği
-      if (Platform.isAndroid) {
-        var status = await Permission.storage.status;
-        if (!status.isGranted) {
-          status = await Permission.storage.request();
-        }
-      }
-
       // 2. Davetleri getir (sadece kabul edenler)
       final davetler = await _davetService.getDavetlerBySayimFuture(_selectedSayim!.id);
       final acceptedDavetler = davetler.where((d) => d.status == DavetStatus.accepted).toList();
@@ -107,29 +98,21 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       }
 
       // 6. Dosyayı Kaydet
-      Directory? directory;
-      if (Platform.isAndroid) {
-        directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
-          directory = await getExternalStorageDirectory();
-        }
-      } else {
-        directory = await getApplicationDocumentsDirectory();
-      }
-
       final dateStr = DateFormat('yyyy-MM-dd').format(_selectedSayim!.date);
       final safeName = _selectedSayim!.note.replaceAll(RegExp(r'[^a-zA-Z0-9_\-\s]'), '').trim();
-      final String fileName = 'Sayim_$safeName\_$dateStr.xlsx';
-      final String filePath = '${directory!.path}/$fileName';
+      final String fileName = 'Sayim_${safeName}_$dateStr';
 
-      File(filePath)
-        ..createSync(recursive: true)
-        ..writeAsBytesSync(excel.encode()!);
+      final savedPath = await FileSaver.instance.saveFile(
+        name: fileName,
+        bytes: Uint8List.fromList(excel.encode()!),
+        fileExtension: 'xlsx',
+        mimeType: MimeType.microsoftExcel,
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Excel dosyası başarıyla indirildi:\n$filePath'),
+            content: Text('Excel dosyası başarıyla indirildi:\n$savedPath'),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 4),
           ),
@@ -204,7 +187,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
                   dropdownColor: AppColors.card,
-                  value: _selectedSayim,
+                  initialValue: _selectedSayim,
                   hint: Text(
                     isTr ? 'Sayım Seçin' : 'Select Count',
                     style: const TextStyle(color: AppColors.textHint),

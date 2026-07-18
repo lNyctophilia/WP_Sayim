@@ -412,50 +412,63 @@ class _StaffPickerState extends State<StaffPicker> {
                 ),
               ),
               if (config.isSelected)
-                DropdownButton<DavetRole>(
-                  value: config.role,
-                  dropdownColor: AppColors.surface,
-                  underline: const SizedBox(),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.accentLight,
-                  ),
-                  icon: const Icon(Icons.arrow_drop_down,
-                      color: AppColors.accentLight, size: 20),
-                  items: [
-                    DropdownMenuItem(
-                      value: DavetRole.staff,
-                      child: Text(widget.isTr ? 'Personel' : 'Staff'),
+                if (u.isManager || u.isOwner)
+                  DropdownButton<DavetRole>(
+                    value: config.role,
+                    dropdownColor: AppColors.surface,
+                    underline: const SizedBox(),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.accentLight,
                     ),
-                    DropdownMenuItem(
-                      value: DavetRole.manager,
-                      child: Text(widget.isTr ? 'Yönetici' : 'Manager'),
-                    ),
-                  ],
-                  onChanged: (val) {
-                    if (val != null && val != config.role) {
-                      if (val == DavetRole.staff) {
-                         int currentP = _configs.where((c) => c.isSelected && c.role == DavetRole.staff).length + widget.alreadySelectedPersonel;
-                         if (currentP >= widget.targetPersonel) {
-                           _showLimitSnackBar('Personel sınırına ulaştınız!', 'Personnel limit reached!');
-                           return;
-                         }
-                      } else {
-                         int currentY = _configs.where((c) => c.isSelected && c.role == DavetRole.manager).length + widget.alreadySelectedYonetici;
-                         if (currentY >= widget.targetYonetici) {
-                           _showLimitSnackBar('Yönetici sınırına ulaştınız!', 'Manager limit reached!');
-                           return;
-                         }
+                    icon: const Icon(Icons.arrow_drop_down,
+                        color: AppColors.accentLight, size: 20),
+                    items: [
+                      DropdownMenuItem(
+                        value: DavetRole.staff,
+                        child: Text(widget.isTr ? 'Personel' : 'Staff'),
+                      ),
+                      DropdownMenuItem(
+                        value: DavetRole.manager,
+                        child: Text(widget.isTr ? 'Yönetici' : 'Manager'),
+                      ),
+                    ],
+                    onChanged: (val) {
+                      if (val != null && val != config.role) {
+                        if (val == DavetRole.staff) {
+                           int currentP = _configs.where((c) => c.isSelected && c.role == DavetRole.staff).length + widget.alreadySelectedPersonel;
+                           if (currentP >= widget.targetPersonel) {
+                             _showLimitSnackBar('Personel sınırına ulaştınız!', 'Personnel limit reached!');
+                             return;
+                           }
+                        } else {
+                           int currentY = _configs.where((c) => c.isSelected && c.role == DavetRole.manager).length + widget.alreadySelectedYonetici;
+                           if (currentY >= widget.targetYonetici) {
+                             _showLimitSnackBar('Yönetici sınırına ulaştınız!', 'Manager limit reached!');
+                             return;
+                           }
+                        }
+                        setState(() {
+                          config.role = val;
+                          config.ucret = _calculateWage(config.role, config.multiplier);
+                        });
+                        _notifyChanges();
                       }
-                      setState(() {
-                        config.role = val;
-                        config.ucret = _calculateWage(config.role, config.multiplier);
-                      });
-                      _notifyChanges();
-                    }
-                  },
-                ),
+                    },
+                  )
+                else
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: Text(
+                      widget.isTr ? 'Personel' : 'Staff',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textHint,
+                      ),
+                    ),
+                  ),
             ],
           ),
           if (config.isSelected) ...[
