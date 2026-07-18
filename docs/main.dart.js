@@ -8537,33 +8537,32 @@ _.b=b
 _.c=c
 _.d=d},
 aSM(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q){return new A.d2(g,q,f,l,n,e,d,a,i,c,p,o,m,b,j,k,h)},
-a6R(a0){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d=null,c=t.a.a(a0.kV()),b=B.b.gaj(a0.b.b.a),a=A.ac(c.h(0,"username"))
-if(a==null)a=""
-s=A.ac(c.h(0,"fullName"))
+a6R(a){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e=null,d=t.a.a(a.kV()),c=B.b.gaj(a.b.b.a),b=A.ac(d.h(0,"username"))
+if(b==null)b=""
+s=A.ac(d.h(0,"fullName"))
 if(s==null)s=""
-r=A.ac(c.h(0,"password"))
-q=t.kc.a(c.h(0,"roles"))
-if(q==null)q=d
-else{q=J.eM(q,new A.a6U(),t.yV)
-q=A.T(q,q.$ti.i("aa.E"))}if(q==null)q=A.b([B.d9],t.W2)
-p=A.o4(c.h(0,"defaultWage"))
-if(p==null)p=d
-o=A.ac(c.h(0,"createdBy"))
-n=A.f_(c.h(0,"active"))
-m=A.f_(c.h(0,"isDeleted"))
-l=t.J4.a(c.h(0,"createdAt"))
-l=l==null?d:A.rz(l.goI())
-if(l==null)l=new A.bw(Date.now(),0,!1)
-k=A.ac(c.h(0,"sessionId"))
-j=A.f_(c.h(0,"sayimReminderEnabled"))
-i=A.ac(c.h(0,"phone"))
-h=A.ac(c.h(0,"address"))
-g=A.o4(c.h(0,"latitude"))
-if(g==null)g=d
-f=A.o4(c.h(0,"longitude"))
-if(f==null)f=d
-e=A.f_(c.h(0,"isApproved"))
-return A.aSM(n!==!1,h,l,o,p,s,b,e===!0,m===!0,g,f,r,i,q,j!==!1,k,a)},
+r=t.kc.a(d.h(0,"roles"))
+if(r==null)r=e
+else{r=J.eM(r,new A.a6U(),t.yV)
+r=A.T(r,r.$ti.i("aa.E"))}if(r==null)r=A.b([B.d9],t.W2)
+q=A.o4(d.h(0,"defaultWage"))
+if(q==null)q=e
+p=A.ac(d.h(0,"createdBy"))
+o=A.f_(d.h(0,"active"))
+n=A.f_(d.h(0,"isDeleted"))
+m=t.J4.a(d.h(0,"createdAt"))
+m=m==null?e:A.rz(m.goI())
+if(m==null)m=new A.bw(Date.now(),0,!1)
+l=A.ac(d.h(0,"sessionId"))
+k=A.f_(d.h(0,"sayimReminderEnabled"))
+j=A.ac(d.h(0,"phone"))
+i=A.ac(d.h(0,"address"))
+h=A.o4(d.h(0,"latitude"))
+if(h==null)h=e
+g=A.o4(d.h(0,"longitude"))
+if(g==null)g=e
+f=A.f_(d.h(0,"isApproved"))
+return A.aSM(o!==!1,i,m,p,q,s,c,f===!0,n===!0,h,g,e,j,r,k!==!1,l,b)},
 fA:function fA(a,b){this.a=a
 this.b=b},
 d2:function d2(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q){var _=this

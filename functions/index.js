@@ -288,8 +288,8 @@ exports.syncUserWithAuth = onDocumentUpdated("users/{userId}", async (event) => 
 
   const updatePayload = {};
 
-  // Şifre değişmişse
-  if (oldData.password !== newData.password && newData.password) {
+  // Şifre alanı varsa (yeni atanmış veya eskiden kalmış olabilir), auth'u güncelle ve ardından sil
+  if (newData.password) {
     updatePayload.password = newData.password;
   }
 

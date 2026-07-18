@@ -55,7 +55,7 @@ class AppUser {
       id: doc.id,
       username: data['username'] as String? ?? '',
       fullName: data['fullName'] as String? ?? '',
-      password: data['password'] as String?,
+      password: null, // Veritabanındaki eski şifreleri yok sayıyoruz
       roles: (data['roles'] as List<dynamic>?)
               ?.map((r) => UserRole.values.firstWhere(
                     (e) => e.name == r,
