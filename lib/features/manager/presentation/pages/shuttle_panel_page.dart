@@ -84,7 +84,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
     final isTr = widget.lang.currentLang == 'tr';
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(AppStrings.get('you_can_select_up_to_maxselection_people', isTr ? 'tr' : 'en')),
+        content: Text(AppStrings.getFormat('you_can_select_up_to_maxselection_people', isTr ? 'tr' : 'en', [_maxSelection])),
         backgroundColor: Colors.orange,
       ),
     );
@@ -177,7 +177,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppStrings.get('could_not_open_map_e', isTr ? 'tr' : 'en')),
+            content: Text(AppStrings.getFormat('could_not_open_map_e', isTr ? 'tr' : 'en', [e])),
             backgroundColor: Colors.red,
           ),
         );

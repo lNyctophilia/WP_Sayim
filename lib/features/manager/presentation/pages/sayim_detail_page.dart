@@ -438,7 +438,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                             backgroundColor: AppColors.background,
                             title: Text(AppStrings.get('remove_person', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.textPrimary)),
                             content: Text(
-                              AppStrings.get('are_you_sure_you_want_to_remove_username_from_this_count_a_cancellation_notification_will_be_sent_to_the_user', isTr ? 'tr' : 'en'),
+                              AppStrings.getFormat('are_you_sure_you_want_to_remove_username_from_this_count_a_cancellation_notification_will_be_sent_to_the_user', isTr ? 'tr' : 'en', [userName]),
                               style: const TextStyle(color: AppColors.textSecondary),
                             ),
                             actions: [
