@@ -10,6 +10,7 @@ import '../../../settings/presentation/pages/global_settings_page.dart';
 import '../../../home/presentation/pages/home_page.dart';
 import '../pages/edit_profiles_page.dart';
 import '../pages/create_past_sayim_page.dart';
+import '../pages/export_sayim_page.dart';
 
 class ManagerDrawer extends StatelessWidget {
   final AppUser currentUser;
@@ -169,6 +170,22 @@ class ManagerDrawer extends StatelessWidget {
                             lang: lang,
                             currentUser: currentUser,
                             storage: storage,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  
+                  ListTile(
+                    leading: const Icon(Icons.sim_card_download_rounded, color: AppColors.textSecondary),
+                    title: Text(isTr ? 'Excel Çıktısı Al' : 'Export Excel', style: const TextStyle(color: AppColors.textPrimary)),
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ExportSayimPage(
+                            lang: lang,
                           ),
                         ),
                       );

@@ -17,6 +17,15 @@ class DavetService {
     });
   }
 
+  /// Belirli bir sayıma ait davetleri getir (Future)
+  Future<List<Davet>> getDavetlerBySayimFuture(String sayimId) async {
+    final snapshot = await _firestore
+        .collection('davetler')
+        .where('sayimId', isEqualTo: sayimId)
+        .get();
+    return snapshot.docs.map((doc) => Davet.fromFirestore(doc)).toList();
+  }
+
   /// Belirli bir kullanıcıya ait (Personel/Yönetici) davetleri getir
   Stream<List<Davet>> getDavetlerByUser(String userId) {
     return _firestore
