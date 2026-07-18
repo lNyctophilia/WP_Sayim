@@ -7,17 +7,23 @@ import '../../../../core/models/davet.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/sayim_service.dart';
+import '../../../../core/services/storage_service.dart';
 import '../widgets/grup_selector.dart';
 import '../widgets/staff_picker.dart';
+import '../widgets/manager_drawer.dart';
+import '../../../../features/home/presentation/widgets/custom_top_bar.dart';
+import 'manager_panel_page.dart';
 
 class CreatePastSayimPage extends StatefulWidget {
   final AppUser currentUser;
   final LanguageService lang;
+  final StorageService storage;
 
   const CreatePastSayimPage({
     super.key,
     required this.currentUser,
     required this.lang,
+    required this.storage,
   });
 
   @override
@@ -249,25 +255,55 @@ class _CreatePastSayimPageState extends State<CreatePastSayimPage> {
   Widget build(BuildContext context) {
     final isTr = widget.lang.currentLang == 'tr';
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.card,
-        elevation: 0,
-        title: Text(
-          isTr ? 'Geçmiş Sayım Ekle' : 'Add Past Count',
-          style: GoogleFonts.inter(
-            color: AppColors.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => ManagerPanelPage(
+              currentUser: widget.currentUser,
+              storage: widget.storage,
+              lang: widget.lang,
+              onLogout: () {},
+            ),
+            transitionDuration: Duration.zero,
           ),
+        );
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        drawer: ManagerDrawer(
+          currentUser: widget.currentUser,
+          lang: widget.lang,
+          storage: widget.storage,
         ),
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
-      ),
-      body: _isLoading && _allUsers.isEmpty
-          ? const Center(child: CircularProgressIndicator(color: AppColors.accentLight))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+        body: Column(
+          children: [
+            CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  const Icon(Icons.history_rounded, color: AppColors.accentLight),
+                  const SizedBox(width: 8),
+                  Text(
+                    isTr ? 'Geçmiş Sayım Ekle' : 'Add Past Count',
+                    style: GoogleFonts.inter(
+                      color: AppColors.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: _isLoading && _allUsers.isEmpty
+                  ? const Center(child: CircularProgressIndicator(color: AppColors.accentLight))
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -478,6 +514,10 @@ class _CreatePastSayimPageState extends State<CreatePastSayimPage> {
                 ),
               ),
             ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

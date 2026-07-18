@@ -5,15 +5,21 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
+import '../../../../core/services/storage_service.dart';
+import '../widgets/manager_drawer.dart';
+import '../../../../features/home/presentation/widgets/custom_top_bar.dart';
+import 'manager_panel_page.dart';
 
 class EditProfilesPage extends StatefulWidget {
   final AppUser currentUser;
   final LanguageService lang;
+  final StorageService storage;
 
   const EditProfilesPage({
     super.key,
     required this.currentUser,
     required this.lang,
+    required this.storage,
   });
 
   @override
@@ -166,29 +172,55 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
   Widget build(BuildContext context) {
     final isTr = widget.lang.currentLang == 'tr';
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.card,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          isTr ? 'Profilleri Düzenle' : 'Edit Profiles',
-          style: GoogleFonts.inter(
-            color: AppColors.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => ManagerPanelPage(
+              currentUser: widget.currentUser,
+              storage: widget.storage,
+              lang: widget.lang,
+              onLogout: () {},
+            ),
+            transitionDuration: Duration.zero,
           ),
+        );
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        drawer: ManagerDrawer(
+          currentUser: widget.currentUser,
+          lang: widget.lang,
+          storage: widget.storage,
         ),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.accentLight))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+        body: Column(
+          children: [
+            CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  const Icon(Icons.manage_accounts_rounded, color: AppColors.accentLight),
+                  const SizedBox(width: 8),
+                  Text(
+                    isTr ? 'Profilleri Düzenle' : 'Edit Profiles',
+                    style: GoogleFonts.inter(
+                      color: AppColors.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator(color: AppColors.accentLight))
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -350,6 +382,10 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                 ],
               ),
             ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

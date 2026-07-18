@@ -4,15 +4,21 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
 import '../../../../core/services/language_service.dart';
+import '../../../../core/services/storage_service.dart';
+import '../widgets/manager_drawer.dart';
+import '../../../../features/home/presentation/widgets/custom_top_bar.dart';
+import 'manager_panel_page.dart';
 
 class ShuttlePanelPage extends StatefulWidget {
   final AppUser currentUser;
   final LanguageService lang;
+  final StorageService storage;
 
   const ShuttlePanelPage({
     super.key,
     required this.currentUser,
     required this.lang,
+    required this.storage,
   });
 
   @override
@@ -191,24 +197,55 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
   Widget build(BuildContext context) {
     final isTr = widget.lang.currentLang == 'tr';
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
-        title: Text(
-          isTr ? 'Servis / Rota Planlama' : 'Shuttle / Route Planning',
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.bold,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => ManagerPanelPage(
+              currentUser: widget.currentUser,
+              storage: widget.storage,
+              lang: widget.lang,
+              onLogout: () {},
+            ),
+            transitionDuration: Duration.zero,
           ),
+        );
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        drawer: ManagerDrawer(
+          currentUser: widget.currentUser,
+          lang: widget.lang,
+          storage: widget.storage,
         ),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.accentLight))
-          : Column(
-              children: [
+        body: Column(
+          children: [
+            CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  const Icon(Icons.directions_bus_rounded, color: AppColors.accentLight),
+                  const SizedBox(width: 8),
+                  Text(
+                    isTr ? 'Servis / Rota Planlama' : 'Shuttle / Route Planning',
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator(color: AppColors.accentLight))
+                  : Column(
+                      children: [
                 Container(
                   padding: const EdgeInsets.all(16),
                   margin: const EdgeInsets.all(16),
@@ -306,6 +343,9 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -331,6 +371,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
           ),
         ),
       ),
+    ),
     );
   }
 }

@@ -73,13 +73,15 @@ class ManagerDrawer extends StatelessWidget {
               title: Text(isTr ? 'Profilleri Düzenle' : 'Edit Profiles', style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w500)),
               onTap: () {
                 Navigator.pop(context); // Close drawer
-                Navigator.push(
+                Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => EditProfilesPage(
+                  PageRouteBuilder(
+                    pageBuilder: (_, __, ___) => EditProfilesPage(
                       currentUser: currentUser,
                       lang: lang,
+                      storage: storage,
                     ),
+                    transitionDuration: Duration.zero,
                   ),
                 );
               },
@@ -101,12 +103,13 @@ class ManagerDrawer extends StatelessWidget {
                     Navigator.pop(context); // Close drawer
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => HomePage(
+                      PageRouteBuilder(
+                        pageBuilder: (_, __, ___) => HomePage(
                           currentUser: currentUser,
                           storage: storage,
                           lang: lang,
                         ),
+                        transitionDuration: Duration.zero,
                       ),
                     );
                   },
@@ -121,19 +124,19 @@ class ManagerDrawer extends StatelessWidget {
                   subtitle: Text(isTr ? 'Sayımlar ve Personeller' : 'Counts and Staff', style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
                   onTap: () {
                     Navigator.pop(context); // Close drawer
-                    Navigator.push(
+                    Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => ManagerPanelPage(
+                      PageRouteBuilder(
+                        pageBuilder: (_, __, ___) => ManagerPanelPage(
                           currentUser: currentUser,
                           storage: storage,
                           lang: lang,
                           onLogout: () {},
                         ),
+                        transitionDuration: Duration.zero,
                       ),
                     ).then((_) {
-                      // Geri dönüldüğünde (örneğin ana sayfaya) paneli güncelle
-                      storage.setLastPanel('home');
+                      storage.setLastPanel('manager');
                     });
                   },
                 ),
@@ -144,13 +147,15 @@ class ManagerDrawer extends StatelessWidget {
                   subtitle: Text(isTr ? 'Personel Servis Rotası' : 'Staff Shuttle Route', style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
                   onTap: () {
                     Navigator.pop(context); // Close drawer
-                    Navigator.push(
+                    Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => ShuttlePanelPage(
+                      PageRouteBuilder(
+                        pageBuilder: (_, __, ___) => ShuttlePanelPage(
                           currentUser: currentUser,
                           lang: lang,
+                          storage: storage,
                         ),
+                        transitionDuration: Duration.zero,
                       ),
                     );
                   },
@@ -162,12 +167,15 @@ class ManagerDrawer extends StatelessWidget {
                   subtitle: Text(isTr ? 'Sayım Raporları' : 'Count Reports', style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
                   onTap: () {
                     Navigator.pop(context); // Close drawer
-                    Navigator.push(
+                    Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => ExportSayimPage(
+                      PageRouteBuilder(
+                        pageBuilder: (_, __, ___) => ExportSayimPage(
                           lang: lang,
+                          currentUser: currentUser,
+                          storage: storage,
                         ),
+                        transitionDuration: Duration.zero,
                       ),
                     );
                   },
@@ -182,13 +190,15 @@ class ManagerDrawer extends StatelessWidget {
                     title: Text(isTr ? 'Geçmiş Sayım Ekle' : 'Add Past Count', style: const TextStyle(color: AppColors.textPrimary)),
                     onTap: () {
                       Navigator.pop(context); // Close drawer
-                      Navigator.push(
+                      Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => CreatePastSayimPage(
+                        PageRouteBuilder(
+                          pageBuilder: (_, __, ___) => CreatePastSayimPage(
                             currentUser: currentUser,
                             lang: lang,
+                            storage: storage,
                           ),
+                          transitionDuration: Duration.zero,
                         ),
                       );
                     },
@@ -199,14 +209,15 @@ class ManagerDrawer extends StatelessWidget {
                     title: Text(isTr ? 'Genel Ücret Ayarları' : 'Global Wage Settings', style: const TextStyle(color: AppColors.textPrimary)),
                     onTap: () {
                       Navigator.pop(context); // Close drawer
-                      Navigator.push(
+                      Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => GlobalSettingsPage(
+                        PageRouteBuilder(
+                          pageBuilder: (_, __, ___) => GlobalSettingsPage(
                             lang: lang,
                             currentUser: currentUser,
                             storage: storage,
                           ),
+                          transitionDuration: Duration.zero,
                         ),
                       );
                     },

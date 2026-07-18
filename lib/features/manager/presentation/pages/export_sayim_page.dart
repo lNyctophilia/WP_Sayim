@@ -11,13 +11,21 @@ import '../../../../core/services/sayim_service.dart';
 import '../../../../core/services/davet_service.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
+import '../../../../core/services/storage_service.dart';
+import '../widgets/manager_drawer.dart';
+import '../../../../features/home/presentation/widgets/custom_top_bar.dart';
+import 'manager_panel_page.dart';
 
 class ExportSayimPage extends StatefulWidget {
   final LanguageService lang;
+  final StorageService storage;
+  final AppUser currentUser;
 
   const ExportSayimPage({
     super.key,
     required this.lang,
+    required this.storage,
+    required this.currentUser,
   });
 
   @override
@@ -189,26 +197,56 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
   Widget build(BuildContext context) {
     final isTr = widget.lang.currentLang == 'tr';
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        title: Text(
-          isTr ? 'Excel Çıktısı Al' : 'Export Excel',
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => ManagerPanelPage(
+              currentUser: widget.currentUser,
+              storage: widget.storage,
+              lang: widget.lang,
+              onLogout: () {},
+            ),
+            transitionDuration: Duration.zero,
           ),
+        );
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        drawer: ManagerDrawer(
+          currentUser: widget.currentUser,
+          lang: widget.lang,
+          storage: widget.storage,
         ),
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        body: Column(
           children: [
+            CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  const Icon(Icons.table_view_rounded, color: AppColors.accentLight),
+                  const SizedBox(width: 8),
+                  Text(
+                    isTr ? 'Excel Çıktısı Al' : 'Export Excel',
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
             Text(
               isTr ? 'Lütfen Excel çıktısı almak istediğiniz sayımı seçin.' : 'Please select a count to export to Excel.',
               style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
@@ -316,10 +354,14 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
-              const SizedBox(height: 32),
-            ]
-          ],
+                const SizedBox(height: 32),
+              ]
+            ],
+          ),
         ),
+      ),
+      ],
+      ),
       ),
     );
   }

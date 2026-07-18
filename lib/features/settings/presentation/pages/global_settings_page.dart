@@ -7,6 +7,7 @@ import '../../../../core/models/app_user.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../home/presentation/widgets/custom_top_bar.dart';
 import '../../../manager/presentation/widgets/manager_drawer.dart';
+import '../../../manager/presentation/pages/manager_panel_page.dart';
 
 class GlobalSettingsPage extends StatefulWidget {
   final LanguageService lang;
@@ -111,32 +112,50 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
   Widget build(BuildContext context) {
     final isTr = widget.lang.currentLang == 'tr';
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      drawer: ManagerDrawer(
-        currentUser: widget.currentUser,
-        lang: widget.lang,
-        storage: widget.storage,
-      ),
-      body: Column(
-        children: [
-          CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-            child: Row(
-              children: [
-                const BackButton(color: AppColors.textPrimary),
-                Text(
-                  isTr ? 'Genel Ayarlar' : 'Global Settings',
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => ManagerPanelPage(
+              currentUser: widget.currentUser,
+              storage: widget.storage,
+              lang: widget.lang,
+              onLogout: () {},
             ),
+            transitionDuration: Duration.zero,
           ),
+        );
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        drawer: ManagerDrawer(
+          currentUser: widget.currentUser,
+          lang: widget.lang,
+          storage: widget.storage,
+        ),
+        body: Column(
+          children: [
+            CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  const Icon(Icons.settings_rounded, color: AppColors.accentLight),
+                  const SizedBox(width: 8),
+                  Text(
+                    isTr ? 'Genel Ayarlar' : 'Global Settings',
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           Expanded(
             child: _isLoading
                 ? const Center(
@@ -213,6 +232,7 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
             ),
           ),
         ],
+      ),
       ),
     );
   }
