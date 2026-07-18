@@ -85,14 +85,14 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       sheetObject.appendRow([ex.TextCellValue('Konum: ${_selectedSayim!.note}')]);
       var titleCell = sheetObject.cell(ex.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0));
       titleCell.cellStyle = subTitleStyle;
-      sheetObject.merge(ex.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0), ex.CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: 0));
+      sheetObject.merge(ex.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0), ex.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 0));
 
       // Date
       final dateStrFormatted = DateFormat('dd.MM.yyyy').format(_selectedSayim!.date);
       sheetObject.appendRow([ex.TextCellValue('Tarih: $dateStrFormatted')]);
       var dateCell = sheetObject.cell(ex.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1));
       dateCell.cellStyle = subTitleStyle;
-      sheetObject.merge(ex.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1), ex.CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: 1));
+      sheetObject.merge(ex.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1), ex.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 1));
 
       sheetObject.appendRow([ex.TextCellValue('')]); // Empty row
 
@@ -106,11 +106,11 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
         sheetObject.appendRow([ex.TextCellValue(sectionTitle)]);
         var sectionCell = sheetObject.cell(ex.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow));
         sectionCell.cellStyle = subTitleStyle;
-        sheetObject.merge(ex.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow), ex.CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: currentRow));
+        sheetObject.merge(ex.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow), ex.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow));
         currentRow++;
 
         // Table Header
-        var rowHeader = ['İsim Soyisim', 'Görevi', 'Saat Grubu', 'Ücret'];
+        var rowHeader = ['İsim Soyisim'];
         sheetObject.appendRow(rowHeader.map((e) => ex.TextCellValue(e)).toList());
         for (int col = 0; col < rowHeader.length; col++) {
           var cell = sheetObject.cell(ex.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: currentRow));
@@ -121,27 +121,18 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
         // Table Data
         if (davetList.isEmpty) {
           sheetObject.appendRow([ex.TextCellValue('Kayıt bulunamadı.')]);
-          sheetObject.merge(ex.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow), ex.CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: currentRow));
+          sheetObject.merge(ex.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow), ex.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow));
           currentRow++;
         } else {
           for (var davet in davetList) {
             final user = userMap[davet.userId];
             final fullName = user?.fullName ?? 'Bilinmeyen Kullanıcı';
-            final roleStr = user?.isManager == true ? 'Yönetici' : 'Personel';
-            
-            final grup = _selectedSayim!.gruplar.firstWhere(
-              (g) => g.grupId == davet.grupId,
-              orElse: () => const SayimGrup(grupId: 1, saat: ''),
-            );
 
             sheetObject.appendRow([
               ex.TextCellValue(fullName),
-              ex.TextCellValue(roleStr),
-              ex.TextCellValue(grup.saat),
-              ex.DoubleCellValue(davet.ucret),
             ]);
             
-            for (int col = 0; col < 4; col++) {
+            for (int col = 0; col < 1; col++) {
                var cell = sheetObject.cell(ex.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: currentRow));
                cell.cellStyle = cellStyle;
             }
@@ -157,10 +148,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       addSection('Personeller', personnelDavetler);
 
       try {
-        sheetObject.setColumnWidth(0, 25.0);
-        sheetObject.setColumnWidth(1, 15.0);
-        sheetObject.setColumnWidth(2, 20.0);
-        sheetObject.setColumnWidth(3, 12.0);
+        sheetObject.setColumnWidth(0, 40.0);
       } catch (_) {}
 
       // 6. Dosyayı Kaydet
