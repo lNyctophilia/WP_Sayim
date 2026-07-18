@@ -421,6 +421,11 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                       tooltip: isTr ? 'İptal Et' : 'Cancel',
                       onPressed: () async {
                         await _davetService.deleteDavet(davet.id);
+                        
+                        // Remove from invitedUserIds
+                        final updatedInvited = List<String>.from(currentSayim.invitedUserIds)..remove(davet.userId);
+                        final updatedSayim = currentSayim.copyWith(invitedUserIds: updatedInvited);
+                        await _sayimService.updateSayim(updatedSayim);
                       },
                     ),
                   ],
@@ -456,6 +461,12 @@ class _SayimDetailPageState extends State<SayimDetailPage>
 
                         if (confirm == true) {
                           await _davetService.deleteDavet(davet.id);
+                          
+                          // Remove from invitedUserIds
+                          final updatedInvited = List<String>.from(currentSayim.invitedUserIds)..remove(davet.userId);
+                          final updatedSayim = currentSayim.copyWith(invitedUserIds: updatedInvited);
+                          await _sayimService.updateSayim(updatedSayim);
+
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -491,6 +502,11 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                       tooltip: isTr ? 'Kaldır' : 'Remove',
                       onPressed: () async {
                         await _davetService.deleteDavet(davet.id);
+                        
+                        // Remove from invitedUserIds
+                        final updatedInvited = List<String>.from(currentSayim.invitedUserIds)..remove(davet.userId);
+                        final updatedSayim = currentSayim.copyWith(invitedUserIds: updatedInvited);
+                        await _sayimService.updateSayim(updatedSayim);
                       },
                     ),
                   ],

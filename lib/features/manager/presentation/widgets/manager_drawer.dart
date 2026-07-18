@@ -177,7 +177,7 @@ class ManagerDrawer extends StatelessWidget {
                   ),
                   
                   ListTile(
-                    leading: const Icon(Icons.sim_card_download_rounded, color: AppColors.textSecondary),
+                    leading: const Icon(Icons.table_view_rounded, color: AppColors.textSecondary),
                     title: Text(isTr ? 'Excel Çıktısı Al' : 'Export Excel', style: const TextStyle(color: AppColors.textPrimary)),
                     onTap: () {
                       Navigator.pop(context); // Close drawer
