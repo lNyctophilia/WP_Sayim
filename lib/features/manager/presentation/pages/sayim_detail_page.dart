@@ -430,7 +430,41 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                           color: AppColors.danger, size: 20),
                       tooltip: isTr ? 'Kaldır' : 'Remove',
                       onPressed: () async {
-                        await _davetService.deleteDavet(davet.id);
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            backgroundColor: AppColors.background,
+                            title: Text(isTr ? 'Kişiyi Çıkar' : 'Remove Person', style: const TextStyle(color: AppColors.textPrimary)),
+                            content: Text(
+                              isTr 
+                                ? '$userName isimli personeli bu sayımdan çıkarmak istediğinize emin misiniz? (Kullanıcıya iptal bildirimi gönderilecektir)'
+                                : 'Are you sure you want to remove $userName from this count? (A cancellation notification will be sent to the user)',
+                              style: const TextStyle(color: AppColors.textSecondary),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: Text(isTr ? 'İptal' : 'Cancel', style: const TextStyle(color: AppColors.textHint)),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: Text(isTr ? 'Çıkar' : 'Remove', style: const TextStyle(color: AppColors.danger)),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (confirm == true) {
+                          await _davetService.deleteDavet(davet.id);
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(isTr ? 'Kişi başarıyla çıkarıldı ve bildirim gönderildi.' : 'Person successfully removed and notification sent.'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        }
                       },
                     ),
                   ],

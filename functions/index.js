@@ -245,7 +245,7 @@ exports.sendDavetCancelledNotification = onDocumentDeleted("davetler/{davetId}",
       token: fcmToken,
       notification: {
         title: "Sayım İptali",
-        body: `Kabul ettiğiniz "${sayimName}" sayımı için katılımınız iptal edildi veya sayım silindi.`
+        body: `Kabul ettiğin "${sayimName}" isimli sayım iptal edildi.`
       },
       android: {
         priority: "high",
