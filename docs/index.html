@@ -39,81 +39,48 @@
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAIOLuT4e4tAlwXYhKhwxB7qjPojrelZxs"></script>
 </head>
 <body>
-  <!-- PWA Force Auto-Update Script (Bulletproof Version Check) -->
   <script>
-    async function checkAppVersionAndRefresh() {
-      try {
-        // version.json dosyasını cache'e takılmadan çekmek için t parametresi ve headers ekliyoruz
-        const response = await fetch('/WP_Sayim/version.json?t=' + new Date().getTime(), {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-          }
-        });
-        const data = await response.json();
-        const latestVersion = data.version;
-        const currentVersion = localStorage.getItem('app_version');
-
-        if (currentVersion && currentVersion !== latestVersion) {
-          console.log('[PWA Update] Yeni versiyon bulundu! Caches temizleniyor...', latestVersion);
-          
-          // 1. Service Worker'ı devre dışı bırak
-          if ('serviceWorker' in navigator) {
-            const registrations = await navigator.serviceWorker.getRegistrations();
-            for (let registration of registrations) {
-              if (registration.active && registration.active.scriptURL.includes('flutter_service_worker')) {
-                await registration.unregister();
-              }
-            }
-          }
-          
-          // 2. Tüm PWA Çerezlerini ve Önbelleği Sil
-          if (window.caches) {
+    // PWA Otomatik Güncelleme ve Hard Cache Temizleme
+    if ('serviceWorker' in navigator) {
+      async function clearCacheAndReload() {
+        console.log('[PWA Update] Yeni versiyon bulundu! Caches temizleniyor...');
+        if (window.caches) {
+          try {
             const names = await caches.keys();
             await Promise.all(names.map(name => caches.delete(name)));
+            console.log('[PWA Update] Tüm önbellek (cache) başarıyla silindi.');
+          } catch (e) {
+            console.error('[PWA Update] Önbellek silinirken hata oluştu:', e);
           }
-          
-          // 3. HTTP Disk Cache'i kırmak için kritik dosyaları zorla ağdan çek
-          const filesToBust = [
-            '/WP_Sayim/index.html',
-            '/WP_Sayim/flutter_service_worker.js',
-            '/WP_Sayim/main.dart.js',
-            '/WP_Sayim/flutter_bootstrap.js'
-          ];
-          for (let file of filesToBust) {
-            try {
-              await fetch(file, { cache: 'reload' });
-            } catch(e) {
-              console.log('Cache bust failed for', file, e);
-            }
-          }
-          
-          // 4. Yeni sürümü kaydet
-          localStorage.setItem('app_version', latestVersion);
-          
-          // 5. Kullanıcıya haber ver ve sayfayı URL parametresiyle yenile
-          alert('Yeni bir güncelleme bulundu! Uygulama yenileniyor...');
-          window.location.href = window.location.pathname + '?v=' + new Date().getTime();
-        } else if (!currentVersion) {
-          // İlk açılışta versiyonu kaydet
-          localStorage.setItem('app_version', latestVersion);
         }
-      } catch (err) {
-        console.log('Version check failed:', err);
+        
+        // Hard reload için URL'ye timestamp ekleyerek sayfayı yenile
+        alert('Uygulama güncellendi. Yeni sürüm yükleniyor...');
+        window.location.href = window.location.pathname + '?v=' + new Date().getTime();
       }
-    }
 
-    // Uygulama yüklendiğinde versiyonu kontrol et
-    window.addEventListener('load', checkAppVersionAndRefresh);
-    
-    // Uygulama arka plandan öne geldiğinde de versiyonu kontrol et
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        checkAppVersionAndRefresh();
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          clearCacheAndReload();
+        }
+      });
+      
+      // Uygulama her açıldığında ve görünür olduğunda güncellemeleri kontrol et
+      function checkForUpdates() {
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.update().catch((err) => console.log('SW Update error:', err));
+        });
       }
-    });
+
+      window.addEventListener('load', checkForUpdates);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          checkForUpdates();
+        }
+      });
+    }
   </script>
 
   <!-- Service Worker Interceptor for FCM on GitHub Pages -->
@@ -138,26 +105,6 @@
         return originalRegister.call(navigator.serviceWorker, url, options);
       };
     }
-
-    // PWA Otomatik Güncelleme (Cache Temizleme Derdine Son!)
-    // Yeni bir sürüm yayınlandığında Service Worker güncellenir ve sayfayı otomatik yeniler.
-    if ('serviceWorker' in navigator) {
-      let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-          refreshing = true;
-          console.log('[PWA] Yeni sürüm algılandı, sayfa otomatik güncelleniyor...');
-          window.location.reload();
-        }
-      });
-      
-      // Uygulama her açıldığında arka planda yeni sürüm var mı diye kontrol et
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.ready.then((registration) => {
-          registration.update();
-        });
-      });
-    }
   </script>
 
   <!--
@@ -168,6 +115,12 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
-  <script src="flutter_bootstrap.js" async></script>
+  <script>
+    // flutter_bootstrap.js dosyasının önbelleğe alınmasını engellemek için cache buster ekleniyor.
+    const bootstrapScript = document.createElement('script');
+    bootstrapScript.src = "flutter_bootstrap.js?v=" + new Date().getTime();
+    bootstrapScript.async = true;
+    document.body.appendChild(bootstrapScript);
+  </script>
 </body>
 </html>
