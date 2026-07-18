@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/models/app_user.dart';
 import 'register_page.dart';
+
+class LockoutException implements Exception {
+  final String message;
+  LockoutException(this.message);
+  @override
+  String toString() => message;
+}
 
 /// Login ekranı — kullanıcı adı + şifre ile giriş
 class LoginPage extends StatefulWidget {
@@ -66,6 +74,45 @@ class _LoginPageState extends State<LoginPage>
     super.dispose();
   }
 
+  Future<void> _checkLockoutStatus(String username) async {
+    final prefs = await SharedPreferences.getInstance();
+    final lockedUntilStr = prefs.getString('login_locked_until_$username');
+    if (lockedUntilStr != null) {
+      final lockedUntil = DateTime.parse(lockedUntilStr);
+      if (DateTime.now().isBefore(lockedUntil)) {
+        final diff = lockedUntil.difference(DateTime.now());
+        final minutes = diff.inMinutes > 0 ? diff.inMinutes : 1;
+        throw LockoutException('Hesap kilitli. Lütfen $minutes dakika sonra tekrar deneyin.');
+      }
+    }
+  }
+
+  Future<void> _handleFailedAttempt(String username) async {
+    final prefs = await SharedPreferences.getInstance();
+    int attempts = prefs.getInt('login_failed_attempts_$username') ?? 0;
+    attempts++;
+    await prefs.setInt('login_failed_attempts_$username', attempts);
+
+    if (attempts >= 3) {
+      int minutesToLock = 15;
+      if (attempts > 3) {
+        minutesToLock = 15 * (1 << (attempts - 3)); // 15, 30, 60, 120...
+      }
+      if (minutesToLock > 1440) minutesToLock = 1440; // max 24 hours
+
+      final lockedUntil = DateTime.now().add(Duration(minutes: minutesToLock));
+      await prefs.setString('login_locked_until_$username', lockedUntil.toIso8601String());
+      
+      throw LockoutException('Çok fazla hatalı giriş. Hesap $minutesToLock dakika kilitlendi.');
+    }
+  }
+
+  Future<void> _resetAttempts(String username) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('login_failed_attempts_$username');
+    await prefs.remove('login_locked_until_$username');
+  }
+
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -74,20 +121,42 @@ class _LoginPageState extends State<LoginPage>
       _errorMessage = null;
     });
 
+    final username = _usernameController.text.trim().toLowerCase();
+
     try {
+      await _checkLockoutStatus(username);
+
       final user = await _authService.login(
-        _usernameController.text.trim(),
+        username,
         _passwordController.text,
       );
 
       if (user != null && mounted) {
+        await _resetAttempts(username);
         widget.onLoginSuccess(user.id);
       } else if (mounted) {
+        await _handleFailedAttempt(username);
         setState(() {
           _errorMessage = widget.lang.tr('login_failed');
         });
       }
+    } on LockoutException catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.message;
+        });
+      }
     } on FirebaseAuthException catch (e) {
+      try { await _handleFailedAttempt(username); } on LockoutException catch (le) {
+        if (mounted) {
+          setState(() {
+            _errorMessage = le.message;
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+      
       if (mounted) {
         String message;
         switch (e.code) {

@@ -19,8 +19,8 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      // Anyone logged in can read users
-      allow read: if request.auth != null;
+      // Staff can read their own profile, owner and manager can read all
+      allow read: if isOwner() || isManager() || request.auth.uid == userId;
       // Owner and Manager can do full update/create/delete
       // A regular user can only update their own fcmToken
       allow delete: if isOwner() || isManager();

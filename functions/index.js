@@ -307,6 +307,14 @@ exports.syncUserWithAuth = onDocumentUpdated("users/{userId}", async (event) => 
     try {
       await admin.auth().updateUser(event.params.userId, updatePayload);
       console.log(`Successfully synced auth for user: ${event.params.userId}`);
+      
+      // Şifre güncellendiyse, Firestore'dan güvenlik için sil
+      if (updatePayload.password) {
+        await admin.firestore().collection("users").doc(event.params.userId).update({
+          password: admin.firestore.FieldValue.delete()
+        });
+        console.log(`Deleted plaintext password from Firestore for user: ${event.params.userId}`);
+      }
     } catch (error) {
       console.error(`Error syncing auth for user: ${event.params.userId}`, error);
     }

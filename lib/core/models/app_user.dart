@@ -83,7 +83,6 @@ class AppUser {
     return {
       'username': username,
       'fullName': fullName,
-      if (password != null) 'password': password,
       'roles': roles.map((r) => r.name).toList(),
       'defaultWage': defaultWage,
       'createdBy': createdBy,
