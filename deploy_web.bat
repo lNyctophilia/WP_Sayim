@@ -11,7 +11,7 @@ set TIMESTAMP=%TIMESTAMP: =_%
 
 REM 1. Flutter Web Build
 echo [1/4] Flutter Web build aliniyor...
-call flutter build web --release --base-href "/WP_Sayim/" --dart-define="BUILD_VERSION=%TIMESTAMP%"
+call flutter build web --release --wasm --base-href "/WP_Sayim/" --dart-define="BUILD_VERSION=%TIMESTAMP%"
 if errorlevel 1 (
     echo HATA: Flutter web build basarisiz!
     pause
