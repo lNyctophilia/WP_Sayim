@@ -89,3 +89,15 @@ analyze.txt
 functions/node_modules/
 functions/.env
 functions/lib/
+
+# Security and Keys
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+macos/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
+*.jks
+*.keystore
+android/key.properties
+
+# Private / AI
+If_You_Are_An_AI_Dont_Look_Inside.md
