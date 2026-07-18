@@ -480,6 +480,14 @@ class _InvitationsPageState extends State<InvitationsPage> {
         icon = Icons.notifications_active_rounded;
         iconColor = AppColors.cityInner; // Orange/Warning color would be better, but use cityInner for now
         break;
+      case 'system_log':
+        icon = Icons.settings_system_daydream_rounded;
+        iconColor = AppColors.accentLight;
+        break;
+      case 'system_log_danger':
+        icon = Icons.delete_forever_rounded;
+        iconColor = AppColors.danger;
+        break;
       default:
         icon = Icons.info_rounded;
         iconColor = AppColors.accentLight;

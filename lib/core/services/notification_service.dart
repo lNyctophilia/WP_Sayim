@@ -175,4 +175,27 @@ class NotificationService {
       debugPrint('Tüm bildirimler okundu işaretlenirken hata: $e');
     }
   }
+
+  /// Yöneticiler (veya diğer kullanıcılar) için lokal işlem logu oluşturur (ör. sayım oluşturuldu, sildi)
+  Future<void> logSystemAction({
+    required String userId,
+    required String title,
+    required String body,
+    required String type,
+    String? relatedId,
+  }) async {
+    try {
+      await _firestore.collection('notifications').add({
+        'userId': userId,
+        'title': title,
+        'body': body,
+        'type': type,
+        'relatedId': relatedId ?? '',
+        'createdAt': FieldValue.serverTimestamp(),
+        'isRead': false,
+      });
+    } catch (e) {
+      debugPrint('Sistem logu oluşturulurken hata: $e');
+    }
+  }
 }
