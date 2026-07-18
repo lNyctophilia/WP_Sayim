@@ -156,6 +156,23 @@ class ManagerDrawer extends StatelessWidget {
                   },
                 ),
                 
+                ListTile(
+                  leading: const Icon(Icons.table_view_rounded, color: AppColors.textSecondary),
+                  title: Text(isTr ? 'Excel Çıktısı Al' : 'Export Excel', style: const TextStyle(color: AppColors.textPrimary)),
+                  subtitle: Text(isTr ? 'Sayım Raporları' : 'Count Reports', style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
+                  onTap: () {
+                    Navigator.pop(context); // Close drawer
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ExportSayimPage(
+                          lang: lang,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                
                 if (currentUser.isOwner) ...[
                   const Divider(color: AppColors.divider),
                   _buildSectionTitle(isTr ? 'Sistem Araçları' : 'System Tools'),
@@ -189,22 +206,6 @@ class ManagerDrawer extends StatelessWidget {
                             lang: lang,
                             currentUser: currentUser,
                             storage: storage,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  
-                  ListTile(
-                    leading: const Icon(Icons.table_view_rounded, color: AppColors.textSecondary),
-                    title: Text(isTr ? 'Excel Çıktısı Al' : 'Export Excel', style: const TextStyle(color: AppColors.textPrimary)),
-                    onTap: () {
-                      Navigator.pop(context); // Close drawer
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ExportSayimPage(
-                            lang: lang,
                           ),
                         ),
                       );

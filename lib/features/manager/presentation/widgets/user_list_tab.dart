@@ -302,7 +302,7 @@ class _UserListTabState extends State<UserListTab>
   Widget _buildUserCard(AppUser user) {
     final isTr = widget.lang.currentLang == 'tr';
     final isManagerList = widget.targetRole == UserRole.manager;
-    final canEdit = !isManagerList || widget.currentUser.isOwner;
+    final canEdit = widget.currentUser.isOwner;
     final roleLabel = user.isOwner
         ? (isTr ? 'Sahip' : 'Owner')
         : user.isManager
