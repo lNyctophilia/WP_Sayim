@@ -263,6 +263,19 @@ class AuthService {
       'isDeleted': true,
       'username': '${username}_deleted_${DateTime.now().millisecondsSinceEpoch}',
     });
+
+    // İşlem logu oluştur
+    final currentUserId = _auth.currentUser?.uid;
+    if (currentUserId != null) {
+      final NotificationService notificationService = NotificationService();
+      await notificationService.logSystemAction(
+        userId: currentUserId,
+        title: 'Personel Silindi',
+        body: '${data?['fullName'] ?? 'Bilinmeyen Kullanıcı'} sistemden silindi.',
+        type: 'system_log_danger',
+        relatedId: uid,
+      );
+    }
   }
 
   /// Admin/Owner yetkisiyle kullanıcı bilgilerini güncelle

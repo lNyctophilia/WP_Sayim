@@ -79,6 +79,15 @@ exports.sendDavetNotification = onDocumentCreated("davetler/{davetId}", async (e
     };
 
     await admin.messaging().send(message);
+    await admin.firestore().collection("notifications").add({
+      userId: staffId,
+      title: message.notification.title,
+      body: message.notification.body,
+      type: "davet",
+      relatedId: event.params.davetId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      isRead: false
+    });
   } catch (error) {
     console.error("Error sending notification:", error);
   }
@@ -157,6 +166,15 @@ exports.sendDavetResponseNotification = onDocumentUpdated("davetler/{davetId}", 
     };
 
     await admin.messaging().send(message);
+    await admin.firestore().collection("notifications").add({
+      userId: creatorId,
+      title: message.notification.title,
+      body: message.notification.body,
+      type: "davet_response",
+      relatedId: event.params.davetId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      isRead: false
+    });
   } catch (error) {
     console.error("Error sending response notification:", error);
   }
@@ -222,6 +240,15 @@ exports.sendDavetReminderNotification = onDocumentUpdated("davetler/{davetId}", 
     };
 
     await admin.messaging().send(message);
+    await admin.firestore().collection("notifications").add({
+      userId: staffId,
+      title: message.notification.title,
+      body: message.notification.body,
+      type: "davet_reminder",
+      relatedId: event.params.davetId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      isRead: false
+    });
   } catch (error) {
     console.error("Error sending reminder notification:", error);
   }
@@ -281,6 +308,15 @@ exports.sendDavetCancelledNotification = onDocumentDeleted("davetler/{davetId}",
     };
 
     await admin.messaging().send(message);
+    await admin.firestore().collection("notifications").add({
+      userId: staffId,
+      title: message.notification.title,
+      body: message.notification.body,
+      type: "davet_cancelled",
+      relatedId: sayimId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      isRead: false
+    });
   } catch (error) {
     console.error("Error sending cancellation notification:", error);
   }
@@ -443,6 +479,15 @@ exports.sayimAutoReminder = onSchedule("every 60 minutes", async (event) => {
 
           try {
             await admin.messaging().send(message);
+            await admin.firestore().collection("notifications").add({
+              userId: davet.userId,
+              title: message.notification.title,
+              body: message.notification.body,
+              type: "sayim_auto_reminder",
+              relatedId: davetDoc.id,
+              createdAt: admin.firestore.FieldValue.serverTimestamp(),
+              isRead: false
+            });
             // Bildirimin atıldığını kaydet ki bir sonraki döngüde tekrar atmasın
             await davetDoc.ref.update({ autoReminderSent: true });
           } catch (e) {
@@ -500,6 +545,15 @@ exports.sendApprovalNotification = onDocumentUpdated("users/{userId}", async (ev
 
     try {
       await admin.messaging().send(message);
+      await admin.firestore().collection("notifications").add({
+        userId: event.params.userId,
+        title: message.notification.title,
+        body: message.notification.body,
+        type: "approval",
+        relatedId: event.params.userId,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        isRead: false
+      });
       console.log(`Approval notification sent to user: ${event.params.userId}`);
     } catch (error) {
       console.error(`Error sending approval notification to user: ${event.params.userId}`, error);
@@ -632,4 +686,42 @@ exports.cleanupOldSayimlar = onSchedule({ schedule: "0 4 1,15 * *", timeZone: "E
   }
   
   console.log(`cleanupOldSayimlar finished. Deleted ${totalDeletedSayim} sayimlar (older than 90 days) and their related records.`);
+});
+
+// 10. 30 Günden Eski Bildirimleri Temizle (Ayın 1'inde ve 15'inde gece 04:00)
+exports.cleanupOldNotifications = onSchedule({ schedule: "0 4 1,15 * *", timeZone: "Europe/Istanbul" }, async (event) => {
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+  
+  const notifRef = admin.firestore().collection('notifications');
+  
+  const snapshot = await notifRef
+    .where("createdAt", "<", admin.firestore.Timestamp.fromDate(thirtyDaysAgo))
+    .get();
+
+  if (snapshot.empty) {
+    console.log("No old notifications found to delete.");
+    return;
+  }
+
+  let batch = admin.firestore().batch();
+  let count = 0;
+  let totalDeleted = 0;
+
+  for (const doc of snapshot.docs) {
+    batch.delete(doc.ref);
+    count++;
+    totalDeleted++;
+
+    if (count >= 400) {
+      await batch.commit();
+      batch = admin.firestore().batch();
+      count = 0;
+    }
+  }
+
+  if (count > 0) {
+    await batch.commit();
+  }
+  console.log(`cleanupOldNotifications finished. Deleted ${totalDeleted} notifications older than 30 days.`);
 });

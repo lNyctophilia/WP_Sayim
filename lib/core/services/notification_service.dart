@@ -2,6 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import '../models/app_notification.dart';
 
 class NotificationService {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -125,6 +126,76 @@ class NotificationService {
       // await _messaging.deleteToken();
     } catch (e) {
       debugPrint('FCM Token silinirken hata: $e');
+    }
+  }
+
+  /// Kullanıcıya ait genel bildirimleri (davetler dışındaki push notification verilerini) Firestore'dan çeker
+  Stream<List<AppNotification>> getNotificationsByUser(String userId) {
+    return _firestore
+        .collection('notifications')
+        .where('userId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => AppNotification.fromFirestore(doc))
+          .toList();
+    });
+  }
+
+  /// Bir bildirimi okundu olarak işaretler
+  Future<void> markAsRead(String notificationId) async {
+    try {
+      await _firestore.collection('notifications').doc(notificationId).update({
+        'isRead': true,
+      });
+    } catch (e) {
+      debugPrint('Bildirim okundu işaretlenirken hata: $e');
+    }
+  }
+
+  /// Kullanıcının tüm bildirimlerini okundu olarak işaretler
+  Future<void> markAllAsRead(String userId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('notifications')
+          .where('userId', isEqualTo: userId)
+          .where('isRead', isEqualTo: false)
+          .get();
+
+      final batch = _firestore.batch();
+      for (final doc in snapshot.docs) {
+        batch.update(doc.reference, {'isRead': true});
+      }
+      
+      if (snapshot.docs.isNotEmpty) {
+        await batch.commit();
+      }
+    } catch (e) {
+      debugPrint('Tüm bildirimler okundu işaretlenirken hata: $e');
+    }
+  }
+
+  /// Yöneticiler (veya diğer kullanıcılar) için lokal işlem logu oluşturur (ör. sayım oluşturuldu, sildi)
+  Future<void> logSystemAction({
+    required String userId,
+    required String title,
+    required String body,
+    required String type,
+    String? relatedId,
+  }) async {
+    try {
+      await _firestore.collection('notifications').add({
+        'userId': userId,
+        'title': title,
+        'body': body,
+        'type': type,
+        'relatedId': relatedId ?? '',
+        'createdAt': FieldValue.serverTimestamp(),
+        'isRead': false,
+      });
+    } catch (e) {
+      debugPrint('Sistem logu oluşturulurken hata: $e');
     }
   }
 }
