@@ -222,7 +222,7 @@ exports.sendDavetReminderNotification = onDocumentUpdated("davetler/{davetId}", 
 
 // 3. Davet iptal edildiğinde (silindiğinde) personeli bilgilendir
 exports.sendDavetCancelledNotification = onDocumentDeleted("davetler/{davetId}", async (event) => {
-  const davetData = event.data.before.data();
+  const davetData = event.data.data();
   if (!davetData) return;
 
   // Sadece kabul etmiş personellere iptal bildirimi gönder
