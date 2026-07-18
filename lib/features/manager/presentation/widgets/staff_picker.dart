@@ -245,9 +245,7 @@ class _StaffPickerState extends State<StaffPicker> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            widget.isTr
-                ? 'Seçilebilecek personel bulunmuyor.'
-                : 'No personnel available.',
+            AppStrings.get('no_personnel_available', widget.isTr ? 'tr' : 'en'),
             style: const TextStyle(color: AppColors.textHint),
           ),
         ),
@@ -273,9 +271,7 @@ class _StaffPickerState extends State<StaffPicker> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  widget.isTr 
-                    ? 'Personel: ${_configs.where((c) => c.isSelected && c.role == DavetRole.staff).length + widget.alreadySelectedPersonel}/${widget.targetPersonel} | Yönetici: ${_configs.where((c) => c.isSelected && c.role == DavetRole.manager).length + widget.alreadySelectedYonetici}/${widget.targetYonetici}'
-                    : 'Staff: ${_configs.where((c) => c.isSelected && c.role == DavetRole.staff).length + widget.alreadySelectedPersonel}/${widget.targetPersonel} | Manager: ${_configs.where((c) => c.isSelected && c.role == DavetRole.manager).length + widget.alreadySelectedYonetici}/${widget.targetYonetici}',
+                  AppStrings.getFormat('staff_selection_count', widget.isTr ? 'tr' : 'en', [_configs.where((c) => c.isSelected && c.role == DavetRole.staff).length + widget.alreadySelectedPersonel, widget.targetPersonel, _configs.where((c) => c.isSelected && c.role == DavetRole.manager).length + widget.alreadySelectedYonetici, widget.targetYonetici]),
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,

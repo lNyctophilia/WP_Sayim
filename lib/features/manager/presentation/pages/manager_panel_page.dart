@@ -1,3 +1,4 @@
+import 'package:daytrack/core/constants/app_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -103,16 +104,16 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
 
     final tabs = <Widget>[
       Tab(
+        icon: const Icon(Icons.inventory_2_rounded, size: 20),
+        text: AppStrings.get('counts', isTr ? 'tr' : 'en'),
+      ),
+      Tab(
         icon: const Icon(Icons.supervisor_account_rounded, size: 20),
-        text: isTr ? 'Yöneticiler' : 'Managers',
+        text: AppStrings.get('managers', isTr ? 'tr' : 'en'),
       ),
       Tab(
         icon: const Icon(Icons.people_rounded, size: 20),
-        text: isTr ? 'Personel' : 'Staff',
-      ),
-      Tab(
-        icon: const Icon(Icons.inventory_2_rounded, size: 20),
-        text: isTr ? 'Sayımlar' : 'Counts',
+        text: AppStrings.get('staff', isTr ? 'tr' : 'en'),
       ),
     ];
 
@@ -147,6 +148,10 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
 
   Widget _buildTabContent() {
     final views = <Widget>[
+      SayimListTab(
+        currentUser: widget.currentUser,
+        lang: widget.lang,
+      ),
       UserListTab(
         currentUser: widget.currentUser,
         lang: widget.lang,
@@ -156,10 +161,6 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
         currentUser: widget.currentUser,
         lang: widget.lang,
         targetRole: UserRole.staff,
-      ),
-      SayimListTab(
-        currentUser: widget.currentUser,
-        lang: widget.lang,
       ),
     ];
 

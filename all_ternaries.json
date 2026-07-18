@@ -1,0 +1,72 @@
+[
+  {
+    "file": "./lib/core/constants/app_strings.dart",
+    "before": "ing.'},\n    'no_account': {'tr': 'Hesabınız yok mu",
+    "original": "?', 'en': 'Don\\'",
+    "tr": ", 'en",
+    "en": "Don\\"
+  },
+  {
+    "file": "./lib/core/constants/app_strings.dart",
+    "before": "ruyu reddetmek ve silmek istediğinize emin misiniz",
+    "original": "?', 'en': 'Are you sure you want to reject and delete this application?'",
+    "tr": ", 'en",
+    "en": "Are you sure you want to reject and delete this application?"
+  },
+  {
+    "file": "./lib/core/constants/app_strings.dart",
+    "before": ": 'Bu kullanıcıyı silmek istediğinize emin misiniz",
+    "original": "?', 'en': 'Are you sure you want to delete this user?'",
+    "tr": ", 'en",
+    "en": "Are you sure you want to delete this user?"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "before": "isTr",
+    "original": "? 'Eksik Kişi! ${missingPersonel > 0 ? '$missingPersonel Personel ' : ''",
+    "tr": "Eksik Kişi! ${missingPersonel > 0 ? '$missingPersonel Personel ",
+    "en": ""
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "before": "ingPersonel Personel ' : ''}${missingYonetici > 0",
+    "original": "? '$missingYonetici Yönetici' : ''",
+    "tr": "$missingYonetici Yönetici",
+    "en": ""
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "before": ": 'Missing People! ${missingPersonel > 0",
+    "original": "? '$missingPersonel Staff ' : ''",
+    "tr": "$missingPersonel Staff ",
+    "en": ""
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "before": "issingPersonel Staff ' : ''}${missingYonetici > 0",
+    "original": "? '$missingYonetici Manager' : ''",
+    "tr": "$missingYonetici Manager",
+    "en": ""
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "before": "userSnapshot.data?.isDeleted == true",
+    "original": "? '$userName (${AppStrings.get('deleted', isTr ? 'tr' : 'en'",
+    "tr": "$userName (${AppStrings.get('deleted', isTr ? 'tr",
+    "en": "en"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "before": "vet.ucret.toStringAsFixed(0)}${grupAdi.isNotEmpty",
+    "original": "? ' • Saat: $grupAdi' : ''",
+    "tr": " • Saat: $grupAdi",
+    "en": ""
+  },
+  {
+    "file": "./lib/features/manager/presentation/widgets/grup_selector.dart",
+    "before": "String defaultSaat = _gruplar.length == 1",
+    "original": "? '21:30' : '12:00'",
+    "tr": "21:30",
+    "en": "12:00"
+  }
+]

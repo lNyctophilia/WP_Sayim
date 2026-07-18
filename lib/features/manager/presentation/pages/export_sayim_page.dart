@@ -1,3 +1,4 @@
+import 'package:daytrack/core/constants/app_strings.dart';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_saver/file_saver.dart';
@@ -216,7 +217,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
               const Icon(Icons.table_view_rounded, color: AppColors.accentLight),
               const SizedBox(width: 8),
               Text(
-                isTr ? 'Excel Çıktısı Al' : 'Export Excel',
+                AppStrings.get('export_excel', isTr ? 'tr' : 'en'),
                 style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 18,
@@ -233,7 +234,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
             Text(
-              isTr ? 'Lütfen Excel çıktısı almak istediğiniz sayımı seçin.' : 'Please select a count to export to Excel.',
+              AppStrings.get('please_select_a_count_to_export_to_excel', isTr ? 'tr' : 'en'),
               style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
             ),
             const SizedBox(height: 16),
@@ -245,7 +246,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                 }
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return Text(
-                    isTr ? 'Henüz hiç sayım yok.' : 'No counts found.',
+                    AppStrings.get('no_counts_found', isTr ? 'tr' : 'en'),
                     style: const TextStyle(color: AppColors.textSecondary),
                   );
                 }
@@ -265,7 +266,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                   dropdownColor: AppColors.card,
                   initialValue: _selectedSayim,
                   hint: Text(
-                    isTr ? 'Sayım Seçin' : 'Select Count',
+                    AppStrings.get('select_count', isTr ? 'tr' : 'en'),
                     style: const TextStyle(color: AppColors.textHint),
                   ),
                   items: sayimlar.map((sayim) {
@@ -299,7 +300,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isTr ? 'Sayım Özeti' : 'Count Summary',
+                      AppStrings.get('count_summary', isTr ? 'tr' : 'en'),
                       style: const TextStyle(
                         color: AppColors.accentLight,
                         fontWeight: FontWeight.bold,
@@ -311,7 +312,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                     const SizedBox(height: 8),
                     _buildSummaryRow(Icons.calendar_month_rounded, DateFormat('dd.MM.yyyy').format(_selectedSayim!.date)),
                     const SizedBox(height: 8),
-                    _buildSummaryRow(Icons.groups_rounded, '${_selectedSayim!.invitedUserIds.length} ${isTr ? "Kişi Davet Edildi" : "Invited"}'),
+                    _buildSummaryRow(Icons.groups_rounded, '${_selectedSayim!.invitedUserIds.length} ${AppStrings.get('invited', isTr ? 'tr' : 'en')}'),
                   ],
                 ),
               ),
@@ -335,7 +336,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                       )
                     : const Icon(Icons.download_rounded),
                 label: Text(
-                  isTr ? 'Excel İndir' : 'Download Excel',
+                  AppStrings.get('download_excel', isTr ? 'tr' : 'en'),
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),

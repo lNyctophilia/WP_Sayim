@@ -1,3 +1,4 @@
+import 'package:daytrack/core/constants/app_strings.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
@@ -74,7 +75,7 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(isTr ? 'Veriler yüklenirken hata oluştu' : 'Error loading data')),
+          SnackBar(content: Text(AppStrings.get('error_loading_data', isTr ? 'tr' : 'en'))),
         );
         setState(() => _isLoading = false);
       }
@@ -125,13 +126,13 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(isTr ? 'Davetler gönderildi!' : 'Invites sent!')),
+          SnackBar(content: Text(AppStrings.get('invites_sent', isTr ? 'tr' : 'en'))),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(isTr ? 'Hata oluştu' : 'An error occurred')),
+          SnackBar(content: Text(AppStrings.get('an_error_occurred', isTr ? 'tr' : 'en'))),
         );
         setState(() => _isSaving = false);
       }
@@ -151,7 +152,7 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          isTr ? 'Kişi Ekle' : 'Add Person',
+          AppStrings.get('add_person', isTr ? 'tr' : 'en'),
           style: const TextStyle(
             color: AppColors.textPrimary,
             fontSize: 16,
@@ -212,9 +213,7 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
                           child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                         )
                       : Text(
-                          isTr
-                              ? 'Davet Gönder (${_selectedConfigs.length} Kişi)'
-                              : 'Send Invites (${_selectedConfigs.length} People)',
+                          AppStrings.getFormat('send_invites_count', isTr ? 'tr' : 'en', [_selectedConfigs.length]),
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                 ),

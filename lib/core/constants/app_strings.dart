@@ -1,3 +1,4 @@
+import 'package:daytrack/core/constants/app_strings.dart';
 /// Tüm UI string'leri — Türkçe ve İngilizce
 class AppStrings {
   AppStrings._();
@@ -291,6 +292,30 @@ class AppStrings {
     'username_required': {'tr': 'Kullanıcı adı gerekli', 'en': 'Username is required'},
     'notifications': {'tr': 'Bildirimler', 'en': 'Notifications'},
     'sayim_reminder': {'tr': 'Sayım Hatırlatıcı', 'en': 'Count Reminder'},
+      // Newly extracted\n    'hello': {'tr': 'Merhaba,', 'en': 'Hello,'},\n    'no_entries_for_this_month_yet_let': {'tr': 'Bu ay için henüz kayıt girmedin. Hadi başlayalım!', 'en': 'No entries for this month yet. Let\'},\n    'monthly_work_intensity': {'tr': 'Aylık İş Yoğunluğu', 'en': 'Monthly Work Intensity'},\n    'recent_notes': {'tr': 'Son Notlar', 'en': 'Recent Notes'},\n    'error_loading_data': {'tr': 'Veriler yüklenirken hata oluştu', 'en': 'Error loading data'},\n    'invites_sent': {'tr': 'Davetler gönderildi!', 'en': 'Invites sent!'},\n    'an_error_occurred': {'tr': 'Hata oluştu', 'en': 'An error occurred'},\n    'add_person': {'tr': 'Kişi Ekle', 'en': 'Add Person'},\n    'basic_info': {'tr': 'Temel Bilgiler', 'en': 'Basic Info'},\n    'note_job_location': {'tr': 'Not / İş / Yer', 'en': 'Note / Job / Location'},\n    'cannot_be_empty': {'tr': 'Boş bırakılamaz', 'en': 'Cannot be empty'},\n    'standard_personnel': {'tr': 'Standart Personel', 'en': 'Standard Personnel'},\n    'standard_manager': {'tr': 'Standart Yönetici', 'en': 'Standard Manager'},\n    'city_type': {'tr': 'Şehir İçi/Dışı', 'en': 'City Type'},\n    'in_city': {'tr': 'Şehir İçi', 'en': 'In-City'},\n    'out_of_city': {'tr': 'Şehir Dışı', 'en': 'Out-of-City'},\n    'global_multiplier': {'tr': 'Yevmiye Çarpanı', 'en': 'Global Multiplier'},\n    'save_count': {'tr': 'Sayımı Kaydet', 'en': 'Save Count'},\n    'create_new_count': {'tr': 'Yeni Sayım Oluştur', 'en': 'Create New Count'},\n    'send_invitations': {'tr': 'Davet Gönder', 'en': 'Send Invitations'},\n    'an_error_occurred_during_update': {'tr': 'Güncelleme sırasında bir hata oluştu.', 'en': 'An error occurred during update.'},\n    'select_user': {'tr': 'Kullanıcı Seçin', 'en': 'Select User'},\n    'select_a_person': {'tr': 'Bir kişi seçin', 'en': 'Select a person'},\n    'e_g_john_doe': {'tr': 'Örn: Ahmet Yılmaz', 'en': 'e.g. John Doe'},\n    'required': {'tr': 'Gerekli', 'en': 'Required'},\n    'e_g_05551234567': {'tr': 'Örn: 05551234567', 'en': 'e.g. 05551234567'},\n    'for_service_route': {'tr': 'Servis güzergahı için', 'en': 'For service route'},\n    'set_new_password': {'tr': 'Yeni şifre belirleyin', 'en': 'Set new password'},\n    'role': {'tr': 'Rol', 'en': 'Role'},\n    'staff': {'tr': 'Personel', 'en': 'Staff'},\n    'manager': {'tr': 'Yönetici', 'en': 'Manager'},\n    'owner': {'tr': 'Sahip (Owner)', 'en': 'Owner'},\n    'edit_count': {'tr': 'Sayımı Düzenle', 'en': 'Edit Count'},\n    'please_select_a_count_to_export_to_excel': {'tr': 'Lütfen Excel çıktısı almak istediğiniz sayımı seçin.', 'en': 'Please select a count to export to Excel.'},\n    'select_count': {'tr': 'Sayım Seçin', 'en': 'Select Count'},\n    'count_summary': {'tr': 'Sayım Özeti', 'en': 'Count Summary'},\n    'invited': {'tr': 'Kişi Davet Edildi', 'en': 'Invited'},\n    'download_excel': {'tr': 'Excel İndir', 'en': 'Download Excel'},\n    'counts': {'tr': 'Sayımlar', 'en': 'Counts'},\n    'delete_count': {'tr': 'Sayımı Sil', 'en': 'Delete Count'},\n    'are_you_sure_you_want_to_delete_this_count_and_all_related_invitations_calendar_records_this_action_cannot_be_undone': {'tr': 'Bu sayımı ve bağlantılı tüm davet/takvim kayıtlarını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.', 'en': 'Are you sure you want to delete this count and all related invitations/calendar records? This action cannot be undone.'},\n    'count_deleted_successfully': {'tr': 'Sayım başarıyla silindi.', 'en': 'Count deleted successfully.'},\n    'count_not_found_or_deleted': {'tr': 'Sayım bulunamadı veya silinmiş.', 'en': 'Count not found or deleted.'},\n    'count_details': {'tr': 'Sayım Detayı', 'en': 'Count Details'},\n    'edit': {'tr': 'Düzenle', 'en': 'Edit'},\n    'accepted': {'tr': 'Kabul', 'en': 'Accepted'},\n    'pending': {'tr': 'Bekliyor', 'en': 'Pending'},\n    'declined': {'tr': 'Red', 'en': 'Declined'},\n    'no_one_found': {'tr': 'Kimse bulunamadı', 'en': 'No one found'},\n    'loading': {'tr': 'Yükleniyor...', 'en': 'Loading...'},\n    'deleted': {'tr': 'Silindi', 'en': 'Deleted'},\n    'remind': {'tr': 'Hatırlat', 'en': 'Remind'},\n    'please_wait_5_minutes_before_sending_another_reminder': {'tr': 'Lütfen yeni bir hatırlatma göndermeden önce 5 dakika bekleyin.', 'en': 'Please wait 5 minutes before sending another reminder.'},\n    'reminder_sent': {'tr': 'Hatırlatma gönderildi.', 'en': 'Reminder sent.'},\n    'remove': {'tr': 'Kaldır', 'en': 'Remove'},\n    'remove_person': {'tr': 'Kişiyi Çıkar', 'en': 'Remove Person'},\n    'are_you_sure_you_want_to_remove_username_from_this_count_a_cancellation_notification_will_be_sent_to_the_user': {'tr': '$userName isimli personeli bu sayımdan çıkarmak istediğinize emin misiniz? (Kullanıcıya iptal bildirimi gönderilecektir)', 'en': 'Are you sure you want to remove $userName from this count? (A cancellation notification will be sent to the user)'},\n    'person_successfully_removed_and_notification_sent': {'tr': 'Kişi başarıyla çıkarıldı ve bildirim gönderildi.', 'en': 'Person successfully removed and notification sent.'},\n    're_invite': {'tr': 'Tekrar Davet Et', 'en': 'Re-invite'},\n    'reinvited': {'tr': 'Yeniden davet gönderildi', 'en': 'Reinvited'},\n    'you_can_select_up_to_maxselection_people': {'tr': 'En fazla $_maxSelection kişi seçebilirsiniz!', 'en': 'You can select up to $_maxSelection people!'},\n    'please_add_an_address_or_location_to_your_profile_the_destination_will_be_your_location': {'tr': 'Lütfen kendi profilinize bir adres veya konum ekleyin. Bitiş noktası sizin konumunuz olacaktır.', 'en': 'Please add an address or location to your profile. The destination will be your location.'},\n    'please_select_at_least_one_staff': {'tr': 'Lütfen en az bir personel seçin.', 'en': 'Please select at least one staff.'},\n    'no_selected_staff_with_valid_location': {'tr': 'Geçerli konuma sahip seçili personel yok.', 'en': 'No selected staff with valid location.'},\n    'could_not_open_map_e': {'tr': 'Harita açılamadı: $e', 'en': 'Could not open map: $e'},\n    'shuttle_route_planning': {'tr': 'Servis / Rota Planlama', 'en': 'Shuttle / Route Planning'},\n    'location_saved': {'tr': 'Konum kayıtlı', 'en': 'Location saved'},\n    'no_location_address': {'tr': 'Konum/Adres bilgisi yok!', 'en': 'No location/address!'},\n    'open_route_on_map': {'tr': 'Rotayı Haritada Aç', 'en': 'Open Route on Map'},\n    'no_personnel_available': {'tr': 'Seçilebilecek personel bulunmuyor.', 'en': 'No personnel available.'},\n    'add_time_group_error': {'tr': 'En az bir saat grubu eklemelisiniz.', 'en': 'You must add at least one time group.'},
+    'missing_personnel_title': {'tr': 'Eksik Kişi Seçimi', 'en': 'Missing Personnel'},
+
+    'create': {'tr': 'Oluştur', 'en': 'Create'},
+    'update_btn': {'tr': 'Güncelle', 'en': 'Update'},
+    'past_count_saved': {'tr': 'Geçmiş sayım başarıyla kaydedildi.', 'en': 'Past count saved successfully.'},
+    'count_created_sent': {'tr': 'Sayım başarıyla oluşturuldu ve davetler gönderildi.', 'en': 'Count created successfully and invitations sent.'},
+    'count_updated': {'tr': 'Sayım başarıyla güncellendi.', 'en': 'Count updated successfully.'},
+    'settings_saved': {'tr': 'Ayarlar başarıyla kaydedildi.', 'en': 'Settings saved successfully.'},
+    'error_prefix': {'tr': 'Hata: ', 'en': 'Error: '},
+    'worked_days_msg': {'tr': 'Bu ay {0} gün çalıştın, harika gidiyorsun!', 'en': 'You worked {0} days this month, keep it up!'},
+    'send_invites_count': {'tr': 'Davet Gönder ({0} Kişi)', 'en': 'Send Invites ({0} People)'},
+    'too_many_people_error': {'tr': 'Standart sayıdan fazla kişi seçemezsiniz!\nPersonel: {0}/{1}, Yönetici: {2}/{3}', 'en': 'You cannot select more people than the standard count!\nPersonnel: {0}/{1}, Manager: {2}/{3}'},
+    'not_enough_people_msg': {'tr': 'Sayım için hedeflenen sayıdan az kişi seçtiniz.\nEksik Personel: {0}\nEksik Yönetici: {1}\nYine de oluşturmak istiyor musunuz? (Sonradan kişi ekleyebilirsiniz)', 'en': 'You have selected fewer people than targeted.\nMissing Personnel: {0}\nMissing Manager: {1}\nDo you still want to create it? (You can add people later)'},
+    'not_enough_people_update_msg': {'tr': 'Sayım için hedeflenen sayıdan az kişi seçtiniz.\nEksik Personel: {0}\nEksik Yönetici: {1}\nYine de güncellemek istiyor musunuz? (Sonradan kişi ekleyebilirsiniz)', 'en': 'You have selected fewer people than targeted.\nMissing Personnel: {0}\nMissing Manager: {1}\nDo you still want to update it? (You can add people later)'},
+    'missing_people_prefix': {'tr': 'Eksik Kişi! ', 'en': 'Missing People! '},
+    'missing_staff': {'tr': '{0} Personel ', 'en': '{0} Staff '},
+    'missing_manager': {'tr': '{0} Yönetici', 'en': '{0} Manager'},
+    'shuttle_missing_location': {'tr': 'Şu personellerin konumu yok ve rotaya eklenemedi: {0}', 'en': 'These staff members have no location and were skipped: {0}'},
+
+    'shuttle_selected_count': {'tr': 'Seçilen: {0} / {1}', 'en': 'Selected: {0} / {1}'},
+    'staff_selection_count': {'tr': 'Personel: {0}/{1} | Yönetici: {2}/{3}', 'en': 'Staff: {0}/{1} | Manager: {2}/{3}'},
+    'city_inner_short': {'tr': 'Ş. İçi', 'en': 'In City'},
+    'city_outer_short': {'tr': 'Ş. Dışı', 'en': 'Out of City'},
   };
 
   static const List<String> monthKeys = [
@@ -304,6 +329,14 @@ class AppStrings {
 
   static String get(String key, String lang) {
     return _strings[key]?[lang] ?? key;
+  }
+
+  static String getFormat(String key, String lang, List<dynamic> args) {
+    String str = get(key, lang);
+    for (int i = 0; i < args.length; i++) {
+      str = str.replaceAll('{$i}', args[i].toString());
+    }
+    return str;
   }
 
   static String getMonth(int month, String lang) {

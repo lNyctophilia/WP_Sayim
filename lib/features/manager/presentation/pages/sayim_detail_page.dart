@@ -1,3 +1,4 @@
+import 'package:daytrack/core/constants/app_strings.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
@@ -64,21 +65,19 @@ class _SayimDetailPageState extends State<SayimDetailPage>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.background,
-        title: Text(isTr ? 'Sayımı Sil' : 'Delete Count', style: const TextStyle(color: AppColors.textPrimary)),
+        title: Text(AppStrings.get('delete_count', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.textPrimary)),
         content: Text(
-          isTr 
-            ? 'Bu sayımı ve bağlantılı tüm davet/takvim kayıtlarını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.'
-            : 'Are you sure you want to delete this count and all related invitations/calendar records? This action cannot be undone.',
+          AppStrings.get('are_you_sure_you_want_to_delete_this_count_and_all_related_invitations_calendar_records_this_action_cannot_be_undone', isTr ? 'tr' : 'en'),
           style: const TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(isTr ? 'İptal' : 'Cancel', style: const TextStyle(color: AppColors.textHint)),
+            child: Text(AppStrings.get('cancel', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.textHint)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(isTr ? 'Sil' : 'Delete', style: const TextStyle(color: AppColors.danger)),
+            child: Text(AppStrings.get('delete', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
@@ -92,7 +91,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
       if (mounted) {
         Navigator.pop(context); // loading pop
         Navigator.pop(context); // page pop
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isTr ? 'Sayım başarıyla silindi.' : 'Count deleted successfully.')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppStrings.get('count_deleted_successfully', isTr ? 'tr' : 'en'))));
       }
     }
   }
@@ -123,7 +122,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                 onPressed: () => Navigator.pop(context),
               ),
             ),
-            body: Center(child: Text(isTr ? 'Sayım bulunamadı veya silinmiş.' : 'Count not found or deleted.', style: const TextStyle(color: AppColors.textSecondary))),
+            body: Center(child: Text(AppStrings.get('count_not_found_or_deleted', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.textSecondary))),
           );
         }
 
@@ -139,7 +138,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
             if (snapshot.hasError) {
               return Scaffold(
                 backgroundColor: AppColors.background,
-                body: Center(child: Text(isTr ? 'Hata oluştu' : 'An error occurred')),
+                body: Center(child: Text(AppStrings.get('an_error_occurred', isTr ? 'tr' : 'en'))),
               );
             }
 
@@ -168,7 +167,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              isTr ? 'Sayım Detayı' : 'Count Details',
+              AppStrings.get('count_details', isTr ? 'tr' : 'en'),
               style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 16,
@@ -179,7 +178,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
               if (widget.currentUser.id == currentSayim.createdBy || widget.currentUser.isOwner) ...[
                 IconButton(
                   icon: const Icon(Icons.edit_rounded, color: AppColors.textPrimary, size: 20),
-                  tooltip: isTr ? 'Düzenle' : 'Edit',
+                  tooltip: AppStrings.get('edit', isTr ? 'tr' : 'en'),
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -196,7 +195,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete_rounded, color: AppColors.danger, size: 20),
-                  tooltip: isTr ? 'Sayımı Sil' : 'Delete Count',
+                  tooltip: AppStrings.get('delete_count', isTr ? 'tr' : 'en'),
                   onPressed: _confirmDeleteSayim,
                 ),
               ],
@@ -209,9 +208,9 @@ class _SayimDetailPageState extends State<SayimDetailPage>
               indicatorSize: TabBarIndicatorSize.label,
               labelStyle: const TextStyle(fontWeight: FontWeight.bold),
               tabs: [
-                Tab(text: isTr ? 'Kabul' : 'Accepted'),
-                Tab(text: isTr ? 'Bekliyor' : 'Pending'),
-                Tab(text: isTr ? 'Red' : 'Declined'),
+                Tab(text: AppStrings.get('accepted', isTr ? 'tr' : 'en')),
+                Tab(text: AppStrings.get('pending', isTr ? 'tr' : 'en')),
+                Tab(text: AppStrings.get('declined', isTr ? 'tr' : 'en')),
               ],
             ),
           ),
@@ -233,9 +232,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          isTr
-                              ? 'Eksik Kişi! ${missingPersonel > 0 ? '$missingPersonel Personel ' : ''}${missingYonetici > 0 ? '$missingYonetici Yönetici' : ''} eksik.'
-                              : 'Missing People! ${missingPersonel > 0 ? '$missingPersonel Staff ' : ''}${missingYonetici > 0 ? '$missingYonetici Manager' : ''} missing.',
+                          AppStrings.get('missing_people_prefix', isTr ? 'tr' : 'en') + (missingPersonel > 0 ? AppStrings.getFormat('missing_staff', isTr ? 'tr' : 'en', [missingPersonel]) : '') + (missingYonetici > 0 ? AppStrings.getFormat('missing_manager', isTr ? 'tr' : 'en', [missingYonetici]) : '') + (isTr ? ' eksik.' : ' missing.'),
                           style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.w600, fontSize: 13),
                         ),
                       ),
@@ -271,7 +268,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                   );
                 },
                 icon: const Icon(Icons.person_add_rounded),
-                label: Text(isTr ? 'Kişi Ekle' : 'Add Person'),
+                label: Text(AppStrings.get('add_person', isTr ? 'tr' : 'en')),
               ) 
             : null,
         );
@@ -285,7 +282,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
     if (davetler.isEmpty) {
       return Center(
         child: Text(
-          isTr ? 'Kimse bulunamadı' : 'No one found',
+          AppStrings.get('no_one_found', isTr ? 'tr' : 'en'),
           style: const TextStyle(color: AppColors.textHint),
         ),
       );
@@ -302,7 +299,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
         return FutureBuilder<AppUser?>(
           future: _getUser(davet.userId),
           builder: (context, userSnapshot) {
-            final userName = userSnapshot.data?.fullName ?? (isTr ? 'Yükleniyor...' : 'Loading...');
+            final userName = userSnapshot.data?.fullName ?? (AppStrings.get('loading', isTr ? 'tr' : 'en'));
             final grupAdi = currentSayim.gruplar.firstWhere((g) => g.grupId == davet.grupId, orElse: () => const SayimGrup(grupId: -1, saat: '')).saat;
             
             return Container(
@@ -330,7 +327,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                           children: [
                             Flexible(
                               child: Text(
-                                userSnapshot.data?.isDeleted == true ? '$userName (${isTr ? "Silindi" : "Deleted"})' : userName,
+                                userSnapshot.data?.isDeleted == true ? '$userName (${AppStrings.get('deleted', isTr ? 'tr' : 'en')})' : userName,
                                 style: TextStyle(
                                     color: userSnapshot.data?.isDeleted == true ? AppColors.danger : AppColors.textPrimary,
                                     fontWeight: FontWeight.w600,
@@ -356,8 +353,8 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                                   userSnapshot.data!.isOwner 
                                       ? 'Admin' 
                                       : userSnapshot.data!.isManager 
-                                          ? (isTr ? 'Yönetici' : 'Manager') 
-                                          : (isTr ? 'Personel' : 'Staff'),
+                                          ? (AppStrings.get('manager', isTr ? 'tr' : 'en')) 
+                                          : (AppStrings.get('staff', isTr ? 'tr' : 'en')),
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
@@ -374,7 +371,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${isTr ? 'Ücret' : 'Wage'}: ₺${davet.ucret.toStringAsFixed(0)}${grupAdi.isNotEmpty ? ' • Saat: $grupAdi' : ''}',
+                          '${AppStrings.get('wage', isTr ? 'tr' : 'en')}: ₺${davet.ucret.toStringAsFixed(0)}${grupAdi.isNotEmpty ? ' • Saat: $grupAdi' : ''}',
                           style: const TextStyle(
                               color: AppColors.textSecondary, fontSize: 13),
                         ),
@@ -385,7 +382,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                     IconButton(
                       icon: const Icon(Icons.notifications_active_rounded,
                           color: AppColors.accentLight, size: 20),
-                      tooltip: isTr ? 'Hatırlat' : 'Remind',
+                      tooltip: AppStrings.get('remind', isTr ? 'tr' : 'en'),
                       onPressed: () async {
                         // Cooldown: 5 dakika dolmadan tekrar hatırlatma atılmasını engelle
                         if (davet.lastReminderAt != null) {
@@ -394,7 +391,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(isTr ? 'Lütfen yeni bir hatırlatma göndermeden önce 5 dakika bekleyin.' : 'Please wait 5 minutes before sending another reminder.'),
+                                  content: Text(AppStrings.get('please_wait_5_minutes_before_sending_another_reminder', isTr ? 'tr' : 'en')),
                                   backgroundColor: AppColors.danger,
                                   behavior: SnackBarBehavior.floating,
                                 ),
@@ -408,7 +405,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(isTr ? 'Hatırlatma gönderildi.' : 'Reminder sent.'),
+                              content: Text(AppStrings.get('reminder_sent', isTr ? 'tr' : 'en')),
                               behavior: SnackBarBehavior.floating,
                             ),
                           );
@@ -418,7 +415,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                     IconButton(
                       icon: const Icon(Icons.person_remove_rounded,
                           color: AppColors.danger, size: 20),
-                      tooltip: isTr ? 'İptal Et' : 'Cancel',
+                      tooltip: AppStrings.get('cancel', isTr ? 'tr' : 'en'),
                       onPressed: () async {
                         await _davetService.deleteDavet(davet.id);
                         
@@ -433,27 +430,25 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                     IconButton(
                       icon: const Icon(Icons.person_remove_rounded,
                           color: AppColors.danger, size: 20),
-                      tooltip: isTr ? 'Kaldır' : 'Remove',
+                      tooltip: AppStrings.get('remove', isTr ? 'tr' : 'en'),
                       onPressed: () async {
                         final confirm = await showDialog<bool>(
                           context: context,
                           builder: (context) => AlertDialog(
                             backgroundColor: AppColors.background,
-                            title: Text(isTr ? 'Kişiyi Çıkar' : 'Remove Person', style: const TextStyle(color: AppColors.textPrimary)),
+                            title: Text(AppStrings.get('remove_person', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.textPrimary)),
                             content: Text(
-                              isTr 
-                                ? '$userName isimli personeli bu sayımdan çıkarmak istediğinize emin misiniz? (Kullanıcıya iptal bildirimi gönderilecektir)'
-                                : 'Are you sure you want to remove $userName from this count? (A cancellation notification will be sent to the user)',
+                              AppStrings.get('are_you_sure_you_want_to_remove_username_from_this_count_a_cancellation_notification_will_be_sent_to_the_user', isTr ? 'tr' : 'en'),
                               style: const TextStyle(color: AppColors.textSecondary),
                             ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context, false),
-                                child: Text(isTr ? 'İptal' : 'Cancel', style: const TextStyle(color: AppColors.textHint)),
+                                child: Text(AppStrings.get('cancel', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.textHint)),
                               ),
                               TextButton(
                                 onPressed: () => Navigator.pop(context, true),
-                                child: Text(isTr ? 'Çıkar' : 'Remove', style: const TextStyle(color: AppColors.danger)),
+                                child: Text(AppStrings.get('remove', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.danger)),
                               ),
                             ],
                           ),
@@ -470,7 +465,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(isTr ? 'Kişi başarıyla çıkarıldı ve bildirim gönderildi.' : 'Person successfully removed and notification sent.'),
+                                content: Text(AppStrings.get('person_successfully_removed_and_notification_sent', isTr ? 'tr' : 'en')),
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
@@ -483,13 +478,13 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                     IconButton(
                       icon: const Icon(Icons.refresh_rounded,
                           color: AppColors.success, size: 20),
-                      tooltip: isTr ? 'Tekrar Davet Et' : 'Re-invite',
+                      tooltip: AppStrings.get('re_invite', isTr ? 'tr' : 'en'),
                       onPressed: () async {
                         await _davetService.resetDavet(davet.id);
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(isTr ? 'Yeniden davet gönderildi' : 'Reinvited'),
+                              content: Text(AppStrings.get('reinvited', isTr ? 'tr' : 'en')),
                               behavior: SnackBarBehavior.floating,
                             ),
                           );
@@ -499,7 +494,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                     IconButton(
                       icon: const Icon(Icons.person_remove_rounded,
                           color: AppColors.danger, size: 20),
-                      tooltip: isTr ? 'Kaldır' : 'Remove',
+                      tooltip: AppStrings.get('remove', isTr ? 'tr' : 'en'),
                       onPressed: () async {
                         await _davetService.deleteDavet(davet.id);
                         

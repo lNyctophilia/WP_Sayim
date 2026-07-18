@@ -1,0 +1,818 @@
+[
+  {
+    "file": "./lib/features/home/presentation/pages/home_page.dart",
+    "tr": "Merhaba,",
+    "en": "Hello,",
+    "original": "isTr ? 'Merhaba,' : 'Hello,'"
+  },
+  {
+    "file": "./lib/features/home/presentation/pages/home_page.dart",
+    "tr": "Bu ay ${data.totalDays} gün çalıştın, harika gidiyorsun!",
+    "en": "You worked ${data.totalDays} days this month, keep it up!",
+    "original": "isTr\n            ? 'Bu ay ${data.totalDays} gün çalıştın, harika gidiyorsun!'\n            : 'You worked ${data.totalDays} days this month, keep it up!'"
+  },
+  {
+    "file": "./lib/features/home/presentation/pages/home_page.dart",
+    "tr": "Bu ay için henüz kayıt girmedin. Hadi başlayalım!",
+    "en": "No entries for this month yet. Let\\",
+    "original": "isTr\n            ? 'Bu ay için henüz kayıt girmedin. Hadi başlayalım!'\n            : 'No entries for this month yet. Let\\'"
+  },
+  {
+    "file": "./lib/features/home/presentation/pages/home_page.dart",
+    "tr": "Aylık İş Yoğunluğu",
+    "en": "Monthly Work Intensity",
+    "original": "isTr ? 'Aylık İş Yoğunluğu' : 'Monthly Work Intensity'"
+  },
+  {
+    "file": "./lib/features/home/presentation/pages/home_page.dart",
+    "tr": "Son Notlar",
+    "en": "Recent Notes",
+    "original": "isTr ? 'Son Notlar' : 'Recent Notes'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/add_person_to_sayim_page.dart",
+    "tr": "Veriler yüklenirken hata oluştu",
+    "en": "Error loading data",
+    "original": "isTr ? 'Veriler yüklenirken hata oluştu' : 'Error loading data'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/add_person_to_sayim_page.dart",
+    "tr": "Davetler gönderildi!",
+    "en": "Invites sent!",
+    "original": "isTr ? 'Davetler gönderildi!' : 'Invites sent!'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/add_person_to_sayim_page.dart",
+    "tr": "Hata oluştu",
+    "en": "An error occurred",
+    "original": "isTr ? 'Hata oluştu' : 'An error occurred'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/add_person_to_sayim_page.dart",
+    "tr": "Kişi Ekle",
+    "en": "Add Person",
+    "original": "isTr ? 'Kişi Ekle' : 'Add Person'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/add_person_to_sayim_page.dart",
+    "tr": "Davet Gönder (${_selectedConfigs.length} Kişi)",
+    "en": "Send Invites (${_selectedConfigs.length} People)",
+    "original": "isTr\n                              ? 'Davet Gönder (${_selectedConfigs.length} Kişi)'\n                              : 'Send Invites (${_selectedConfigs.length} People)'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_past_sayim_page.dart",
+    "tr": "Geçmiş Sayım Ekle",
+    "en": "Add Past Count",
+    "original": "isTr ? 'Geçmiş Sayım Ekle' : 'Add Past Count'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_past_sayim_page.dart",
+    "tr": "Temel Bilgiler",
+    "en": "Basic Info",
+    "original": "isTr ? 'Temel Bilgiler' : 'Basic Info'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_past_sayim_page.dart",
+    "tr": "Not / İş / Yer",
+    "en": "Note / Job / Location",
+    "original": "isTr ? 'Not / İş / Yer' : 'Note / Job / Location'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_past_sayim_page.dart",
+    "tr": "Boş bırakılamaz",
+    "en": "Cannot be empty",
+    "original": "isTr ? 'Boş bırakılamaz' : 'Cannot be empty'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_past_sayim_page.dart",
+    "tr": "Standart Personel",
+    "en": "Standard Personnel",
+    "original": "isTr ? 'Standart Personel' : 'Standard Personnel'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_past_sayim_page.dart",
+    "tr": "Standart Yönetici",
+    "en": "Standard Manager",
+    "original": "isTr ? 'Standart Yönetici' : 'Standard Manager'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_past_sayim_page.dart",
+    "tr": "Şehir İçi/Dışı",
+    "en": "City Type",
+    "original": "isTr ? 'Şehir İçi/Dışı' : 'City Type'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_past_sayim_page.dart",
+    "tr": "Şehir İçi",
+    "en": "In-City",
+    "original": "isTr ? 'Şehir İçi' : 'In-City'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_past_sayim_page.dart",
+    "tr": "Şehir Dışı",
+    "en": "Out-of-City",
+    "original": "isTr ? 'Şehir Dışı' : 'Out-of-City'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_past_sayim_page.dart",
+    "tr": "Yevmiye Çarpanı",
+    "en": "Global Multiplier",
+    "original": "isTr ? 'Yevmiye Çarpanı' : 'Global Multiplier'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_past_sayim_page.dart",
+    "tr": "Sayımı Kaydet",
+    "en": "Save Count",
+    "original": "isTr ? 'Sayımı Kaydet' : 'Save Count'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_sayim_page.dart",
+    "tr": "Yeni Sayım Oluştur",
+    "en": "Create New Count",
+    "original": "isTr ? 'Yeni Sayım Oluştur' : 'Create New Count'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_sayim_page.dart",
+    "tr": "Temel Bilgiler",
+    "en": "Basic Info",
+    "original": "isTr ? 'Temel Bilgiler' : 'Basic Info'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_sayim_page.dart",
+    "tr": "Not / İş / Yer",
+    "en": "Note / Job / Location",
+    "original": "isTr ? 'Not / İş / Yer' : 'Note / Job / Location'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_sayim_page.dart",
+    "tr": "Boş bırakılamaz",
+    "en": "Cannot be empty",
+    "original": "isTr ? 'Boş bırakılamaz' : 'Cannot be empty'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_sayim_page.dart",
+    "tr": "Standart Personel",
+    "en": "Standard Personnel",
+    "original": "isTr ? 'Standart Personel' : 'Standard Personnel'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_sayim_page.dart",
+    "tr": "Standart Yönetici",
+    "en": "Standard Manager",
+    "original": "isTr ? 'Standart Yönetici' : 'Standard Manager'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_sayim_page.dart",
+    "tr": "Şehir İçi/Dışı",
+    "en": "City Type",
+    "original": "isTr ? 'Şehir İçi/Dışı' : 'City Type'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_sayim_page.dart",
+    "tr": "Şehir İçi",
+    "en": "In-City",
+    "original": "isTr ? 'Şehir İçi' : 'In-City'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_sayim_page.dart",
+    "tr": "Şehir Dışı",
+    "en": "Out-of-City",
+    "original": "isTr ? 'Şehir Dışı' : 'Out-of-City'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_sayim_page.dart",
+    "tr": "Yevmiye Çarpanı",
+    "en": "Global Multiplier",
+    "original": "isTr ? 'Yevmiye Çarpanı' : 'Global Multiplier'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/create_sayim_page.dart",
+    "tr": "Davet Gönder",
+    "en": "Send Invitations",
+    "original": "isTr ? 'Davet Gönder' : 'Send Invitations'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Kullanıcı bilgileri güncellendi.",
+    "en": "User details updated.",
+    "original": "isTr ? 'Kullanıcı bilgileri güncellendi.' : 'User details updated.'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Güncelleme sırasında bir hata oluştu.",
+    "en": "An error occurred during update.",
+    "original": "isTr ? 'Güncelleme sırasında bir hata oluştu.' : 'An error occurred during update.'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Profilleri Düzenle",
+    "en": "Edit Profiles",
+    "original": "isTr ? 'Profilleri Düzenle' : 'Edit Profiles'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Kullanıcı Seçin",
+    "en": "Select User",
+    "original": "isTr ? 'Kullanıcı Seçin' : 'Select User'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Bir kişi seçin",
+    "en": "Select a person",
+    "original": "isTr ? 'Bir kişi seçin' : 'Select a person'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Ad Soyad",
+    "en": "Full Name",
+    "original": "isTr ? 'Ad Soyad' : 'Full Name'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Örn: Ahmet Yılmaz",
+    "en": "e.g. John Doe",
+    "original": "isTr ? 'Örn: Ahmet Yılmaz' : 'e.g. John Doe'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Gerekli",
+    "en": "Required",
+    "original": "isTr ? 'Gerekli' : 'Required'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Kullanıcı Adı",
+    "en": "Username",
+    "original": "isTr ? 'Kullanıcı Adı' : 'Username'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "En az 3 karakter",
+    "en": "Min 3 chars",
+    "original": "isTr ? 'En az 3 karakter' : 'Min 3 chars'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Telefon Numarası",
+    "en": "Phone Number",
+    "original": "isTr ? 'Telefon Numarası' : 'Phone Number'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Örn: 05551234567",
+    "en": "e.g. 05551234567",
+    "original": "isTr ? 'Örn: 05551234567' : 'e.g. 05551234567'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Adres",
+    "en": "Address",
+    "original": "isTr ? 'Adres' : 'Address'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Servis güzergahı için",
+    "en": "For service route",
+    "original": "isTr ? 'Servis güzergahı için' : 'For service route'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Şifre",
+    "en": "Password",
+    "original": "isTr ? 'Şifre' : 'Password'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Yeni şifre belirleyin",
+    "en": "Set new password",
+    "original": "isTr ? 'Yeni şifre belirleyin' : 'Set new password'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "En az 6 karakter",
+    "en": "Min 6 chars",
+    "original": "isTr ? 'En az 6 karakter' : 'Min 6 chars'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Rol",
+    "en": "Role",
+    "original": "isTr ? 'Rol' : 'Role'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Personel",
+    "en": "Staff",
+    "original": "isTr ? 'Personel' : 'Staff'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Yönetici",
+    "en": "Manager",
+    "original": "isTr ? 'Yönetici' : 'Manager'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Sahip (Owner)",
+    "en": "Owner",
+    "original": "isTr ? 'Sahip (Owner)' : 'Owner'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_profiles_page.dart",
+    "tr": "Güncelle",
+    "en": "Update",
+    "original": "isTr ? 'Güncelle' : 'Update'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_sayim_page.dart",
+    "tr": "Sayımı Düzenle",
+    "en": "Edit Count",
+    "original": "isTr ? 'Sayımı Düzenle' : 'Edit Count'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_sayim_page.dart",
+    "tr": "Temel Bilgiler",
+    "en": "Basic Info",
+    "original": "isTr ? 'Temel Bilgiler' : 'Basic Info'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_sayim_page.dart",
+    "tr": "Not / İş / Yer",
+    "en": "Note / Job / Location",
+    "original": "isTr ? 'Not / İş / Yer' : 'Note / Job / Location'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_sayim_page.dart",
+    "tr": "Boş bırakılamaz",
+    "en": "Cannot be empty",
+    "original": "isTr ? 'Boş bırakılamaz' : 'Cannot be empty'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_sayim_page.dart",
+    "tr": "Standart Personel",
+    "en": "Standard Personnel",
+    "original": "isTr ? 'Standart Personel' : 'Standard Personnel'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_sayim_page.dart",
+    "tr": "Standart Yönetici",
+    "en": "Standard Manager",
+    "original": "isTr ? 'Standart Yönetici' : 'Standard Manager'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_sayim_page.dart",
+    "tr": "Şehir İçi/Dışı",
+    "en": "City Type",
+    "original": "isTr ? 'Şehir İçi/Dışı' : 'City Type'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_sayim_page.dart",
+    "tr": "Şehir İçi",
+    "en": "In-City",
+    "original": "isTr ? 'Şehir İçi' : 'In-City'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_sayim_page.dart",
+    "tr": "Şehir Dışı",
+    "en": "Out-of-City",
+    "original": "isTr ? 'Şehir Dışı' : 'Out-of-City'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_sayim_page.dart",
+    "tr": "Yevmiye Çarpanı",
+    "en": "Global Multiplier",
+    "original": "isTr ? 'Yevmiye Çarpanı' : 'Global Multiplier'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/edit_sayim_page.dart",
+    "tr": "Güncelle",
+    "en": "Update",
+    "original": "isTr ? 'Güncelle' : 'Update'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/export_sayim_page.dart",
+    "tr": "Excel Çıktısı Al",
+    "en": "Export Excel",
+    "original": "isTr ? 'Excel Çıktısı Al' : 'Export Excel'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/export_sayim_page.dart",
+    "tr": "Lütfen Excel çıktısı almak istediğiniz sayımı seçin.",
+    "en": "Please select a count to export to Excel.",
+    "original": "isTr ? 'Lütfen Excel çıktısı almak istediğiniz sayımı seçin.' : 'Please select a count to export to Excel.'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/export_sayim_page.dart",
+    "tr": "Henüz hiç sayım yok.",
+    "en": "No counts found.",
+    "original": "isTr ? 'Henüz hiç sayım yok.' : 'No counts found.'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/export_sayim_page.dart",
+    "tr": "Sayım Seçin",
+    "en": "Select Count",
+    "original": "isTr ? 'Sayım Seçin' : 'Select Count'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/export_sayim_page.dart",
+    "tr": "Sayım Özeti",
+    "en": "Count Summary",
+    "original": "isTr ? 'Sayım Özeti' : 'Count Summary'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/export_sayim_page.dart",
+    "tr": "Kişi Davet Edildi",
+    "en": "Invited",
+    "original": "isTr ? \"Kişi Davet Edildi\" : \"Invited\""
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/export_sayim_page.dart",
+    "tr": "Excel İndir",
+    "en": "Download Excel",
+    "original": "isTr ? 'Excel İndir' : 'Download Excel'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/manager_panel_page.dart",
+    "tr": "Sayımlar",
+    "en": "Counts",
+    "original": "isTr ? 'Sayımlar' : 'Counts'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/manager_panel_page.dart",
+    "tr": "Yöneticiler",
+    "en": "Managers",
+    "original": "isTr ? 'Yöneticiler' : 'Managers'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/manager_panel_page.dart",
+    "tr": "Personel",
+    "en": "Staff",
+    "original": "isTr ? 'Personel' : 'Staff'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Sayımı Sil",
+    "en": "Delete Count",
+    "original": "isTr ? 'Sayımı Sil' : 'Delete Count'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Bu sayımı ve bağlantılı tüm davet/takvim kayıtlarını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
+    "en": "Are you sure you want to delete this count and all related invitations/calendar records? This action cannot be undone.",
+    "original": "isTr \n            ? 'Bu sayımı ve bağlantılı tüm davet/takvim kayıtlarını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.'\n            : 'Are you sure you want to delete this count and all related invitations/calendar records? This action cannot be undone.'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "İptal",
+    "en": "Cancel",
+    "original": "isTr ? 'İptal' : 'Cancel'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Sil",
+    "en": "Delete",
+    "original": "isTr ? 'Sil' : 'Delete'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Sayım başarıyla silindi.",
+    "en": "Count deleted successfully.",
+    "original": "isTr ? 'Sayım başarıyla silindi.' : 'Count deleted successfully.'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Sayım bulunamadı veya silinmiş.",
+    "en": "Count not found or deleted.",
+    "original": "isTr ? 'Sayım bulunamadı veya silinmiş.' : 'Count not found or deleted.'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Hata oluştu",
+    "en": "An error occurred",
+    "original": "isTr ? 'Hata oluştu' : 'An error occurred'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Sayım Detayı",
+    "en": "Count Details",
+    "original": "isTr ? 'Sayım Detayı' : 'Count Details'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Düzenle",
+    "en": "Edit",
+    "original": "isTr ? 'Düzenle' : 'Edit'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Sayımı Sil",
+    "en": "Delete Count",
+    "original": "isTr ? 'Sayımı Sil' : 'Delete Count'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Kabul",
+    "en": "Accepted",
+    "original": "isTr ? 'Kabul' : 'Accepted'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Bekliyor",
+    "en": "Pending",
+    "original": "isTr ? 'Bekliyor' : 'Pending'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Red",
+    "en": "Declined",
+    "original": "isTr ? 'Red' : 'Declined'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Eksik Kişi! ${missingPersonel > 0 ? '$missingPersonel Personel ",
+    "en": "",
+    "original": "isTr\n                              ? 'Eksik Kişi! ${missingPersonel > 0 ? '$missingPersonel Personel ' : ''"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Kişi Ekle",
+    "en": "Add Person",
+    "original": "isTr ? 'Kişi Ekle' : 'Add Person'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Kimse bulunamadı",
+    "en": "No one found",
+    "original": "isTr ? 'Kimse bulunamadı' : 'No one found'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Yükleniyor...",
+    "en": "Loading...",
+    "original": "isTr ? 'Yükleniyor...' : 'Loading...'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Silindi",
+    "en": "Deleted",
+    "original": "isTr ? \"Silindi\" : \"Deleted\""
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Yönetici",
+    "en": "Manager",
+    "original": "isTr ? 'Yönetici' : 'Manager'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Personel",
+    "en": "Staff",
+    "original": "isTr ? 'Personel' : 'Staff'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Ücret",
+    "en": "Wage",
+    "original": "isTr ? 'Ücret' : 'Wage'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Hatırlat",
+    "en": "Remind",
+    "original": "isTr ? 'Hatırlat' : 'Remind'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Lütfen yeni bir hatırlatma göndermeden önce 5 dakika bekleyin.",
+    "en": "Please wait 5 minutes before sending another reminder.",
+    "original": "isTr ? 'Lütfen yeni bir hatırlatma göndermeden önce 5 dakika bekleyin.' : 'Please wait 5 minutes before sending another reminder.'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Hatırlatma gönderildi.",
+    "en": "Reminder sent.",
+    "original": "isTr ? 'Hatırlatma gönderildi.' : 'Reminder sent.'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "İptal Et",
+    "en": "Cancel",
+    "original": "isTr ? 'İptal Et' : 'Cancel'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Kaldır",
+    "en": "Remove",
+    "original": "isTr ? 'Kaldır' : 'Remove'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Kişiyi Çıkar",
+    "en": "Remove Person",
+    "original": "isTr ? 'Kişiyi Çıkar' : 'Remove Person'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "$userName isimli personeli bu sayımdan çıkarmak istediğinize emin misiniz? (Kullanıcıya iptal bildirimi gönderilecektir)",
+    "en": "Are you sure you want to remove $userName from this count? (A cancellation notification will be sent to the user)",
+    "original": "isTr \n                                ? '$userName isimli personeli bu sayımdan çıkarmak istediğinize emin misiniz? (Kullanıcıya iptal bildirimi gönderilecektir)'\n                                : 'Are you sure you want to remove $userName from this count? (A cancellation notification will be sent to the user)'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "İptal",
+    "en": "Cancel",
+    "original": "isTr ? 'İptal' : 'Cancel'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Çıkar",
+    "en": "Remove",
+    "original": "isTr ? 'Çıkar' : 'Remove'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Kişi başarıyla çıkarıldı ve bildirim gönderildi.",
+    "en": "Person successfully removed and notification sent.",
+    "original": "isTr ? 'Kişi başarıyla çıkarıldı ve bildirim gönderildi.' : 'Person successfully removed and notification sent.'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Tekrar Davet Et",
+    "en": "Re-invite",
+    "original": "isTr ? 'Tekrar Davet Et' : 'Re-invite'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Yeniden davet gönderildi",
+    "en": "Reinvited",
+    "original": "isTr ? 'Yeniden davet gönderildi' : 'Reinvited'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/sayim_detail_page.dart",
+    "tr": "Kaldır",
+    "en": "Remove",
+    "original": "isTr ? 'Kaldır' : 'Remove'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/shuttle_panel_page.dart",
+    "tr": "En fazla $_maxSelection kişi seçebilirsiniz!",
+    "en": "You can select up to $_maxSelection people!",
+    "original": "isTr\n            ? 'En fazla $_maxSelection kişi seçebilirsiniz!'\n            : 'You can select up to $_maxSelection people!'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/shuttle_panel_page.dart",
+    "tr": "Lütfen kendi profilinize bir adres veya konum ekleyin. Bitiş noktası sizin konumunuz olacaktır.",
+    "en": "Please add an address or location to your profile. The destination will be your location.",
+    "original": "isTr\n              ? 'Lütfen kendi profilinize bir adres veya konum ekleyin. Bitiş noktası sizin konumunuz olacaktır.'\n              : 'Please add an address or location to your profile. The destination will be your location.'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/shuttle_panel_page.dart",
+    "tr": "Lütfen en az bir personel seçin.",
+    "en": "Please select at least one staff.",
+    "original": "isTr\n              ? 'Lütfen en az bir personel seçin.'\n              : 'Please select at least one staff.'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/shuttle_panel_page.dart",
+    "tr": "Şu personellerin konumu yok ve rotaya eklenemedi: ${missingLocationStaff.join(', ')}",
+    "en": "These staff members have no location and were skipped: ${missingLocationStaff.join(",
+    "original": "isTr\n              ? 'Şu personellerin konumu yok ve rotaya eklenemedi: ${missingLocationStaff.join(', ')}'\n              : 'These staff members have no location and were skipped: ${missingLocationStaff.join('"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/shuttle_panel_page.dart",
+    "tr": "Geçerli konuma sahip seçili personel yok.",
+    "en": "No selected staff with valid location.",
+    "original": "isTr\n              ? 'Geçerli konuma sahip seçili personel yok.'\n              : 'No selected staff with valid location.'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/shuttle_panel_page.dart",
+    "tr": "Harita açılamadı: $e",
+    "en": "Could not open map: $e",
+    "original": "isTr\n                ? 'Harita açılamadı: $e'\n                : 'Could not open map: $e'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/shuttle_panel_page.dart",
+    "tr": "Servis / Rota Planlama",
+    "en": "Shuttle / Route Planning",
+    "original": "isTr ? 'Servis / Rota Planlama' : 'Shuttle / Route Planning'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/shuttle_panel_page.dart",
+    "tr": "Rota \"Mevcut Konum\"dan başlar, seçilen personellere uğrar ve sizin konumunuzda (${widget.currentUser.fullName}) biter.",
+    "en": "The route starts at \"Current Location\", visits selected staff, and ends at your location (${widget.currentUser.fullName}).",
+    "original": "isTr\n                                  ? 'Rota \"Mevcut Konum\"dan başlar, seçilen personellere uğrar ve sizin konumunuzda (${widget.currentUser.fullName}) biter.'\n                                  : 'The route starts at \"Current Location\", visits selected staff, and ends at your location (${widget.currentUser.fullName}).'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/shuttle_panel_page.dart",
+    "tr": "Seçilen: ${_selectedStaff.length} / $_maxSelection",
+    "en": "Selected: ${_selectedStaff.length} / $_maxSelection",
+    "original": "isTr\n                                ? 'Seçilen: ${_selectedStaff.length} / $_maxSelection'\n                                : 'Selected: ${_selectedStaff.length} / $_maxSelection'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/shuttle_panel_page.dart",
+    "tr": "Konum kayıtlı",
+    "en": "Location saved",
+    "original": "isTr ? 'Konum kayıtlı' : 'Location saved'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/shuttle_panel_page.dart",
+    "tr": "Konum/Adres bilgisi yok!",
+    "en": "No location/address!",
+    "original": "isTr ? 'Konum/Adres bilgisi yok!' : 'No location/address!'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/pages/shuttle_panel_page.dart",
+    "tr": "Rotayı Haritada Aç",
+    "en": "Open Route on Map",
+    "original": "isTr ? 'Rotayı Haritada Aç' : 'Open Route on Map'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/widgets/grup_selector.dart",
+    "tr": "tr",
+    "en": "en",
+    "original": "isTr ? 'tr' : 'en'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/widgets/grup_selector.dart",
+    "tr": "tr",
+    "en": "en",
+    "original": "isTr ? 'tr' : 'en'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/widgets/grup_selector.dart",
+    "tr": "tr",
+    "en": "en",
+    "original": "isTr ? 'tr' : 'en'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/widgets/staff_picker.dart",
+    "tr": "Seçilebilecek personel bulunmuyor.",
+    "en": "No personnel available.",
+    "original": "isTr\n                ? 'Seçilebilecek personel bulunmuyor.'\n                : 'No personnel available.'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/widgets/staff_picker.dart",
+    "tr": "tr",
+    "en": "en",
+    "original": "isTr ? 'tr' : 'en'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/widgets/staff_picker.dart",
+    "tr": "Personel: ${_configs.where((c) => c.isSelected && c.role == DavetRole.staff).length + widget.alreadySelectedPersonel}/${widget.targetPersonel} | Yönetici: ${_configs.where((c) => c.isSelected && c.role == DavetRole.manager).length + widget.alreadySelectedYonetici}/${widget.targetYonetici}",
+    "en": "Staff: ${_configs.where((c) => c.isSelected && c.role == DavetRole.staff).length + widget.alreadySelectedPersonel}/${widget.targetPersonel} | Manager: ${_configs.where((c) => c.isSelected && c.role == DavetRole.manager).length + widget.alreadySelectedYonetici}/${widget.targetYonetici}",
+    "original": "isTr \n                    ? 'Personel: ${_configs.where((c) => c.isSelected && c.role == DavetRole.staff).length + widget.alreadySelectedPersonel}/${widget.targetPersonel} | Yönetici: ${_configs.where((c) => c.isSelected && c.role == DavetRole.manager).length + widget.alreadySelectedYonetici}/${widget.targetYonetici}'\n                    : 'Staff: ${_configs.where((c) => c.isSelected && c.role == DavetRole.staff).length + widget.alreadySelectedPersonel}/${widget.targetPersonel} | Manager: ${_configs.where((c) => c.isSelected && c.role == DavetRole.manager).length + widget.alreadySelectedYonetici}/${widget.targetYonetici}'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/widgets/staff_picker.dart",
+    "tr": "tr",
+    "en": "en",
+    "original": "isTr ? 'tr' : 'en'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/widgets/staff_picker.dart",
+    "tr": "tr",
+    "en": "en",
+    "original": "isTr ? 'tr' : 'en'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/widgets/staff_picker.dart",
+    "tr": "tr",
+    "en": "en",
+    "original": "isTr ? 'tr' : 'en'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/widgets/staff_picker.dart",
+    "tr": "tr",
+    "en": "en",
+    "original": "isTr ? 'tr' : 'en'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/widgets/staff_picker.dart",
+    "tr": "tr",
+    "en": "en",
+    "original": "isTr ? 'tr' : 'en'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/widgets/staff_picker.dart",
+    "tr": "tr",
+    "en": "en",
+    "original": "isTr ? 'tr' : 'en'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/widgets/staff_picker.dart",
+    "tr": "tr",
+    "en": "en",
+    "original": "isTr ? 'tr' : 'en'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/widgets/staff_picker.dart",
+    "tr": "tr",
+    "en": "en",
+    "original": "isTr ? 'tr' : 'en'"
+  },
+  {
+    "file": "./lib/features/manager/presentation/widgets/staff_picker.dart",
+    "tr": "tr",
+    "en": "en",
+    "original": "isTr ? 'tr' : 'en'"
+  }
+]

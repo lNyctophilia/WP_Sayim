@@ -1,3 +1,4 @@
+import 'package:daytrack/core/constants/app_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -83,9 +84,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
     final isTr = widget.lang.currentLang == 'tr';
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(isTr
-            ? 'En fazla $_maxSelection kişi seçebilirsiniz!'
-            : 'You can select up to $_maxSelection people!'),
+        content: Text(AppStrings.get('you_can_select_up_to_maxselection_people', isTr ? 'tr' : 'en')),
         backgroundColor: Colors.orange,
       ),
     );
@@ -109,9 +108,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
     if (destLocation.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(isTr
-              ? 'Lütfen kendi profilinize bir adres veya konum ekleyin. Bitiş noktası sizin konumunuz olacaktır.'
-              : 'Please add an address or location to your profile. The destination will be your location.'),
+          content: Text(AppStrings.get('please_add_an_address_or_location_to_your_profile_the_destination_will_be_your_location', isTr ? 'tr' : 'en')),
           backgroundColor: Colors.red,
         ),
       );
@@ -121,9 +118,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
     if (_selectedStaff.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(isTr
-              ? 'Lütfen en az bir personel seçin.'
-              : 'Please select at least one staff.'),
+          content: Text(AppStrings.get('please_select_at_least_one_staff', isTr ? 'tr' : 'en')),
           backgroundColor: Colors.red,
         ),
       );
@@ -146,9 +141,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
     if (missingLocationStaff.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(isTr
-              ? 'Şu personellerin konumu yok ve rotaya eklenemedi: ${missingLocationStaff.join(', ')}'
-              : 'These staff members have no location and were skipped: ${missingLocationStaff.join(', ')}'),
+          content: Text(AppStrings.getFormat('shuttle_missing_location', isTr ? 'tr' : 'en', [missingLocationStaff.join(', ')])),
           backgroundColor: Colors.orange,
           duration: const Duration(seconds: 4),
         ),
@@ -158,9 +151,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
     if (waypoints.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(isTr
-              ? 'Geçerli konuma sahip seçili personel yok.'
-              : 'No selected staff with valid location.'),
+          content: Text(AppStrings.get('no_selected_staff_with_valid_location', isTr ? 'tr' : 'en')),
           backgroundColor: Colors.red,
         ),
       );
@@ -186,9 +177,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(isTr
-                ? 'Harita açılamadı: $e'
-                : 'Could not open map: $e'),
+            content: Text(AppStrings.get('could_not_open_map_e', isTr ? 'tr' : 'en')),
             backgroundColor: Colors.red,
           ),
         );
@@ -218,7 +207,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
                 const Icon(Icons.directions_bus_rounded, color: AppColors.accentLight),
                 const SizedBox(width: 8),
                 Text(
-                  isTr ? 'Servis / Rota Planlama' : 'Shuttle / Route Planning',
+                  AppStrings.get('shuttle_route_planning', isTr ? 'tr' : 'en'),
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.bold,
@@ -250,9 +239,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              isTr
-                                  ? 'Rota "Mevcut Konum"dan başlar, seçilen personellere uğrar ve sizin konumunuzda (${widget.currentUser.fullName}) biter.'
-                                  : 'The route starts at "Current Location", visits selected staff, and ends at your location (${widget.currentUser.fullName}).',
+                              AppStrings.getFormat('shuttle_route_desc', isTr ? 'tr' : 'en', [widget.currentUser.fullName]),
                               style: const TextStyle(
                                 color: AppColors.textPrimary,
                                 fontSize: 13,
@@ -266,9 +253,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            isTr
-                                ? 'Seçilen: ${_selectedStaff.length} / $_maxSelection'
-                                : 'Selected: ${_selectedStaff.length} / $_maxSelection',
+                            AppStrings.getFormat('shuttle_selected_count', isTr ? 'tr' : 'en', [_selectedStaff.length, _maxSelection]),
                             style: const TextStyle(
                               color: AppColors.textSecondary,
                               fontWeight: FontWeight.w600,
@@ -307,8 +292,8 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
                         ),
                         subtitle: Text(
                           hasLocation
-                              ? (staff.address ?? (isTr ? 'Konum kayıtlı' : 'Location saved'))
-                              : (isTr ? 'Konum/Adres bilgisi yok!' : 'No location/address!'),
+                              ? (staff.address ?? (AppStrings.get('location_saved', isTr ? 'tr' : 'en')))
+                              : (AppStrings.get('no_location_address', isTr ? 'tr' : 'en')),
                           style: TextStyle(
                             color: hasLocation ? AppColors.textSecondary : Colors.red,
                             fontSize: 12,
@@ -349,7 +334,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
             ),
             icon: const Icon(Icons.map_rounded),
             label: Text(
-              isTr ? 'Rotayı Haritada Aç' : 'Open Route on Map',
+              AppStrings.get('open_route_on_map', isTr ? 'tr' : 'en'),
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,

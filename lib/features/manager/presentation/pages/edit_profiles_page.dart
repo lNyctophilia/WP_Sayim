@@ -1,3 +1,4 @@
+import 'package:daytrack/core/constants/app_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -143,7 +144,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              isTr ? 'Kullanıcı bilgileri güncellendi.' : 'User details updated.',
+              AppStrings.get('user_details_updated', isTr ? 'tr' : 'en'),
               style: const TextStyle(color: AppColors.textPrimary),
             ),
             backgroundColor: AppColors.card,
@@ -158,7 +159,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
       if (mounted) {
         final isTr = widget.lang.currentLang == 'tr';
         setState(() {
-          _errorMessage = isTr ? 'Güncelleme sırasında bir hata oluştu.' : 'An error occurred during update.';
+          _errorMessage = AppStrings.get('an_error_occurred_during_update', isTr ? 'tr' : 'en');
           _isSaving = false;
         });
       }
@@ -180,7 +181,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
               const Icon(Icons.manage_accounts_rounded, color: AppColors.accentLight),
               const SizedBox(width: 8),
               Text(
-                isTr ? 'Profilleri Düzenle' : 'Edit Profiles',
+                AppStrings.get('edit_profiles', isTr ? 'tr' : 'en'),
                 style: GoogleFonts.inter(
                   color: AppColors.textPrimary,
                   fontSize: 18,
@@ -198,7 +199,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  _buildLabel(isTr ? 'Kullanıcı Seçin' : 'Select User'),
+                  _buildLabel(AppStrings.get('select_user', isTr ? 'tr' : 'en')),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -211,7 +212,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                       child: DropdownButton<AppUser?>(
                         isExpanded: true,
                         hint: Text(
-                          isTr ? 'Bir kişi seçin' : 'Select a person',
+                          AppStrings.get('select_a_person', isTr ? 'tr' : 'en'),
                           style: TextStyle(color: AppColors.textHint),
                         ),
                         value: _selectedUser,
@@ -238,17 +239,17 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildLabel(isTr ? 'Ad Soyad' : 'Full Name'),
+                          _buildLabel(AppStrings.get('full_name', isTr ? 'tr' : 'en')),
                           const SizedBox(height: 6),
                           _buildTextField(
                             controller: _fullNameController,
-                            hintText: isTr ? 'Örn: Ahmet Yılmaz' : 'e.g. John Doe',
+                            hintText: AppStrings.get('e_g_john_doe', isTr ? 'tr' : 'en'),
                             icon: Icons.badge_outlined,
-                            validator: (v) => (v == null || v.trim().isEmpty) ? (isTr ? 'Gerekli' : 'Required') : null,
+                            validator: (v) => (v == null || v.trim().isEmpty) ? (AppStrings.get('required', isTr ? 'tr' : 'en')) : null,
                           ),
                           const SizedBox(height: 16),
 
-                          _buildLabel(isTr ? 'Kullanıcı Adı' : 'Username'),
+                          _buildLabel(AppStrings.get('username', isTr ? 'tr' : 'en')),
                           const SizedBox(height: 6),
                           _buildTextField(
                             controller: _usernameController,
@@ -258,34 +259,34 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                               FilteringTextInputFormatter.allow(RegExp(r'[a-z0-9._]')),
                               LengthLimitingTextInputFormatter(30),
                             ],
-                            validator: (v) => (v == null || v.trim().length < 3) ? (isTr ? 'En az 3 karakter' : 'Min 3 chars') : null,
+                            validator: (v) => (v == null || v.trim().length < 3) ? (AppStrings.get('min_3_chars', isTr ? 'tr' : 'en')) : null,
                           ),
                           const SizedBox(height: 16),
 
-                          _buildLabel(isTr ? 'Telefon Numarası' : 'Phone Number'),
+                          _buildLabel(AppStrings.get('phone_number', isTr ? 'tr' : 'en')),
                           const SizedBox(height: 6),
                           _buildTextField(
                             controller: _phoneController,
-                            hintText: isTr ? 'Örn: 05551234567' : 'e.g. 05551234567',
+                            hintText: AppStrings.get('e_g_05551234567', isTr ? 'tr' : 'en'),
                             icon: Icons.phone_outlined,
                             keyboardType: TextInputType.phone,
                           ),
                           const SizedBox(height: 16),
 
-                          _buildLabel(isTr ? 'Adres' : 'Address'),
+                          _buildLabel(AppStrings.get('address', isTr ? 'tr' : 'en')),
                           const SizedBox(height: 6),
                           _buildTextField(
                             controller: _addressController,
-                            hintText: isTr ? 'Servis güzergahı için' : 'For service route',
+                            hintText: AppStrings.get('for_service_route', isTr ? 'tr' : 'en'),
                             icon: Icons.location_on_outlined,
                           ),
                           const SizedBox(height: 16),
 
-                          _buildLabel(isTr ? 'Şifre' : 'Password'),
+                          _buildLabel(AppStrings.get('password', isTr ? 'tr' : 'en')),
                           const SizedBox(height: 6),
                           _buildTextField(
                             controller: _passwordController,
-                            hintText: isTr ? 'Yeni şifre belirleyin' : 'Set new password',
+                            hintText: AppStrings.get('set_new_password', isTr ? 'tr' : 'en'),
                             icon: Icons.lock_outline_rounded,
                             obscureText: _obscurePassword,
                             suffixIcon: IconButton(
@@ -296,11 +297,11 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                               ),
                               onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                             ),
-                            validator: (v) => (v != null && v.isNotEmpty && v.length < 6) ? (isTr ? 'En az 6 karakter' : 'Min 6 chars') : null,
+                            validator: (v) => (v != null && v.isNotEmpty && v.length < 6) ? (AppStrings.get('min_6_chars', isTr ? 'tr' : 'en')) : null,
                           ),
                           const SizedBox(height: 16),
 
-                          _buildLabel(isTr ? 'Rol' : 'Role'),
+                          _buildLabel(AppStrings.get('role', isTr ? 'tr' : 'en')),
                           const SizedBox(height: 6),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -316,9 +317,9 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                                 dropdownColor: AppColors.card,
                                 icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
                                 items: [
-                                  DropdownMenuItem(value: UserRole.staff, child: Text(isTr ? 'Personel' : 'Staff', style: GoogleFonts.inter(color: AppColors.textPrimary))),
-                                  DropdownMenuItem(value: UserRole.manager, child: Text(isTr ? 'Yönetici' : 'Manager', style: GoogleFonts.inter(color: AppColors.textPrimary))),
-                                  DropdownMenuItem(value: UserRole.owner, child: Text(isTr ? 'Sahip (Owner)' : 'Owner', style: GoogleFonts.inter(color: AppColors.textPrimary))),
+                                  DropdownMenuItem(value: UserRole.staff, child: Text(AppStrings.get('staff', isTr ? 'tr' : 'en'), style: GoogleFonts.inter(color: AppColors.textPrimary))),
+                                  DropdownMenuItem(value: UserRole.manager, child: Text(AppStrings.get('manager', isTr ? 'tr' : 'en'), style: GoogleFonts.inter(color: AppColors.textPrimary))),
+                                  DropdownMenuItem(value: UserRole.owner, child: Text(AppStrings.get('owner', isTr ? 'tr' : 'en'), style: GoogleFonts.inter(color: AppColors.textPrimary))),
                                 ],
                                 onChanged: (val) {
                                   if (val != null) setState(() => _selectedRole = val);
@@ -347,7 +348,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                               ),
                               child: _isSaving
                                   ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
-                                  : Text(isTr ? 'Güncelle' : 'Update', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600)),
+                                  : Text(AppStrings.get('update', isTr ? 'tr' : 'en'), style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600)),
                             ),
                           ),
                         ],

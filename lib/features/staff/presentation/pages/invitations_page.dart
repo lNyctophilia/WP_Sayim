@@ -1,3 +1,5 @@
+import '../../../../core/services/language_service.dart';
+import 'package:daytrack/core/constants/app_strings.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
@@ -8,10 +10,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class InvitationsPage extends StatefulWidget {
   final AppUser currentUser;
+  final LanguageService lang;
 
   const InvitationsPage({
     super.key,
     required this.currentUser,
+    required this.lang,
   });
 
   @override
@@ -297,7 +301,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      davet.sehirIciDisi == SehirTipi.ici ? 'Ş. İçi' : 'Ş. Dışı',
+                      davet.sehirIciDisi == SehirTipi.ici ? AppStrings.get('city_inner_short', widget.lang.currentLang) : AppStrings.get('city_outer_short', widget.lang.currentLang),
                       style: TextStyle(
                         color: davet.sehirIciDisi == SehirTipi.ici ? AppColors.cityInner : AppColors.cityOuter,
                         fontSize: 12,

@@ -1,3 +1,4 @@
+import 'package:daytrack/core/constants/app_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -154,7 +155,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
     
     if (_gruplar.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(widget.lang.currentLang == 'tr' ? 'En az bir saat grubu eklemelisiniz.' : 'You must add at least one time group.')),
+        SnackBar(content: Text(AppStrings.get('add_time_group_error', widget.lang.currentLang))),
       );
       return;
     }
@@ -176,9 +177,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            widget.lang.currentLang == 'tr' 
-              ? 'Standart sayıdan fazla kişi seçemezsiniz!\nPersonel: $selectedPersonel/$targetPersonel, Yönetici: $selectedYonetici/$targetYonetici'
-              : 'You cannot select more people than the standard count!\nPersonnel: $selectedPersonel/$targetPersonel, Manager: $selectedYonetici/$targetYonetici'
+            AppStrings.getFormat('too_many_people_error', widget.lang.currentLang, [selectedPersonel, targetPersonel, selectedYonetici, targetYonetici])
           ),
           backgroundColor: AppColors.danger,
         ),
@@ -189,21 +188,19 @@ class _EditSayimPageState extends State<EditSayimPage> {
         context: context,
         builder: (context) => AlertDialog(
           backgroundColor: AppColors.background,
-          title: Text(widget.lang.currentLang == 'tr' ? 'Eksik Kişi Seçimi' : 'Missing Personnel', style: const TextStyle(color: AppColors.textPrimary)),
+          title: Text(AppStrings.get('missing_personnel_title', widget.lang.currentLang), style: const TextStyle(color: AppColors.textPrimary)),
           content: Text(
-            widget.lang.currentLang == 'tr' 
-              ? 'Sayım için hedeflenen sayıdan az kişi seçtiniz.\nEksik Personel: ${targetPersonel - selectedPersonel}\nEksik Yönetici: ${targetYonetici - selectedYonetici}\nYine de güncellemek istiyor musunuz? (Sonradan kişi ekleyebilirsiniz)'
-              : 'You have selected fewer people than targeted.\nMissing Personnel: ${targetPersonel - selectedPersonel}\nMissing Manager: ${targetYonetici - selectedYonetici}\nDo you still want to update it? (You can add people later)',
+            AppStrings.getFormat('not_enough_people_update_msg', widget.lang.currentLang, [targetPersonel - selectedPersonel, targetYonetici - selectedYonetici]),
             style: const TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text(widget.lang.currentLang == 'tr' ? 'İptal' : 'Cancel', style: const TextStyle(color: AppColors.textHint)),
+              child: Text(AppStrings.get('cancel', widget.lang.currentLang), style: const TextStyle(color: AppColors.textHint)),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text(widget.lang.currentLang == 'tr' ? 'Güncelle' : 'Update', style: const TextStyle(color: AppColors.accentLight)),
+              child: Text(AppStrings.get('update_btn', widget.lang.currentLang), style: const TextStyle(color: AppColors.accentLight)),
             ),
           ],
         ),
@@ -269,7 +266,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(widget.lang.currentLang == 'tr' ? 'Sayım başarıyla güncellendi.' : 'Count updated successfully.'),
+            content: Text(AppStrings.get('count_updated', widget.lang.currentLang)),
             backgroundColor: AppColors.success,
           ),
         );
@@ -297,7 +294,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
         backgroundColor: AppColors.card,
         elevation: 0,
         title: Text(
-          isTr ? 'Sayımı Düzenle' : 'Edit Count',
+          AppStrings.get('edit_count', isTr ? 'tr' : 'en'),
           style: GoogleFonts.inter(
             color: AppColors.textPrimary,
             fontSize: 18,
@@ -316,13 +313,13 @@ class _EditSayimPageState extends State<EditSayimPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // --- TEMEL BİLGİLER ---
-                    _buildSectionTitle(isTr ? 'Temel Bilgiler' : 'Basic Info'),
+                    _buildSectionTitle(AppStrings.get('basic_info', isTr ? 'tr' : 'en')),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _noteController,
                       style: const TextStyle(color: AppColors.textPrimary),
                       decoration: InputDecoration(
-                        labelText: isTr ? 'Not / İş / Yer' : 'Note / Job / Location',
+                        labelText: AppStrings.get('note_job_location', isTr ? 'tr' : 'en'),
                         labelStyle: const TextStyle(color: AppColors.textHint),
                         filled: true,
                         fillColor: AppColors.surface,
@@ -333,7 +330,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
                         prefixIcon: const Icon(Icons.place_rounded, color: AppColors.textSecondary),
                       ),
                       validator: (val) => val == null || val.trim().isEmpty
-                          ? (isTr ? 'Boş bırakılamaz' : 'Cannot be empty')
+                          ? (AppStrings.get('cannot_be_empty', isTr ? 'tr' : 'en'))
                           : null,
                     ),
                     const SizedBox(height: 12),
@@ -368,7 +365,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
                             onChanged: (_) => setState((){}),
                             style: const TextStyle(color: AppColors.textPrimary),
                             decoration: InputDecoration(
-                              labelText: isTr ? 'Standart Personel' : 'Standard Personnel',
+                              labelText: AppStrings.get('standard_personnel', isTr ? 'tr' : 'en'),
                               labelStyle: const TextStyle(color: AppColors.textHint),
                               filled: true,
                               fillColor: AppColors.surface,
@@ -388,7 +385,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
                             onChanged: (_) => setState((){}),
                             style: const TextStyle(color: AppColors.textPrimary),
                             decoration: InputDecoration(
-                              labelText: isTr ? 'Standart Yönetici' : 'Standard Manager',
+                              labelText: AppStrings.get('standard_manager', isTr ? 'tr' : 'en'),
                               labelStyle: const TextStyle(color: AppColors.textHint),
                               filled: true,
                               fillColor: AppColors.surface,
@@ -409,7 +406,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
                           child: DropdownButtonFormField<SehirTipi>(
                             value: _sehirTipi,
                             decoration: InputDecoration(
-                              labelText: isTr ? 'Şehir İçi/Dışı' : 'City Type',
+                              labelText: AppStrings.get('city_type', isTr ? 'tr' : 'en'),
                               filled: true,
                               fillColor: AppColors.surface,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -417,8 +414,8 @@ class _EditSayimPageState extends State<EditSayimPage> {
                             ),
                             dropdownColor: AppColors.card,
                             items: [
-                              DropdownMenuItem(value: SehirTipi.ici, child: Text(isTr ? 'Şehir İçi' : 'In-City', style: const TextStyle(color: AppColors.textPrimary))),
-                              DropdownMenuItem(value: SehirTipi.disi, child: Text(isTr ? 'Şehir Dışı' : 'Out-of-City', style: const TextStyle(color: AppColors.textPrimary))),
+                              DropdownMenuItem(value: SehirTipi.ici, child: Text(AppStrings.get('in_city', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.textPrimary))),
+                              DropdownMenuItem(value: SehirTipi.disi, child: Text(AppStrings.get('out_of_city', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.textPrimary))),
                             ],
                             onChanged: (val) {
                               if (val != null) setState(() => _sehirTipi = val);
@@ -430,7 +427,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
                           child: DropdownButtonFormField<double>(
                             value: _globalMultiplier,
                             decoration: InputDecoration(
-                              labelText: isTr ? 'Yevmiye Çarpanı' : 'Global Multiplier',
+                              labelText: AppStrings.get('global_multiplier', isTr ? 'tr' : 'en'),
                               filled: true,
                               fillColor: AppColors.surface,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -508,7 +505,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
                                 child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                               )
                             : Text(
-                                isTr ? 'Güncelle' : 'Update',
+                                AppStrings.get('update', isTr ? 'tr' : 'en'),
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,

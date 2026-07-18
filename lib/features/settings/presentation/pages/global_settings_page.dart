@@ -1,3 +1,4 @@
+import 'package:daytrack/core/constants/app_strings.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_settings.dart';
@@ -87,9 +88,7 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(widget.lang.currentLang == 'tr'
-                ? 'Ayarlar başarıyla kaydedildi.'
-                : 'Settings saved successfully.'),
+            content: Text(AppStrings.get('settings_saved', widget.lang.currentLang)),
             backgroundColor: AppColors.success,
           ),
         );
@@ -110,9 +109,7 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(widget.lang.currentLang == 'tr'
-                ? 'Hata: $e'
-                : 'Error: $e'),
+            content: Text(AppStrings.get('error_prefix', widget.lang.currentLang) + e.toString()),
             backgroundColor: AppColors.danger,
           ),
         );

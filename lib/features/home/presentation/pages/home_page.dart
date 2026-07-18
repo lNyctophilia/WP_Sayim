@@ -1,3 +1,4 @@
+import 'package:daytrack/core/constants/app_strings.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -74,6 +75,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           MaterialPageRoute(
             builder: (_) => InvitationsPage(
               currentUser: widget.currentUser!,
+              lang: widget.lang,
             ),
           ),
         );
@@ -631,14 +633,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildGreeting(MonthlyData data) {
     final isTr = widget.lang.currentLang == 'tr';
-    final greeting = isTr ? 'Merhaba,' : 'Hello,';
+    final greeting = AppStrings.get('hello', isTr ? 'tr' : 'en');
     final motivation = data.totalDays > 0
-        ? (isTr
-            ? 'Bu ay ${data.totalDays} gün çalıştın, harika gidiyorsun!'
-            : 'You worked ${data.totalDays} days this month, keep it up!')
-        : (isTr
-            ? 'Bu ay için henüz kayıt girmedin. Hadi başlayalım!'
-            : 'No entries for this month yet. Let\'s start!');
+        ? (AppStrings.getFormat('worked_days_msg', isTr ? 'tr' : 'en', [data.totalDays]))
+        : AppStrings.get('no_entries_for_this_month_yet_let', isTr ? 'tr' : 'en');
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
@@ -708,7 +706,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                isTr ? 'Aylık İş Yoğunluğu' : 'Monthly Work Intensity',
+                AppStrings.get('monthly_work_intensity', isTr ? 'tr' : 'en'),
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -743,7 +741,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     if (daysWithNotes.isEmpty) return const SizedBox.shrink();
 
     final isTr = widget.lang.currentLang == 'tr';
-    final title = isTr ? 'Son Notlar' : 'Recent Notes';
+    final title = AppStrings.get('recent_notes', isTr ? 'tr' : 'en');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

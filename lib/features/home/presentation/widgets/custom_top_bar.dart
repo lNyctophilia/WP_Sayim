@@ -87,6 +87,7 @@ class CustomTopBar extends StatelessWidget {
                               MaterialPageRoute(
                                 builder: (_) => InvitationsPage(
                                   currentUser: currentUser!,
+                                  lang: lang,
                                 ),
                               ),
                             );
