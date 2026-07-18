@@ -5,9 +5,13 @@ echo   WP Sayim - Web Build ve Deploy
 echo ===================================
 echo.
 
+REM 0. Zaman damgasi olustur (Dart Define ve PWA Cache icin)
+set TIMESTAMP=%date%-%time%
+set TIMESTAMP=%TIMESTAMP: =_%
+
 REM 1. Flutter Web Build
 echo [1/4] Flutter Web build aliniyor...
-call flutter build web --release --base-href "/WP_Sayim/"
+call flutter build web --release --base-href "/WP_Sayim/" --dart-define="BUILD_VERSION=%TIMESTAMP%"
 if errorlevel 1 (
     echo HATA: Flutter web build basarisiz!
     pause
@@ -17,8 +21,6 @@ echo Build basarili!
 echo.
 
 REM 1.5. Versiyon dosyasi olustur (PWA Cache guncelleme icin)
-set TIMESTAMP=%date%-%time%
-set TIMESTAMP=%TIMESTAMP: =_%
 echo {"version": "%TIMESTAMP%"} > build\web\version.json
 
 REM 2. docs klasorunu temizle ve yeni build'i kopyala

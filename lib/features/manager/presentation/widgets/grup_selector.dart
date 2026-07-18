@@ -72,14 +72,17 @@ class _GrupSelectorState extends State<GrupSelector> {
       context: context,
       initialTime: initialTime,
       builder: (context, child) {
-        return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.accentLight,
-              surface: AppColors.card,
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: Theme(
+            data: ThemeData.dark().copyWith(
+              colorScheme: const ColorScheme.dark(
+                primary: AppColors.accentLight,
+                surface: AppColors.card,
+              ),
             ),
+            child: child!,
           ),
-          child: child!,
         );
       },
     );

@@ -12,7 +12,7 @@ $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 # 1) app_config.dart
 $cfgPath = Join-Path $root "lib\core\constants\app_config.dart"
 $cfg = [System.IO.File]::ReadAllText($cfgPath)
-$cfg = $cfg -replace "static const String version = '.*?'", "static const String version = '$Version'"
+$cfg = $cfg -replace "static const String _baseVersion = '.*?'", "static const String _baseVersion = '$Version'"
 [System.IO.File]::WriteAllText($cfgPath, $cfg)
 Write-Host "  [1/2] app_config.dart -> $Version"
 
