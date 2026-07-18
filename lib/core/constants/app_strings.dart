@@ -103,12 +103,12 @@ class AppStrings {
       'en': '1. Tap the three-dot menu (⋮) in Chrome\'s top right'
     },
     'install_android_step2': {
-      'tr': '2. "Ana ekrana ekle" seçeneğini seçin',
-      'en': '2. Select "Add to Home screen"'
+      'tr': '2. Biraz aşağı kaydırıp "Yükle ve kısayol oluştur" seçeneğine basın',
+      'en': '2. Scroll down a bit and tap on "Install and create shortcut"'
     },
     'install_android_step3': {
-      'tr': '3. Açılan pencerede "Ekle" butonuna basın',
-      'en': '3. Tap "Add" in the popup'
+      'tr': '3. Açılan pencerede onaylayarak işlemi tamamlayın',
+      'en': '3. Confirm in the opened window to complete the process'
     },
     'install_android_step4': {
       'tr': '✅ Artık ana ekranınızda uygulama ikonu görünecek!',
@@ -120,12 +120,12 @@ class AppStrings {
       'en': '1. Tap the Share (⬆) icon in Safari\'s bottom menu'
     },
     'install_ios_step2': {
-      'tr': '2. Aşağı kaydırıp "Ana Ekrana Ekle" seçeneğini bulun',
-      'en': '2. Scroll down and find "Add to Home Screen"'
+      'tr': '2. "Daha Fazla" seçeneğine basıp oradan "Ana Ekrana Ekle"ye dokunun',
+      'en': '2. Tap on "More" and from there tap on "Add to Home Screen"'
     },
     'install_ios_step3': {
-      'tr': '3. Sağ üstteki "Ekle" butonuna basın',
-      'en': '3. Tap "Add" in the top right'
+      'tr': '3. Açılan pencerede onaylayarak işlemi tamamlayın',
+      'en': '3. Confirm in the opened window to complete the process'
     },
     'install_ios_step4': {
       'tr': '✅ Artık ana ekranınızda uygulama ikonu görünecek!',
