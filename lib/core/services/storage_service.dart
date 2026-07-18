@@ -74,4 +74,12 @@ class StorageService {
   Future<void> setLastPanel(String panel) async {
     await _prefs.setString(_prefsLastPanel, panel);
   }
+
+  // ─── Son Aktif Manager Tab ────────────────────────────────
+
+  int getLastManagerTab() => _prefs.getInt('last_manager_tab') ?? 0;
+
+  Future<void> setLastManagerTab(int index) async {
+    await _prefs.setInt('last_manager_tab', index);
+  }
 }
