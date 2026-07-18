@@ -105,7 +105,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
           isEmbedded: true,
         );
       case 'edit_profiles':
-        if (widget.currentUser.isOwner || widget.currentUser.isManager) {
+        if (widget.currentUser.isOwner) {
           return EditProfilesPage(
             currentUser: widget.currentUser,
             storage: widget.storage,

@@ -172,7 +172,7 @@ class ManagerDrawer extends StatelessWidget {
                   },
                 ),
                 
-                if (currentUser.isOwner || currentUser.isManager) ...[
+                if (currentUser.isOwner) ...[
                   const Divider(color: AppColors.divider),
                   _buildSectionTitle(lang.tr('system_tools')),
 
@@ -199,53 +199,51 @@ class ManagerDrawer extends StatelessWidget {
                     },
                   ),
                   
-                  if (currentUser.isOwner) ...[
-                    ListTile(
-                      leading: const Icon(Icons.history_edu_rounded, color: AppColors.textSecondary),
-                      title: Text(lang.tr('add_past_count'), style: const TextStyle(color: AppColors.textPrimary)),
-                      onTap: () {
-                        Navigator.pop(context); // Close drawer
-                        if (onPanelSelected != null) {
-                          onPanelSelected!('create_past');
-                        } else {
-                          Navigator.pushReplacement(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder: (_, __, ___) => CreatePastSayimPage(
-                                currentUser: currentUser,
-                                lang: lang,
-                                storage: storage,
-                              ),
-                              transitionDuration: Duration.zero,
+                  ListTile(
+                    leading: const Icon(Icons.history_edu_rounded, color: AppColors.textSecondary),
+                    title: Text(lang.tr('add_past_count'), style: const TextStyle(color: AppColors.textPrimary)),
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      if (onPanelSelected != null) {
+                        onPanelSelected!('create_past');
+                      } else {
+                        Navigator.pushReplacement(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (_, __, ___) => CreatePastSayimPage(
+                              currentUser: currentUser,
+                              lang: lang,
+                              storage: storage,
                             ),
-                          );
-                        }
-                      },
-                    ),
-                    
-                    ListTile(
-                      leading: const Icon(Icons.settings_suggest_rounded, color: AppColors.textSecondary),
-                      title: Text(lang.tr('global_wage_settings'), style: const TextStyle(color: AppColors.textPrimary)),
-                      onTap: () {
-                        Navigator.pop(context); // Close drawer
-                        if (onPanelSelected != null) {
-                          onPanelSelected!('global_settings');
-                        } else {
-                          Navigator.pushReplacement(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder: (_, __, ___) => GlobalSettingsPage(
-                                lang: lang,
-                                currentUser: currentUser,
-                                storage: storage,
-                              ),
-                              transitionDuration: Duration.zero,
+                            transitionDuration: Duration.zero,
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                  
+                  ListTile(
+                    leading: const Icon(Icons.settings_suggest_rounded, color: AppColors.textSecondary),
+                    title: Text(lang.tr('global_wage_settings'), style: const TextStyle(color: AppColors.textPrimary)),
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      if (onPanelSelected != null) {
+                        onPanelSelected!('global_settings');
+                      } else {
+                        Navigator.pushReplacement(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (_, __, ___) => GlobalSettingsPage(
+                              lang: lang,
+                              currentUser: currentUser,
+                              storage: storage,
                             ),
-                          );
-                        }
-                      },
-                    ),
-                  ],
+                            transitionDuration: Duration.zero,
+                          ),
+                        );
+                      }
+                    },
+                  ),
                 ],
               ],
             ),
