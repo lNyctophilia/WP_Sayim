@@ -66,29 +66,7 @@ class ManagerDrawer extends StatelessWidget {
             ),
           ),
 
-          // Profilleri Düzenle Butonu (Sadece Admin/Owner görebilir)
-          if (currentUser.isOwner) ...[
-            ListTile(
-              leading: const Icon(Icons.manage_accounts_rounded, color: AppColors.accentLight),
-              title: Text(isTr ? 'Profilleri Düzenle' : 'Edit Profiles', style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w500)),
-              onTap: () {
-                Navigator.pop(context); // Close drawer
-                Navigator.pushReplacement(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (_, __, ___) => EditProfilesPage(
-                      currentUser: currentUser,
-                      lang: lang,
-                      storage: storage,
-                    ),
-                    transitionDuration: Duration.zero,
-                  ),
-                );
-              },
-            ),
-            const Divider(color: AppColors.divider, height: 1),
-          ],
-          
+
           Expanded(
             child: ListView(
               padding: EdgeInsets.zero,
@@ -184,6 +162,25 @@ class ManagerDrawer extends StatelessWidget {
                 if (currentUser.isOwner) ...[
                   const Divider(color: AppColors.divider),
                   _buildSectionTitle(isTr ? 'Sistem Araçları' : 'System Tools'),
+
+                  ListTile(
+                    leading: const Icon(Icons.manage_accounts_rounded, color: AppColors.textSecondary),
+                    title: Text(isTr ? 'Profilleri Düzenle' : 'Edit Profiles', style: const TextStyle(color: AppColors.textPrimary)),
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      Navigator.pushReplacement(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (_, __, ___) => EditProfilesPage(
+                            currentUser: currentUser,
+                            lang: lang,
+                            storage: storage,
+                          ),
+                          transitionDuration: Duration.zero,
+                        ),
+                      );
+                    },
+                  ),
                   
                   ListTile(
                     leading: const Icon(Icons.history_edu_rounded, color: AppColors.textSecondary),
