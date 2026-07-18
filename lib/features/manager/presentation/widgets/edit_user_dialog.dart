@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
 import '../../../../core/services/auth_service.dart';
@@ -89,11 +88,10 @@ class _EditUserDialogState extends State<EditUserDialog> {
         widget.onUserEdited();
         Navigator.pop(context);
 
-        final isTr = widget.lang.currentLang == 'tr';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              isTr ? 'Kullanıcı bilgileri güncellendi.' : 'User details updated.',
+              widget.lang.tr('user_details_updated'),
               style: const TextStyle(color: AppColors.textPrimary),
             ),
             backgroundColor: AppColors.card,
@@ -102,9 +100,8 @@ class _EditUserDialogState extends State<EditUserDialog> {
       }
     } catch (e) {
       if (mounted) {
-        final isTr = widget.lang.currentLang == 'tr';
         setState(() {
-          _errorMessage = isTr ? 'Güncelleme sırasında bir hata oluştu.' : 'An error occurred during update.';
+          _errorMessage = widget.lang.tr('update_error');
           _isLoading = false;
         });
       }
@@ -113,11 +110,10 @@ class _EditUserDialogState extends State<EditUserDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final isTr = widget.lang.currentLang == 'tr';
     final isManager = widget.targetUser.isManager;
     final title = isManager
-        ? (isTr ? 'Yöneticiyi Düzenle' : 'Edit Manager')
-        : (isTr ? 'Personeli Düzenle' : 'Edit Staff');
+        ? widget.lang.tr('edit_manager')
+        : widget.lang.tr('edit_staff');
 
     return Container(
       decoration: const BoxDecoration(
@@ -177,7 +173,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
               const SizedBox(height: 24),
 
               // Ad Soyad
-              _buildLabel(isTr ? 'Ad Soyad' : 'Full Name'),
+              _buildLabel(widget.lang.tr('full_name')),
               const SizedBox(height: 6),
               TextFormField(
                 controller: _fullNameController,
@@ -188,13 +184,13 @@ class _EditUserDialogState extends State<EditUserDialog> {
                   fontSize: 15,
                 ),
                 decoration: InputDecoration(
-                  hintText: isTr ? 'Örn: Ahmet Yılmaz' : 'e.g. John Doe',
+                  hintText: widget.lang.tr('full_name_hint'),
                   prefixIcon: const Icon(Icons.badge_outlined,
                       color: AppColors.textSecondary, size: 20),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return isTr ? 'Ad soyad gerekli' : 'Full name required';
+                    return widget.lang.tr('full_name_required');
                   }
                   return null;
                 },
@@ -202,7 +198,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
               const SizedBox(height: 16),
 
               // Kullanıcı Adı
-              _buildLabel(isTr ? 'Kullanıcı Adı' : 'Username'),
+              _buildLabel(widget.lang.tr('username')),
               const SizedBox(height: 6),
               TextFormField(
                 controller: _usernameController,
@@ -218,20 +214,16 @@ class _EditUserDialogState extends State<EditUserDialog> {
                   fontSize: 15,
                 ),
                 decoration: InputDecoration(
-                  hintText: isTr ? 'Örn: ahmet.yilmaz' : 'e.g. john.doe',
+                  hintText: widget.lang.tr('username_hint'),
                   prefixIcon: const Icon(Icons.alternate_email_rounded,
                       color: AppColors.textSecondary, size: 20),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return isTr
-                        ? 'Kullanıcı adı gerekli'
-                        : 'Username required';
+                    return widget.lang.tr('username_required');
                   }
                   if (value.trim().length < 3) {
-                    return isTr
-                        ? 'En az 3 karakter olmalı'
-                        : 'At least 3 characters';
+                    return widget.lang.tr('min_3_chars');
                   }
                   return null;
                 },
@@ -239,7 +231,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
               const SizedBox(height: 16),
 
               // Şifre
-              _buildLabel(isTr ? 'Şifre' : 'Password'),
+              _buildLabel(widget.lang.tr('password')),
               const SizedBox(height: 6),
               TextFormField(
                 controller: _passwordController,
@@ -250,7 +242,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
                   fontSize: 15,
                 ),
                 decoration: InputDecoration(
-                  hintText: isTr ? 'Değiştirmek istemiyorsanız boş bırakın' : 'Leave empty to keep unchanged',
+                  hintText: widget.lang.tr('password_leave_empty'),
                   prefixIcon: const Icon(Icons.lock_outline_rounded,
                       color: AppColors.textSecondary, size: 20),
                   suffixIcon: IconButton(
@@ -268,9 +260,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
                 ),
                 validator: (value) {
                   if (value != null && value.isNotEmpty && value.length < 6) {
-                    return isTr
-                        ? 'En az 6 karakter olmalı'
-                        : 'At least 6 characters';
+                    return widget.lang.tr('min_6_chars');
                   }
                   return null;
                 },
@@ -336,7 +326,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
                           ),
                         )
                       : Text(
-                          isTr ? 'Güncelle' : 'Update',
+                          widget.lang.tr('update'),
                           style: GoogleFonts.inter(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,

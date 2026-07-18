@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
-import '../../../../core/models/app_user.dart';
 import 'register_page.dart';
 
 class LockoutException implements Exception {

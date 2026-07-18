@@ -37,7 +37,7 @@ class SayimListTab extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
-                    isTr ? 'Bir hata oluştu:\n${snapshot.error}' : 'An error occurred:\n${snapshot.error}',
+                    lang.tr('error_occurred') + '${snapshot.error}',
                     style: const TextStyle(color: AppColors.danger),
                     textAlign: TextAlign.center,
                   ),
@@ -59,7 +59,7 @@ class SayimListTab extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      isTr ? 'Henüz sayım bulunmuyor.' : 'No counts found yet.',
+                      lang.tr('no_counts_found'),
                       style: const TextStyle(
                         fontSize: 16,
                         color: AppColors.textHint,
@@ -137,7 +137,7 @@ class SayimListTab extends StatelessWidget {
                 child: Text(
                   sayim.note.isNotEmpty
                       ? sayim.note
-                      : (isTr ? 'İsimsiz Sayım' : 'Unnamed Count'),
+                      : lang.tr('unnamed_count'),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -155,8 +155,8 @@ class SayimListTab extends StatelessWidget {
                 ),
                 child: Text(
                   isOpen
-                      ? (isTr ? 'Açık' : 'Open')
-                      : (isTr ? 'Kapalı' : 'Closed'),
+                      ? lang.tr('status_open')
+                      : lang.tr('status_closed'),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,

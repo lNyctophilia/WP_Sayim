@@ -20,12 +20,14 @@ class ExportSayimPage extends StatefulWidget {
   final LanguageService lang;
   final StorageService storage;
   final AppUser currentUser;
+  final bool isEmbedded;
 
   const ExportSayimPage({
     super.key,
     required this.lang,
     required this.storage,
     required this.currentUser,
+    this.isEmbedded = false,
   });
 
   @override
@@ -39,6 +41,12 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
 
   Sayim? _selectedSayim;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.storage.setLastPanel('export');
+  }
 
   Future<void> _exportToExcel() async {
     if (_selectedSayim == null) return;
@@ -197,56 +205,33 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
   Widget build(BuildContext context) {
     final isTr = widget.lang.currentLang == 'tr';
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => ManagerPanelPage(
-              currentUser: widget.currentUser,
-              storage: widget.storage,
-              lang: widget.lang,
-              onLogout: () {},
-            ),
-            transitionDuration: Duration.zero,
-          ),
-        );
-      },
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        drawer: ManagerDrawer(
-          currentUser: widget.currentUser,
-          lang: widget.lang,
-          storage: widget.storage,
-        ),
-        body: Column(
-          children: [
-            CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  const Icon(Icons.table_view_rounded, color: AppColors.accentLight),
-                  const SizedBox(width: 8),
-                  Text(
-                    isTr ? 'Excel Çıktısı Al' : 'Export Excel',
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+    Widget content = Column(
+      children: [
+        if (!widget.isEmbedded)
+          CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              const Icon(Icons.table_view_rounded, color: AppColors.accentLight),
+              const SizedBox(width: 8),
+              Text(
+                isTr ? 'Excel Çıktısı Al' : 'Export Excel',
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
+            ],
+          ),
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
             Text(
               isTr ? 'Lütfen Excel çıktısı almak istediğiniz sayımı seçin.' : 'Please select a count to export to Excel.',
               style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
@@ -359,9 +344,39 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
             ],
           ),
         ),
-      ),
+        ),
       ],
-      ),
+    );
+
+    if (widget.isEmbedded) {
+      return content;
+    }
+
+    return PopScope<Object?>(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop) return;
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => ManagerPanelPage(
+              currentUser: widget.currentUser,
+              storage: widget.storage,
+              lang: widget.lang,
+              onLogout: () {},
+            ),
+            transitionDuration: Duration.zero,
+          ),
+        );
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        drawer: ManagerDrawer(
+          currentUser: widget.currentUser,
+          lang: widget.lang,
+          storage: widget.storage,
+        ),
+        body: SafeArea(child: content),
       ),
     );
   }

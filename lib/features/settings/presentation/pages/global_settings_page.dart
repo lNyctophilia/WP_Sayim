@@ -13,12 +13,14 @@ class GlobalSettingsPage extends StatefulWidget {
   final LanguageService lang;
   final AppUser currentUser;
   final StorageService storage;
+  final bool isEmbedded;
 
   const GlobalSettingsPage({
     super.key,
     required this.lang,
     required this.currentUser,
     required this.storage,
+    this.isEmbedded = false,
   });
 
   @override
@@ -39,6 +41,7 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
   @override
   void initState() {
     super.initState();
+    widget.storage.setLastPanel('global_settings');
     _staffIciCtrl = TextEditingController();
     _staffDisiCtrl = TextEditingController();
     _managerIciCtrl = TextEditingController();
@@ -90,7 +93,18 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
             backgroundColor: AppColors.success,
           ),
         );
-        Navigator.pop(context);
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => ManagerPanelPage(
+              currentUser: widget.currentUser,
+              storage: widget.storage,
+              lang: widget.lang,
+              onLogout: () {},
+            ),
+            transitionDuration: Duration.zero,
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -110,11 +124,109 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isTr = widget.lang.currentLang == 'tr';
 
-    return PopScope(
+    Widget content = Column(
+      children: [
+        if (!widget.isEmbedded)
+          CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              const Icon(Icons.settings_rounded, color: AppColors.accentLight),
+              const SizedBox(width: 8),
+              Text(
+                widget.lang.tr('global_settings'),
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(color: AppColors.accentLight))
+                : SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.lang.tr('default_wages'),
+                      style: const TextStyle(
+                        color: AppColors.accentLight,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: _staffIciCtrl,
+                      label: widget.lang.tr('staff_in_city'),
+                      icon: Icons.person_rounded,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: _staffDisiCtrl,
+                      label: widget.lang.tr('staff_out_city'),
+                      icon: Icons.person_outline_rounded,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: _managerIciCtrl,
+                      label: widget.lang.tr('manager_in_city'),
+                      icon: Icons.admin_panel_settings_rounded,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: _managerDisiCtrl,
+                      label: widget.lang.tr('manager_out_city'),
+                      icon: Icons.admin_panel_settings_outlined,
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: _saveSettings,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.accentLight,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          widget.lang.tr('save'),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+
+    if (widget.isEmbedded) {
+      return content;
+    }
+
+    return PopScope<Object?>(
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
         if (didPop) return;
         Navigator.pushReplacement(
           context,
@@ -136,103 +248,7 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
           lang: widget.lang,
           storage: widget.storage,
         ),
-        body: Column(
-          children: [
-            CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  const Icon(Icons.settings_rounded, color: AppColors.accentLight),
-                  const SizedBox(width: 8),
-                  Text(
-                    isTr ? 'Genel Ayarlar' : 'Global Settings',
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          Expanded(
-            child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(color: AppColors.accentLight))
-                : SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isTr ? 'Varsayılan Ücretler' : 'Default Wages',
-                      style: const TextStyle(
-                        color: AppColors.accentLight,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      controller: _staffIciCtrl,
-                      label: isTr ? 'Personel (Şehir İçi)' : 'Staff (In-City)',
-                      icon: Icons.person_rounded,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      controller: _staffDisiCtrl,
-                      label: isTr
-                          ? 'Personel (Şehir Dışı)'
-                          : 'Staff (Out-of-City)',
-                      icon: Icons.person_outline_rounded,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      controller: _managerIciCtrl,
-                      label: isTr ? 'Yönetici (Şehir İçi)' : 'Manager (In-City)',
-                      icon: Icons.admin_panel_settings_rounded,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      controller: _managerDisiCtrl,
-                      label: isTr
-                          ? 'Yönetici (Şehir Dışı)'
-                          : 'Manager (Out-of-City)',
-                      icon: Icons.admin_panel_settings_outlined,
-                    ),
-                    const SizedBox(height: 32),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: _saveSettings,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accentLight,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          isTr ? 'Kaydet' : 'Save',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+        body: SafeArea(child: content),
       ),
     );
   }

@@ -179,6 +179,22 @@ class AppStrings {
       'en': 'Are you sure you want to sign out?'
     },
 
+    // Manager Drawer & Tools
+    'staff_panel': {'tr': 'Personel Paneli', 'en': 'Staff Panel'},
+    'calendar_dashboard': {'tr': 'Takvim / İş Takip', 'en': 'Calendar / Dashboard'},
+    'staff_home': {'tr': 'Personel Ana Ekranı', 'en': 'Staff Home Screen'},
+    'manager_tools': {'tr': 'Yönetici Araçları', 'en': 'Manager Tools'},
+    'manager_panel': {'tr': 'Yönetici Paneli', 'en': 'Manager Panel'},
+    'manager_panel_desc': {'tr': 'Sayımlar ve Personeller', 'en': 'Counts and Staff'},
+    'shuttle_planning': {'tr': 'Servis / Rota Planlama', 'en': 'Shuttle / Route Planning'},
+    'shuttle_route_desc': {'tr': 'Personel Servis Rotası', 'en': 'Staff Shuttle Route'},
+    'export_excel': {'tr': 'Excel Çıktısı Al', 'en': 'Export Excel'},
+    'export_reports': {'tr': 'Sayım Raporları', 'en': 'Count Reports'},
+    'system_tools': {'tr': 'Sistem Araçları', 'en': 'System Tools'},
+    'edit_profiles': {'tr': 'Profilleri Düzenle', 'en': 'Edit Profiles'},
+    'add_past_count': {'tr': 'Geçmiş Sayım Ekle', 'en': 'Add Past Count'},
+    'global_wage_settings': {'tr': 'Genel Ücret Ayarları', 'en': 'Global Wage Settings'},
+
     // User Management
     'register': {'tr': 'Kayıt Ol', 'en': 'Register'},
     'register_subtitle': {'tr': 'Yeni bir hesap oluşturun', 'en': 'Create a new account'},
@@ -217,6 +233,64 @@ class AppStrings {
       'tr': 'Kullanıcı oluşturulurken bir hata oluştu',
       'en': 'An error occurred while creating user'
     },
+    
+    // Global Settings
+    'global_settings': {'tr': 'Genel Ayarlar', 'en': 'Global Settings'},
+    'default_wages': {'tr': 'Varsayılan Ücretler', 'en': 'Default Wages'},
+    'staff_in_city': {'tr': 'Personel (Şehir İçi)', 'en': 'Staff (In-City)'},
+    'staff_out_city': {'tr': 'Personel (Şehir Dışı)', 'en': 'Staff (Out-of-City)'},
+    'manager_in_city': {'tr': 'Yönetici (Şehir İçi)', 'en': 'Manager (In-City)'},
+    'manager_out_city': {'tr': 'Yönetici (Şehir Dışı)', 'en': 'Manager (Out-of-City)'},
+
+    // User Edit Dialog
+    'username': {'tr': 'Kullanıcı Adı', 'en': 'Username'},
+    'username_hint': {'tr': 'Örn: ahmet.yilmaz', 'en': 'e.g. john.doe'},
+    'password': {'tr': 'Şifre', 'en': 'Password'},
+    'password_leave_empty': {'tr': 'Değiştirmek istemiyorsanız boş bırakın', 'en': 'Leave empty to keep unchanged'},
+    'update': {'tr': 'Güncelle', 'en': 'Update'},
+
+    // Group Selector
+    'time_groups_max': {'tr': 'Saat Grupları (Max 10)', 'en': 'Time Groups (Max 10)'},
+    'add_group': {'tr': 'Grup Ekle', 'en': 'Add Group'},
+    'group': {'tr': 'Grup', 'en': 'Group'},
+
+    // Sayim List
+    'error_occurred': {'tr': 'Bir hata oluştu:\n', 'en': 'An error occurred:\n'},
+    'no_counts_found': {'tr': 'Henüz sayım bulunmuyor.', 'en': 'No counts found yet.'},
+    'unnamed_count': {'tr': 'İsimsiz Sayım', 'en': 'Unnamed Count'},
+    'status_open': {'tr': 'Açık', 'en': 'Open'},
+    'status_closed': {'tr': 'Kapalı', 'en': 'Closed'},
+
+    // Staff Picker
+    'staff_selection': {'tr': 'Personel Seçimi', 'en': 'Staff Selection'},
+    'select_all': {'tr': 'Hepsini Seç', 'en': 'Select All'},
+    'me_suffix': {'tr': ' (Ben)', 'en': ' (Me)'},
+    'role_staff': {'tr': 'Personel', 'en': 'Staff'},
+    'role_manager': {'tr': 'Yönetici', 'en': 'Manager'},
+    'select_group': {'tr': 'Grup Seç', 'en': 'Select Group'},
+    'multiplier': {'tr': 'Çarpan', 'en': 'Multiplier'},
+    'wage': {'tr': 'Ücret', 'en': 'Wage'},
+
+    // User List Tab
+    'reject_delete_confirm': {'tr': 'Bu başvuruyu reddetmek ve silmek istediğinize emin misiniz?', 'en': 'Are you sure you want to reject and delete this application?'},
+    'delete_user_confirm': {'tr': 'Bu kullanıcıyı silmek istediğinize emin misiniz?', 'en': 'Are you sure you want to delete this user?'},
+    'managers': {'tr': 'Yöneticiler', 'en': 'Managers'},
+    'no_managers_yet': {'tr': 'Henüz yönetici yok', 'en': 'No managers yet'},
+    'no_staff_yet': {'tr': 'Henüz personel yok', 'en': 'No staff yet'},
+    'role_owner': {'tr': 'Sahip', 'en': 'Owner'},
+    'inactive': {'tr': 'Pasif', 'en': 'Inactive'},
+
+    // Extra user edit strings
+    'user_details_updated': {'tr': 'Kullanıcı bilgileri güncellendi.', 'en': 'User details updated.'},
+    'update_error': {'tr': 'Güncelleme sırasında bir hata oluştu.', 'en': 'An error occurred during update.'},
+    'edit_manager': {'tr': 'Yöneticiyi Düzenle', 'en': 'Edit Manager'},
+    'edit_staff': {'tr': 'Personeli Düzenle', 'en': 'Edit Staff'},
+    'full_name_hint': {'tr': 'Örn: Ahmet Yılmaz', 'en': 'e.g. John Doe'},
+    'min_3_chars': {'tr': 'En az 3 karakter', 'en': 'Min 3 characters'},
+    'min_6_chars': {'tr': 'En az 6 karakter', 'en': 'Min 6 characters'},
+    'username_required': {'tr': 'Kullanıcı adı gerekli', 'en': 'Username is required'},
+    'notifications': {'tr': 'Bildirimler', 'en': 'Notifications'},
+    'sayim_reminder': {'tr': 'Sayım Hatırlatıcı', 'en': 'Count Reminder'},
   };
 
   static const List<String> monthKeys = [

@@ -484,7 +484,7 @@ class _SettingsPageState extends State<SettingsPage> {
             borderRadius: BorderRadius.circular(14),
           ),
           child: SwitchListTile(
-            activeColor: AppColors.accentLight,
+            activeThumbColor: AppColors.accentLight,
             secondary: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(

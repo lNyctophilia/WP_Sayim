@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
-import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../widgets/user_list_tab.dart';
@@ -18,6 +17,7 @@ class ManagerPanelPage extends StatefulWidget {
   final StorageService storage;
   final LanguageService lang;
   final VoidCallback onLogout;
+  final bool isEmbedded;
 
   const ManagerPanelPage({
     super.key,
@@ -25,6 +25,7 @@ class ManagerPanelPage extends StatefulWidget {
     required this.storage,
     required this.lang,
     required this.onLogout,
+    this.isEmbedded = false,
   });
 
   @override
@@ -34,7 +35,6 @@ class ManagerPanelPage extends StatefulWidget {
 class _ManagerPanelPageState extends State<ManagerPanelPage>
     with TickerProviderStateMixin {
   late TabController _tabController;
-  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -51,44 +51,18 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
     super.dispose();
   }
 
-  Future<void> _handleLogout() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.card,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          widget.lang.tr('logout'),
-          style: const TextStyle(color: AppColors.textPrimary),
-        ),
-        content: Text(
-          widget.lang.tr('logout_confirm'),
-          style: const TextStyle(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(widget.lang.tr('cancel')),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: Text(widget.lang.tr('logout')),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      await _authService.logout();
-      widget.onLogout();
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
+    if (widget.isEmbedded) {
+      return Column(
+        children: [
+          _buildTabBar(),
+          Expanded(child: _buildTabContent()),
+        ],
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       drawer: ManagerDrawer(
@@ -96,12 +70,18 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
         lang: widget.lang,
         storage: widget.storage,
       ),
-      body: Column(
-        children: [
-          CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
-          _buildTabBar(),
-          Expanded(child: _buildTabContent()),
-        ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            CustomTopBar(
+              currentUser: widget.currentUser,
+              lang: widget.lang,
+              storage: widget.storage,
+            ),
+            _buildTabBar(),
+            Expanded(child: _buildTabContent()),
+          ],
+        ),
       ),
     );
   }

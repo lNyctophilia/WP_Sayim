@@ -63,7 +63,6 @@ class _UserListTabState extends State<UserListTab>
   }
 
   Future<void> _rejectUser(AppUser user) async {
-    final isTr = widget.lang.currentLang == 'tr';
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -72,7 +71,7 @@ class _UserListTabState extends State<UserListTab>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(user.fullName, style: const TextStyle(color: AppColors.textPrimary)),
         content: Text(
-          isTr ? 'Bu başvuruyu reddetmek ve silmek istediğinize emin misiniz?' : 'Are you sure you want to reject and delete this application?',
+          widget.lang.tr('reject_delete_confirm'),
           style: const TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
@@ -93,7 +92,6 @@ class _UserListTabState extends State<UserListTab>
   }
 
   Future<void> _deleteUser(AppUser user) async {
-    final isTr = widget.lang.currentLang == 'tr';
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -102,7 +100,7 @@ class _UserListTabState extends State<UserListTab>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(user.fullName, style: const TextStyle(color: AppColors.textPrimary, fontSize: 16)),
         content: Text(
-          isTr ? 'Bu kullanıcıyı silmek istediğinize emin misiniz?' : 'Are you sure you want to delete this user?',
+          widget.lang.tr('delete_user_confirm'),
           style: const TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
@@ -110,7 +108,7 @@ class _UserListTabState extends State<UserListTab>
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: Text(isTr ? 'Sil' : 'Delete'),
+            child: Text(widget.lang.tr('delete')),
           ),
         ],
       ),
@@ -127,7 +125,7 @@ class _UserListTabState extends State<UserListTab>
     super.build(context);
     final isTr = widget.lang.currentLang == 'tr';
     final isManagerList = widget.targetRole == UserRole.manager;
-    final title = isManagerList ? (isTr ? 'Yöneticiler' : 'Managers') : widget.lang.tr('existing_staff');
+    final title = isManagerList ? widget.lang.tr('managers') : widget.lang.tr('existing_staff');
 
     return RefreshIndicator(
       onRefresh: _loadUsers,
@@ -199,7 +197,7 @@ class _UserListTabState extends State<UserListTab>
           ),
           const SizedBox(height: 12),
           Text(
-            isManagerList ? (isTr ? 'Henüz yönetici yok' : 'No managers yet') : (isTr ? 'Henüz personel yok' : 'No staff yet'),
+            isManagerList ? widget.lang.tr('no_managers_yet') : widget.lang.tr('no_staff_yet'),
             style: GoogleFonts.inter(fontSize: 16, color: AppColors.textHint, fontWeight: FontWeight.w500),
           ),
         ],
@@ -300,14 +298,12 @@ class _UserListTabState extends State<UserListTab>
   }
 
   Widget _buildUserCard(AppUser user) {
-    final isTr = widget.lang.currentLang == 'tr';
-    final isManagerList = widget.targetRole == UserRole.manager;
     final canEdit = widget.currentUser.isOwner || widget.currentUser.isManager;
     final roleLabel = user.isOwner
-        ? (isTr ? 'Sahip' : 'Owner')
+        ? widget.lang.tr('role_owner')
         : user.isManager
-            ? (isTr ? 'Yönetici' : 'Manager')
-            : (isTr ? 'Personel' : 'Staff');
+            ? widget.lang.tr('role_manager')
+            : widget.lang.tr('role_staff');
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -358,7 +354,7 @@ class _UserListTabState extends State<UserListTab>
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                user.active ? roleLabel : (isTr ? 'Pasif' : 'Inactive'),
+                user.active ? roleLabel : widget.lang.tr('inactive'),
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,

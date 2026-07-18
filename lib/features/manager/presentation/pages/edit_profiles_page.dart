@@ -14,12 +14,14 @@ class EditProfilesPage extends StatefulWidget {
   final AppUser currentUser;
   final LanguageService lang;
   final StorageService storage;
+  final bool isEmbedded;
 
   const EditProfilesPage({
     super.key,
     required this.currentUser,
     required this.lang,
     required this.storage,
+    this.isEmbedded = false,
   });
 
   @override
@@ -47,6 +49,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
   @override
   void initState() {
     super.initState();
+    widget.storage.setLastPanel('edit_profiles');
     _loadUsers();
   }
 
@@ -63,12 +66,6 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
   Future<void> _loadUsers() async {
     setState(() => _isLoading = true);
     try {
-      final users = await _authService.getAllUsers();
-      // If we also want to allow editing the current user (owner), 
-      // getAllUsers() might filter out owners. 
-      // Let's get them manually or use the current list.
-      // Wait, getAllUsers() in auth_service excludes the owner currently.
-      // Let's just fetch all active users if we need everyone.
       final snapshot = await _authService.getUsersByRole(UserRole.staff);
       final managers = await _authService.getUsersByRole(UserRole.manager);
       final owners = await _authService.getUsersByRole(UserRole.owner);
@@ -172,58 +169,35 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
   Widget build(BuildContext context) {
     final isTr = widget.lang.currentLang == 'tr';
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => ManagerPanelPage(
-              currentUser: widget.currentUser,
-              storage: widget.storage,
-              lang: widget.lang,
-              onLogout: () {},
-            ),
-            transitionDuration: Duration.zero,
-          ),
-        );
-      },
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        drawer: ManagerDrawer(
-          currentUser: widget.currentUser,
-          lang: widget.lang,
-          storage: widget.storage,
-        ),
-        body: Column(
-          children: [
-            CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  const Icon(Icons.manage_accounts_rounded, color: AppColors.accentLight),
-                  const SizedBox(width: 8),
-                  Text(
-                    isTr ? 'Profilleri Düzenle' : 'Edit Profiles',
-                    style: GoogleFonts.inter(
-                      color: AppColors.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+    Widget content = Column(
+      children: [
+        if (!widget.isEmbedded)
+          CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              const Icon(Icons.manage_accounts_rounded, color: AppColors.accentLight),
+              const SizedBox(width: 8),
+              Text(
+                isTr ? 'Profilleri Düzenle' : 'Edit Profiles',
+                style: GoogleFonts.inter(
+                  color: AppColors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator(color: AppColors.accentLight))
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            ],
+          ),
+        ),
+        Expanded(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator(color: AppColors.accentLight))
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                   _buildLabel(isTr ? 'Kullanıcı Seçin' : 'Select User'),
                   const SizedBox(height: 8),
                   Container(
@@ -234,7 +208,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                       border: Border.all(color: AppColors.divider),
                     ),
                     child: DropdownButtonHideUnderline(
-                      child: DropdownButton<AppUser>(
+                      child: DropdownButton<AppUser?>(
                         isExpanded: true,
                         hint: Text(
                           isTr ? 'Bir kişi seçin' : 'Select a person',
@@ -244,7 +218,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                         dropdownColor: AppColors.card,
                         icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
                         items: _allUsers.map((user) {
-                          return DropdownMenuItem<AppUser>(
+                          return DropdownMenuItem<AppUser?>(
                             value: user,
                             child: Text(
                               '${user.fullName} (@${user.username})',
@@ -380,11 +354,41 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                       ),
                     ),
                 ],
-              ),
-            ),
-            ),
-          ],
+                    ),
+                  ),
         ),
+      ],
+    );
+
+    if (widget.isEmbedded) {
+      return content;
+    }
+
+    return PopScope<Object?>(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop) return;
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => ManagerPanelPage(
+              currentUser: widget.currentUser,
+              storage: widget.storage,
+              lang: widget.lang,
+              onLogout: () {},
+            ),
+            transitionDuration: Duration.zero,
+          ),
+        );
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        drawer: ManagerDrawer(
+          currentUser: widget.currentUser,
+          lang: widget.lang,
+          storage: widget.storage,
+        ),
+        body: SafeArea(child: content),
       ),
     );
   }

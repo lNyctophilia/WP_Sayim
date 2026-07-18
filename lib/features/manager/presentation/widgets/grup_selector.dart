@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/sayim.dart';
+import '../../../../core/constants/app_strings.dart';
 
 class GrupSelector extends StatefulWidget {
   final List<SayimGrup> initialGruplar;
@@ -107,7 +108,7 @@ class _GrupSelectorState extends State<GrupSelector> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              widget.isTr ? 'Saat Grupları (Max 10)' : 'Time Groups (Max 10)',
+              AppStrings.get('time_groups_max', widget.isTr ? 'tr' : 'en'),
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -118,7 +119,7 @@ class _GrupSelectorState extends State<GrupSelector> {
               TextButton.icon(
                 onPressed: _addGroup,
                 icon: const Icon(Icons.add_rounded, size: 18),
-                label: Text(widget.isTr ? 'Grup Ekle' : 'Add Group'),
+                label: Text(AppStrings.get('add_group', widget.isTr ? 'tr' : 'en')),
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.accentLight,
                   padding: EdgeInsets.zero,
@@ -155,7 +156,7 @@ class _GrupSelectorState extends State<GrupSelector> {
                               size: 18, color: AppColors.textSecondary),
                           const SizedBox(width: 8),
                           Text(
-                            '${widget.isTr ? 'Grup' : 'Group'} ${index + 1}: ${grup.saat}',
+                            '${AppStrings.get('group', widget.isTr ? 'tr' : 'en')} ${index + 1}: ${grup.saat}',
                             style: const TextStyle(
                               color: AppColors.textPrimary,
                               fontSize: 14,

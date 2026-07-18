@@ -7,7 +7,7 @@ import '../services/language_service.dart';
 import '../services/storage_service.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
-import '../../features/manager/presentation/pages/manager_panel_page.dart';
+import '../../features/manager/presentation/pages/manager_shell_page.dart';
 import '../services/notification_service.dart';
 
 /// Ana yönlendirici widget — Auth durumuna göre Login veya Ana Ekranı gösterir
@@ -161,13 +161,27 @@ class _AppRouterState extends State<AppRouter> {
   Widget _buildHomeForRole(AppUser user) {
     final lastPanel = widget.storage.getLastPanel();
 
-    if (lastPanel == 'manager' && (user.isOwner || user.isManager)) {
-      return ManagerPanelPage(
+    // Adminler (Owner) doğrudan Yönetici Panellerinde başlar, iş takvimleri yoktur.
+    if (user.isOwner) {
+      return ManagerShellPage(
         currentUser: user,
         storage: widget.storage,
         lang: widget.lang,
+        initialPanel: lastPanel.isEmpty ? 'manager' : lastPanel,
         onLogout: () {},
       );
+    }
+
+    if (user.isManager) {
+      if (lastPanel != 'home') {
+        return ManagerShellPage(
+          currentUser: user,
+          storage: widget.storage,
+          lang: widget.lang,
+          initialPanel: lastPanel.isEmpty ? 'manager' : lastPanel,
+          onLogout: () {},
+        );
+      }
     }
 
     return HomePage(

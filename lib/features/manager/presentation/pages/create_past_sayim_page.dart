@@ -18,12 +18,14 @@ class CreatePastSayimPage extends StatefulWidget {
   final AppUser currentUser;
   final LanguageService lang;
   final StorageService storage;
+  final bool isEmbedded;
 
   const CreatePastSayimPage({
     super.key,
     required this.currentUser,
     required this.lang,
     required this.storage,
+    this.isEmbedded = false,
   });
 
   @override
@@ -53,6 +55,7 @@ class _CreatePastSayimPageState extends State<CreatePastSayimPage> {
   @override
   void initState() {
     super.initState();
+    widget.storage.setLastPanel('create_past');
     _loadUsers();
   }
 
@@ -230,11 +233,22 @@ class _CreatePastSayimPageState extends State<CreatePastSayimPage> {
       await _sayimService.createPastSayimFull(sayim, davetler);
 
       if (mounted) {
-        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(widget.lang.currentLang == 'tr' ? 'Geçmiş sayım başarıyla kaydedildi.' : 'Past count saved successfully.'),
             backgroundColor: AppColors.success,
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => ManagerPanelPage(
+              currentUser: widget.currentUser,
+              storage: widget.storage,
+              lang: widget.lang,
+              onLogout: () {},
+            ),
+            transitionDuration: Duration.zero,
           ),
         );
       }
@@ -255,52 +269,29 @@ class _CreatePastSayimPageState extends State<CreatePastSayimPage> {
   Widget build(BuildContext context) {
     final isTr = widget.lang.currentLang == 'tr';
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => ManagerPanelPage(
-              currentUser: widget.currentUser,
-              storage: widget.storage,
-              lang: widget.lang,
-              onLogout: () {},
-            ),
-            transitionDuration: Duration.zero,
-          ),
-        );
-      },
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        drawer: ManagerDrawer(
-          currentUser: widget.currentUser,
-          lang: widget.lang,
-          storage: widget.storage,
-        ),
-        body: Column(
-          children: [
-            CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  const Icon(Icons.history_rounded, color: AppColors.accentLight),
-                  const SizedBox(width: 8),
-                  Text(
-                    isTr ? 'Geçmiş Sayım Ekle' : 'Add Past Count',
-                    style: GoogleFonts.inter(
-                      color: AppColors.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+    Widget content = Column(
+      children: [
+        if (!widget.isEmbedded)
+          CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              const Icon(Icons.history_rounded, color: AppColors.accentLight),
+              const SizedBox(width: 8),
+              Text(
+                isTr ? 'Geçmiş Sayım Ekle' : 'Add Past Count',
+                style: GoogleFonts.inter(
+                  color: AppColors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-            Expanded(
-              child: _isLoading && _allUsers.isEmpty
+            ],
+          ),
+        ),
+        Expanded(
+          child: _isLoading && _allUsers.isEmpty
                   ? const Center(child: CircularProgressIndicator(color: AppColors.accentLight))
                   : SingleChildScrollView(
                       padding: const EdgeInsets.all(16),
@@ -514,9 +505,39 @@ class _CreatePastSayimPageState extends State<CreatePastSayimPage> {
                 ),
               ),
             ),
+          ),
+        ],
+      );
+
+    if (widget.isEmbedded) {
+      return content;
+    }
+
+    return PopScope<Object?>(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop) return;
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => ManagerPanelPage(
+              currentUser: widget.currentUser,
+              storage: widget.storage,
+              lang: widget.lang,
+              onLogout: () {},
             ),
-          ],
+            transitionDuration: Duration.zero,
+          ),
+        );
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        drawer: ManagerDrawer(
+          currentUser: widget.currentUser,
+          lang: widget.lang,
+          storage: widget.storage,
         ),
+        body: SafeArea(child: content),
       ),
     );
   }

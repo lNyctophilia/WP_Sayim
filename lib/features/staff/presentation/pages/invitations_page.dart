@@ -163,7 +163,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
                   Icon(
                     Icons.inbox_rounded,
                     size: 64,
-                    color: AppColors.textHint.withOpacity(0.5),
+                    color: AppColors.textHint.withValues(alpha: 0.5),
                   ),
                   const SizedBox(height: 16),
                   const Text(
@@ -239,12 +239,12 @@ class _InvitationsPageState extends State<InvitationsPage> {
             color: AppColors.card,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AppColors.accentLight.withOpacity(0.3),
+              color: AppColors.accentLight.withValues(alpha: 0.3),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -258,7 +258,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.accentLight.withOpacity(0.2),
+                      color: AppColors.accentLight.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(Icons.event_available_rounded, color: AppColors.accentLight, size: 20),
@@ -293,7 +293,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: (davet.sehirIciDisi == SehirTipi.ici ? AppColors.cityInner : AppColors.cityOuter).withOpacity(0.2),
+                      color: (davet.sehirIciDisi == SehirTipi.ici ? AppColors.cityInner : AppColors.cityOuter).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(

@@ -13,12 +13,14 @@ class ShuttlePanelPage extends StatefulWidget {
   final AppUser currentUser;
   final LanguageService lang;
   final StorageService storage;
+  final bool isEmbedded;
 
   const ShuttlePanelPage({
     super.key,
     required this.currentUser,
     required this.lang,
     required this.storage,
+    this.isEmbedded = false,
   });
 
   @override
@@ -34,6 +36,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
   @override
   void initState() {
     super.initState();
+    widget.storage.setLastPanel('shuttle');
     _fetchStaff();
   }
 
@@ -197,54 +200,38 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
   Widget build(BuildContext context) {
     final isTr = widget.lang.currentLang == 'tr';
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => ManagerPanelPage(
-              currentUser: widget.currentUser,
-              storage: widget.storage,
-              lang: widget.lang,
-              onLogout: () {},
-            ),
-            transitionDuration: Duration.zero,
-          ),
-        );
-      },
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        drawer: ManagerDrawer(
-          currentUser: widget.currentUser,
-          lang: widget.lang,
-          storage: widget.storage,
-        ),
-        body: Column(
-          children: [
+    Widget scaffold = Scaffold(
+      backgroundColor: widget.isEmbedded ? Colors.transparent : AppColors.background,
+      drawer: widget.isEmbedded ? null : ManagerDrawer(
+        currentUser: widget.currentUser,
+        lang: widget.lang,
+        storage: widget.storage,
+      ),
+      body: Column(
+        children: [
+          if (!widget.isEmbedded)
             CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  const Icon(Icons.directions_bus_rounded, color: AppColors.accentLight),
-                  const SizedBox(width: 8),
-                  Text(
-                    isTr ? 'Servis / Rota Planlama' : 'Shuttle / Route Planning',
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                const Icon(Icons.directions_bus_rounded, color: AppColors.accentLight),
+                const SizedBox(width: 8),
+                Text(
+                  isTr ? 'Servis / Rota Planlama' : 'Shuttle / Route Planning',
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator(color: AppColors.accentLight))
-                  : Column(
+          ),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator(color: AppColors.accentLight))
+                : Column(
                       children: [
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -371,7 +358,30 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
           ),
         ),
       ),
-    ),
+    );
+
+    if (widget.isEmbedded) {
+      return scaffold;
+    }
+
+    return PopScope<Object?>(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop) return;
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => ManagerPanelPage(
+              currentUser: widget.currentUser,
+              storage: widget.storage,
+              lang: widget.lang,
+              onLogout: () {},
+            ),
+            transitionDuration: Duration.zero,
+          ),
+        );
+      },
+      child: scaffold,
     );
   }
 }

@@ -1,11 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/sayim.dart';
 import '../models/davet.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class SayimService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   /// Tüm sayımları getirir (tarihe göre azalan sırada)
   Stream<List<Sayim>> getSayimlar() {

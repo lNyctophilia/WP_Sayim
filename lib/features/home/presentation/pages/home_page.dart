@@ -11,7 +11,6 @@ import '../../../../core/services/storage_service.dart';
 import '../../data/models/monthly_data.dart';
 import '../../data/models/work_day.dart';
 import '../../data/repositories/work_day_repository.dart';
-import '../../../settings/presentation/pages/settings_page.dart';
 import '../widgets/calendar_grid.dart';
 import '../widgets/summary_card.dart';
 import '../../../manager/presentation/widgets/manager_drawer.dart';

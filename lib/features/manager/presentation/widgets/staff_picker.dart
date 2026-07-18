@@ -5,6 +5,7 @@ import '../../../../core/models/sayim.dart';
 import '../../../../core/models/davet.dart';
 import '../../../../core/models/app_settings.dart';
 import '../../../../core/services/settings_service.dart';
+import '../../../../core/constants/app_strings.dart';
 
 class SelectedUserConfig {
   final AppUser user;
@@ -263,7 +264,7 @@ class _StaffPickerState extends State<StaffPicker> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.isTr ? 'Personel Seçimi' : 'Staff Selection',
+                  AppStrings.get('staff_selection', widget.isTr ? 'tr' : 'en'),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -290,7 +291,7 @@ class _StaffPickerState extends State<StaffPicker> {
               return Row(
                 children: [
                   Text(
-                    widget.isTr ? 'Hepsini Seç' : 'Select All',
+                    AppStrings.get('select_all', widget.isTr ? 'tr' : 'en'),
                     style: TextStyle(
                       fontSize: 13,
                       color: canSelectAll ? AppColors.textSecondary : AppColors.textHint,
@@ -385,7 +386,7 @@ class _StaffPickerState extends State<StaffPicker> {
                       _notifyChanges();
                     },
                     activeColor: AppColors.accentLight,
-                    fillColor: isBusy ? WidgetStateProperty.all(AppColors.textHint.withOpacity(0.5)) : null,
+                    fillColor: isBusy ? WidgetStateProperty.all(AppColors.textHint.withValues(alpha: 0.5)) : null,
                   ),
                 ),
               ),
@@ -394,7 +395,7 @@ class _StaffPickerState extends State<StaffPicker> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      u.fullName + (isMe ? (widget.isTr ? ' (Ben)' : ' (Me)') : ''),
+                      u.fullName + (isMe ? AppStrings.get('me_suffix', widget.isTr ? 'tr' : 'en') : ''),
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -427,11 +428,11 @@ class _StaffPickerState extends State<StaffPicker> {
                     items: [
                       DropdownMenuItem(
                         value: DavetRole.staff,
-                        child: Text(widget.isTr ? 'Personel' : 'Staff'),
+                        child: Text(AppStrings.get('role_staff', widget.isTr ? 'tr' : 'en')),
                       ),
                       DropdownMenuItem(
                         value: DavetRole.manager,
-                        child: Text(widget.isTr ? 'Yönetici' : 'Manager'),
+                        child: Text(AppStrings.get('role_manager', widget.isTr ? 'tr' : 'en')),
                       ),
                     ],
                     onChanged: (val) {
@@ -461,7 +462,7 @@ class _StaffPickerState extends State<StaffPicker> {
                   Padding(
                     padding: const EdgeInsets.only(right: 8.0),
                     child: Text(
-                      widget.isTr ? 'Personel' : 'Staff',
+                      AppStrings.get('role_staff', widget.isTr ? 'tr' : 'en'),
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -479,7 +480,7 @@ class _StaffPickerState extends State<StaffPicker> {
                   child: DropdownButtonFormField<int>(
                     initialValue: config.grupId,
                     decoration: InputDecoration(
-                      labelText: widget.isTr ? 'Grup Seç' : 'Select Group',
+                      labelText: AppStrings.get('select_group', widget.isTr ? 'tr' : 'en'),
                       labelStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
                       border: InputBorder.none,
                       filled: true,
@@ -490,7 +491,7 @@ class _StaffPickerState extends State<StaffPicker> {
                       return DropdownMenuItem(
                         value: g.grupId,
                         child: Text(
-                          '${widget.isTr ? 'Grup' : 'Group'} ${g.grupId} (${g.saat})',
+                          '${AppStrings.get('group', widget.isTr ? 'tr' : 'en')} ${g.grupId} (${g.saat})',
                           style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
                         ),
                       );
@@ -508,7 +509,7 @@ class _StaffPickerState extends State<StaffPicker> {
                   child: DropdownButtonFormField<double>(
                     initialValue: config.multiplier,
                     decoration: InputDecoration(
-                      labelText: widget.isTr ? 'Çarpan' : 'Multiplier',
+                      labelText: AppStrings.get('multiplier', widget.isTr ? 'tr' : 'en'),
                       labelStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
                       border: InputBorder.none,
                       filled: true,
@@ -544,7 +545,7 @@ class _StaffPickerState extends State<StaffPicker> {
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
               decoration: InputDecoration(
-                labelText: widget.isTr ? 'Ücret' : 'Wage',
+                labelText: AppStrings.get('wage', widget.isTr ? 'tr' : 'en'),
                 labelStyle: const TextStyle(color: AppColors.textHint, fontSize: 13),
                 filled: true,
                 fillColor: AppColors.surface,
