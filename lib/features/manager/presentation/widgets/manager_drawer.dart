@@ -11,6 +11,7 @@ import '../../../home/presentation/pages/home_page.dart';
 import '../pages/edit_profiles_page.dart';
 import '../pages/create_past_sayim_page.dart';
 import '../pages/export_sayim_page.dart';
+import '../pages/shuttle_panel_page.dart';
 
 class ManagerDrawer extends StatelessWidget {
   final AppUser currentUser;
@@ -134,6 +135,24 @@ class ManagerDrawer extends StatelessWidget {
                       // Geri dönüldüğünde (örneğin ana sayfaya) paneli güncelle
                       storage.setLastPanel('home');
                     });
+                  },
+                ),
+                
+                ListTile(
+                  leading: const Icon(Icons.directions_bus_rounded, color: AppColors.textSecondary),
+                  title: Text(isTr ? 'Servis / Rota Planlama' : 'Shuttle / Route Planning', style: const TextStyle(color: AppColors.textPrimary)),
+                  subtitle: Text(isTr ? 'Personel Servis Rotası' : 'Staff Shuttle Route', style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
+                  onTap: () {
+                    Navigator.pop(context); // Close drawer
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ShuttlePanelPage(
+                          currentUser: currentUser,
+                          lang: lang,
+                        ),
+                      ),
+                    );
                   },
                 ),
                 
