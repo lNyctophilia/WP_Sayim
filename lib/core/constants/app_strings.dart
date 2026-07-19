@@ -206,7 +206,7 @@ class AppStrings {
     'phone_number_required': {'tr': 'Telefon numarası gerekli', 'en': 'Phone number is required'},
     'phone_note': {'tr': 'İletişim kurabilmek için gereklidir.', 'en': 'Required for contact purposes.'},
     'address': {'tr': 'Adres', 'en': 'Address'},
-    'address_hint': {'tr': 'Örn: Kadıköy / İstanbul', 'en': 'e.g. Kadikoy / Istanbul'},
+    'address_hint': {'tr': 'Örn: Denizli, Merkezefendi, Gümüşçay Mahallesi', 'en': 'e.g. Denizli, Merkezefendi, Gumuscay Neighborhood'},
     'address_required': {'tr': 'Adres gerekli', 'en': 'Address is required'},
     'address_note': {'tr': 'Servis güzergahı planlaması için gereklidir.', 'en': 'Required for service route planning.'},
     'no_account': {'tr': 'Hesabınız yok mu?', 'en': 'Don\'t have an account?'},
