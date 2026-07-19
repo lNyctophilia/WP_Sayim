@@ -41,46 +41,61 @@
 <body>
   <script>
     // PWA Otomatik Güncelleme ve Hard Cache Temizleme
-    if ('serviceWorker' in navigator) {
-      async function clearCacheAndReload() {
-        console.log('[PWA Update] Yeni versiyon bulundu! Caches temizleniyor...');
-        if (window.caches) {
-          try {
-            const names = await caches.keys();
-            await Promise.all(names.map(name => caches.delete(name)));
-            console.log('[PWA Update] Tüm önbellek (cache) başarıyla silindi.');
-          } catch (e) {
-            console.error('[PWA Update] Önbellek silinirken hata oluştu:', e);
-          }
-        }
-        
-        // Hard reload için URL'ye timestamp ekleyerek sayfayı yenile
-        alert('Uygulama güncellendi. Yeni sürüm yükleniyor...');
-        window.location.href = window.location.pathname + '?v=' + new Date().getTime();
-      }
-
-      let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-          refreshing = true;
-          clearCacheAndReload();
-        }
-      });
-      
-      // Uygulama her açıldığında ve görünür olduğunda güncellemeleri kontrol et
-      function checkForUpdates() {
-        navigator.serviceWorker.ready.then((registration) => {
-          registration.update().catch((err) => console.log('SW Update error:', err));
+    async function checkForUpdates() {
+      try {
+        // Cache'i atlamak için rastgele bir timestamp ekliyoruz
+        const response = await fetch('version.json?v=' + new Date().getTime(), {
+          cache: 'no-store'
         });
-      }
+        
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        const latestVersion = data.version;
+        const currentVersion = localStorage.getItem('appVersion');
 
-      window.addEventListener('load', checkForUpdates);
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-          checkForUpdates();
+        if (currentVersion && latestVersion && currentVersion !== latestVersion) {
+          console.log('[PWA Update] Yeni versiyon bulundu!', latestVersion);
+          
+          // Mevcut Service Worker'ları ve Cache'i temizle
+          if (window.caches) {
+            try {
+              const names = await caches.keys();
+              await Promise.all(names.map(name => caches.delete(name)));
+              console.log('[PWA Update] Tüm önbellek (cache) başarıyla silindi.');
+            } catch (e) {
+              console.error('[PWA Update] Önbellek silinirken hata oluştu:', e);
+            }
+          }
+          
+          if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (let registration of registrations) {
+              await registration.unregister();
+            }
+          }
+          
+          // Yeni versiyonu kaydet
+          localStorage.setItem('appVersion', latestVersion);
+          
+          alert('Uygulama güncellendi. Yeni sürüm yükleniyor...');
+          window.location.href = window.location.pathname + '?v=' + new Date().getTime();
+        } else if (!currentVersion && latestVersion) {
+          // İlk açılışta versiyonu kaydet
+          localStorage.setItem('appVersion', latestVersion);
         }
-      });
+      } catch (e) {
+        console.error('Update check failed:', e);
+      }
     }
+
+    // Uygulama her açıldığında ve görünür olduğunda güncellemeleri kontrol et
+    window.addEventListener('load', checkForUpdates);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        checkForUpdates();
+      }
+    });
   </script>
 
   <!-- Service Worker Interceptor for FCM on GitHub Pages -->
