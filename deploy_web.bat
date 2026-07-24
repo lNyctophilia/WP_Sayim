@@ -31,6 +31,12 @@ xcopy build\web\* docs\ /s /e /q
 echo Kopyalama tamamlandi!
 echo.
 
+REM 2.5. Cache Busting (flutter_bootstrap.js icindeki dosyalara timestamp ekle)
+echo [Cache Busting] main.dart.js ve wasm dosyalarina versiyon ekleniyor...
+powershell -Command "(Get-Content docs\flutter_bootstrap.js).Replace('\"main.dart.js\"', '\"main.dart.js?v=%TIMESTAMP%\"').Replace('\"main.dart.wasm\"', '\"main.dart.wasm?v=%TIMESTAMP%\"').Replace('\"main.dart.mjs\"', '\"main.dart.mjs?v=%TIMESTAMP%\"') | Set-Content docs\flutter_bootstrap.js"
+echo Cache Busting tamamlandi!
+echo.
+
 REM 3. Git ile commit ve push
 echo [3/4] Git commit yapiliyor...
 git add docs/
