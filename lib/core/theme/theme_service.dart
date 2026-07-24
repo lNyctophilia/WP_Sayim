@@ -10,6 +10,9 @@ enum AppThemeType {
   pastelPurple,
   pastelBlue,
   pastelGreen,
+  monochromeBlack,
+  monochromeWhite,
+  monochromeGray,
 }
 
 class ThemeService extends ChangeNotifier {
@@ -110,6 +113,39 @@ class ThemeService extends ChangeNotifier {
         AppColors.todayBorder = const Color(0xFFB8E0D2);
         AppColors.divider = const Color(0xFF304F3A);
         break;
+
+      case AppThemeType.monochromeBlack:
+        AppColors.background = const Color(0xFF000000);
+        AppColors.surface = const Color(0xFF0A0A0A);
+        AppColors.card = const Color(0xFF141414);
+        AppColors.cardLight = const Color(0xFF1E1E1E);
+        AppColors.accent = const Color(0xFF666666);
+        AppColors.accentLight = const Color(0xFFE0E0E0);
+        AppColors.todayBorder = const Color(0xFFE0E0E0);
+        AppColors.divider = const Color(0xFF2C2C2C);
+        break;
+
+      case AppThemeType.monochromeWhite:
+        AppColors.background = const Color(0xFF121212);
+        AppColors.surface = const Color(0xFF1C1C1C);
+        AppColors.card = const Color(0xFF262626);
+        AppColors.cardLight = const Color(0xFF333333);
+        AppColors.accent = const Color(0xFFA3A3A3);
+        AppColors.accentLight = const Color(0xFFFFFFFF);
+        AppColors.todayBorder = const Color(0xFFFFFFFF);
+        AppColors.divider = const Color(0xFF404040);
+        break;
+
+      case AppThemeType.monochromeGray:
+        AppColors.background = const Color(0xFF161618);
+        AppColors.surface = const Color(0xFF202023);
+        AppColors.card = const Color(0xFF2A2A2E);
+        AppColors.cardLight = const Color(0xFF36363B);
+        AppColors.accent = const Color(0xFF6D6D75);
+        AppColors.accentLight = const Color(0xFFB0B0B8);
+        AppColors.todayBorder = const Color(0xFFB0B0B8);
+        AppColors.divider = const Color(0xFF43434A);
+        break;
     }
   }
 
@@ -129,6 +165,12 @@ class ThemeService extends ChangeNotifier {
         return 'Pastel Mavi';
       case AppThemeType.pastelGreen:
         return 'Pastel Yeşil';
+      case AppThemeType.monochromeBlack:
+        return 'Gece Siyahı';
+      case AppThemeType.monochromeWhite:
+        return 'Saf Beyaz';
+      case AppThemeType.monochromeGray:
+        return 'Nötr Gri';
     }
   }
 
@@ -148,6 +190,12 @@ class ThemeService extends ChangeNotifier {
         return const Color(0xFFA8D0E6);
       case AppThemeType.pastelGreen:
         return const Color(0xFFB8E0D2);
+      case AppThemeType.monochromeBlack:
+        return const Color(0xFF555555);
+      case AppThemeType.monochromeWhite:
+        return const Color(0xFFFFFFFF);
+      case AppThemeType.monochromeGray:
+        return const Color(0xFFB0B0B8);
     }
   }
 }
