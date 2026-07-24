@@ -8,11 +8,12 @@ import '../services/storage_service.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/manager/presentation/pages/manager_shell_page.dart';
-import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../services/notification_service.dart';
 import '../../features/auth/presentation/pages/install_prompt_page.dart';
 import '../utils/pwa_check.dart';
 import '../utils/browser_notification.dart';
+import '../utils/top_toast.dart';
 
 /// Ana yönlendirici widget — Auth durumuna göre Login veya Ana Ekranı gösterir
 ///
@@ -51,7 +52,7 @@ class _AppRouterState extends State<AppRouter> {
 
         // Kullanıcı giriş yapmamış
         if (!snapshot.hasData || snapshot.data == null) {
-          final isMobileWeb = kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android);
+          final isMobileWeb = kIsWeb && isMobileBrowser();
           if (isMobileWeb && !isPWA()) {
             return const InstallPromptPage();
           }
@@ -139,29 +140,8 @@ class _AppRouterState extends State<AppRouter> {
                     showWebNotification(title, body);
                   }
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          Text(body),
-                        ],
-                      ),
-                      behavior: SnackBarBehavior.floating,
-                      backgroundColor: Colors.blueAccent.shade700,
-                      duration: const Duration(seconds: 4),
-                      action: SnackBarAction(
-                        label: 'Tamam',
-                        textColor: Colors.white,
-                        onPressed: () {},
-                      ),
-                    ),
-                  );
+                  // Her sayfanın üzerinde (en üstte) görünecek özel toast bildirimi
+                  TopToast.show(context, title, body);
                 }
               });
             }
