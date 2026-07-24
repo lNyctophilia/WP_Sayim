@@ -12,6 +12,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import '../services/notification_service.dart';
 import '../../features/auth/presentation/pages/install_prompt_page.dart';
 import '../utils/pwa_check.dart';
+import '../utils/browser_notification.dart';
 
 /// Ana yönlendirici widget — Auth durumuna göre Login veya Ana Ekranı gösterir
 ///
@@ -129,6 +130,14 @@ class _AppRouterState extends State<AppRouter> {
               // Uygulama açıkken (ön plandayken) gelen bildirimleri dinle
               FirebaseMessaging.onMessage.listen((RemoteMessage message) {
                 if (message.notification != null) {
+                  final title = message.notification!.title ?? 'Bildirim';
+                  final body = message.notification!.body ?? '';
+
+                  // Ön planda native web bildirimi göster
+                  if (kIsWeb) {
+                    showWebNotification(title, body);
+                  }
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Column(
@@ -136,10 +145,10 @@ class _AppRouterState extends State<AppRouter> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            message.notification!.title ?? 'Bildirim',
+                            title,
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          Text(message.notification!.body ?? ''),
+                          Text(body),
                         ],
                       ),
                       behavior: SnackBarBehavior.floating,
