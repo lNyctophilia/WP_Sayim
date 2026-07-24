@@ -54,7 +54,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
 
       final staffList = snapshot.docs
           .map((doc) => AppUser.fromFirestore(doc))
-          .where((user) => user.id != widget.currentUser.id && user.isStaff) // Hariç tut
+          .where((user) => user.id != widget.currentUser.id) // Personel ve yöneticileri dahil et (kendisi hariç)
           .toList();
 
       setState(() {
