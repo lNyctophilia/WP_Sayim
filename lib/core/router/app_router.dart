@@ -49,13 +49,13 @@ class _AppRouterState extends State<AppRouter> {
           return _buildSplashScreen();
         }
 
+        final isMobileWeb = kIsWeb && isMobileBrowser();
+        if (isMobileWeb && !isPWA()) {
+          return const InstallPromptPage();
+        }
+
         // Kullanıcı giriş yapmamış
         if (!snapshot.hasData || snapshot.data == null) {
-          final isMobileWeb = kIsWeb && isMobileBrowser();
-          if (isMobileWeb && !isPWA()) {
-            return const InstallPromptPage();
-          }
-          
           return LoginPage(
             lang: widget.lang,
             onLoginSuccess: (_) {
