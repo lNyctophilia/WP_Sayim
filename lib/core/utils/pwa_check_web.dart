@@ -1,14 +1,14 @@
-import 'dart:html' as html;
+import 'package:web/web.dart' as web;
 
 bool isPWA() {
-  final isStandalone = html.window.matchMedia('(display-mode: standalone)').matches;
+  final isStandalone = web.window.matchMedia('(display-mode: standalone)').matches;
   
   // Sadece standalone'u kontrol ediyoruz, minimal-ui mobil tarayıcılarda yanıltıcı olabiliyor.
   return isStandalone;
 }
 
 bool isMobileBrowser() {
-  final userAgent = html.window.navigator.userAgent.toLowerCase();
+  final userAgent = web.window.navigator.userAgent.toLowerCase();
   return userAgent.contains('iphone') || 
          userAgent.contains('ipad') || 
          userAgent.contains('android') ||

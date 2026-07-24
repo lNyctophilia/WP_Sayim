@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-class TopToast {
+class BottomToast {
   static OverlayEntry? _overlayEntry;
   static Timer? _timer;
 

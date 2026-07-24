@@ -13,7 +13,7 @@ import '../services/notification_service.dart';
 import '../../features/auth/presentation/pages/install_prompt_page.dart';
 import '../utils/pwa_check.dart';
 import '../utils/browser_notification.dart';
-import '../utils/top_toast.dart';
+import '../utils/bottom_toast.dart';
 
 /// Ana yönlendirici widget — Auth durumuna göre Login veya Ana Ekranı gösterir
 ///
@@ -141,7 +141,7 @@ class _AppRouterState extends State<AppRouter> {
                   }
 
                   // Her sayfanın üzerinde (en üstte) görünecek özel toast bildirimi
-                  TopToast.show(context, title, body);
+                  BottomToast.show(context, title, body);
                 }
               });
             }
