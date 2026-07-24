@@ -61,16 +61,16 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Bildirim iznini yükleme ekranı başlamadan İLK BAŞTA iste.
-    // Kullanıcı ile doğrudan etkileşim anı olduğu için PWA vs sorun çıkarmaz.
-    final token = await NotificationService().getTokenForRegistration();
-
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
+      // Bildirim iznini yükleme ekranı başlamadan İLK BAŞTA iste.
+      // Kullanıcı ile doğrudan etkileşim anı olduğu için PWA vs sorun çıkarmaz.
+      final token = await NotificationService().getTokenForRegistration();
+
       await _authService.register(
         phone: _phoneController.text.trim(),
         password: _passwordController.text,
