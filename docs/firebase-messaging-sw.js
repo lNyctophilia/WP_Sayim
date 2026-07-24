@@ -15,6 +15,44 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// Firebase'in varsayılan davranışını (uygulama açıkken bildirimi göstermeme) aşmak için
+// Kendi push dinleyicimizi ekliyoruz. Eğer uygulama aktifse (foreground), bildirimi ZORLA gösteriyoruz.
+self.addEventListener('push', function(event) {
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      let isFocused = false;
+      for (let i = 0; i < windowClients.length; i++) {
+        if (windowClients[i].focused) {
+          isFocused = true;
+          break;
+        }
+      }
+
+      // Eğer uygulama ön planda (açık) ise Firebase bildirimi SESSİZE ALIR (gizler).
+      // Chrome Android üzerinde main thread'den showNotification çağrısı bloklandığı için,
+      // tek aşma yolu bunu Service Worker'ın 'push' event'inin tam kalbinde yapmaktır!
+      if (isFocused && event.data) {
+        try {
+          const payload = event.data.json();
+          const title = payload.notification?.title || payload.data?.title;
+          const body = payload.notification?.body || payload.data?.body;
+          
+          if (title) {
+            return self.registration.showNotification(title, {
+              body: body,
+              icon: '/icons/Icon-192.png',
+              vibrate: [200, 100, 200],
+              requireInteraction: true,
+              tag: 'fg-notification-' + Date.now()
+            });
+          }
+        } catch (e) {
+          console.error('[firebase-messaging-sw.js] Foreground push parse hatası:', e);
+        }
+      }
+    })
+  );
+});
 // Arka plan mesaj handler — uygulama kapalıyken gelen bildirimleri yakala
 messaging.onBackgroundMessage(function(payload) {
   console.log('[firebase-messaging-sw.js] Arka plan bildirimi alındı:', payload);

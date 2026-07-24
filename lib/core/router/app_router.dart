@@ -12,7 +12,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import '../services/notification_service.dart';
 import '../../features/auth/presentation/pages/install_prompt_page.dart';
 import '../utils/pwa_check.dart';
-import '../utils/browser_notification.dart';
 import '../utils/bottom_toast.dart';
 
 /// Ana yönlendirici widget — Auth durumuna göre Login veya Ana Ekranı gösterir
@@ -134,11 +133,6 @@ class _AppRouterState extends State<AppRouter> {
                 if (message.notification != null) {
                   final title = message.notification!.title ?? 'Bildirim';
                   final body = message.notification!.body ?? '';
-
-                  // Ön planda native web bildirimi göster
-                  if (kIsWeb) {
-                    showWebNotification(title, body);
-                  }
 
                   // Her sayfanın üzerinde (en üstte) görünecek özel toast bildirimi
                   BottomToast.show(context, title, body);
