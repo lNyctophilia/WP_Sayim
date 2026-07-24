@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import '../../../../core/utils/pwa_check.dart';
 import 'register_page.dart';
 
 class LockoutException implements Exception {
@@ -222,7 +224,7 @@ class _LoginPageState extends State<LoginPage>
 
                     // Uygulama adı
                     Text(
-                      'WP Sayım',
+                      'WP Sayım ${kIsWeb ? "W" : "N"}-${isMobileBrowser() ? "M" : "D"}-${isPWA() ? "P" : "B"}',
                       style: GoogleFonts.inter(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,

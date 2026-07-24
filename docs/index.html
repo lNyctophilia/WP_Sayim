@@ -137,5 +137,30 @@
     bootstrapScript.async = true;
     document.body.appendChild(bootstrapScript);
   </script>
+  <script>
+    window.forceShowNotification = async function(title, body) {
+      try {
+        if (!('serviceWorker' in navigator) || Notification.permission !== 'granted') return;
+        
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        let reg = registrations && registrations.length > 0 ? registrations[0] : await navigator.serviceWorker.ready;
+        
+        if (reg) {
+          await reg.showNotification(title, {
+            body: body,
+            icon: 'icons/Icon-192.png',
+            vibrate: [200, 100, 200],
+            requireInteraction: true,
+            tag: 'fg-notification-' + Date.now()
+          });
+          console.log('[forceShowNotification] Native push bildirimi zorla gösterildi!');
+        } else {
+          new Notification(title, { body: body });
+        }
+      } catch (err) {
+        console.error('[forceShowNotification] Bildirim gösterilirken hata:', err);
+      }
+    };
+  </script>
 </body>
 </html>

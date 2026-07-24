@@ -1,18 +1,12 @@
 import 'dart:html' as html;
+import 'dart:js' as js;
 
-void showWebNotification(String title, String body) async {
+void showWebNotification(String title, String body) {
   if (html.Notification.permission == 'granted') {
-    try {
+    if (js.context.hasProperty('forceShowNotification')) {
+      js.context.callMethod('forceShowNotification', [title, body]);
+    } else {
       html.Notification(title, body: body);
-    } catch (e) {
-      try {
-        final reg = await html.window.navigator.serviceWorker?.ready;
-        if (reg != null) {
-          reg.showNotification(title, {'body': body});
-        }
-      } catch (e2) {
-        html.window.console.error('Push bildirim hatası: $e2');
-      }
     }
   }
 }

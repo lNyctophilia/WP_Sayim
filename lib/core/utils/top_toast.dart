@@ -17,7 +17,7 @@ class TopToast {
     _overlayEntry = OverlayEntry(
       builder: (context) {
         return Positioned(
-          top: MediaQuery.of(context).padding.top + 20,
+          bottom: MediaQuery.of(context).padding.bottom + 20,
           left: 20,
           right: 20,
           child: Material(
@@ -28,7 +28,7 @@ class TopToast {
               curve: Curves.easeOutCubic,
               builder: (context, value, child) {
                 return Transform.translate(
-                  offset: Offset(0, -50 * (1 - value)),
+                  offset: Offset(0, 50 * (1 - value)),
                   child: Opacity(
                     opacity: value,
                     child: child,
