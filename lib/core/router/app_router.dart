@@ -8,7 +8,7 @@ import '../services/storage_service.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/manager/presentation/pages/manager_shell_page.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import '../services/notification_service.dart';
 import '../../features/auth/presentation/pages/install_prompt_page.dart';
 import '../utils/pwa_check.dart';
@@ -51,7 +51,8 @@ class _AppRouterState extends State<AppRouter> {
 
         // Kullanıcı giriş yapmamış
         if (!snapshot.hasData || snapshot.data == null) {
-          if (kIsWeb && !isPWA()) {
+          final isMobileWeb = kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android);
+          if (isMobileWeb && !isPWA()) {
             return const InstallPromptPage();
           }
           
