@@ -423,30 +423,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           color: AppColors.accentLight,
                         ),
                       )
-                    : GestureDetector(
-                        onHorizontalDragEnd: (details) {
-                          const threshold = 300.0;
-                          final velocity = details.primaryVelocity ?? 0;
-                          if (velocity > threshold) {
-                            _previousMonth();
-                          } else if (velocity < -threshold) {
-                            _nextMonth();
-                          }
-                        },
-                        behavior: HitTestBehavior.opaque,
-                        child: Center(
-                          child: RefreshIndicator(
-                            onRefresh: () async {
-                              await _loadData();
-                            },
-                            color: AppColors.accentLight,
-                            backgroundColor: AppColors.card,
-                            child: SingleChildScrollView(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              child: _isAnimating
-                                  ? _buildAnimatedContent()
-                                  : _buildStaticContent(),
-                            ),
+                    : Center(
+                        child: RefreshIndicator(
+                          onRefresh: () async {
+                            await _loadData();
+                          },
+                          color: AppColors.accentLight,
+                          backgroundColor: AppColors.card,
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: _isAnimating
+                                ? _buildAnimatedContent()
+                                : _buildStaticContent(),
                           ),
                         ),
                       ),
@@ -481,7 +469,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           totalEarnings: _monthlyData.totalEarnings,
           lang: widget.lang,
         ),
-        _buildMiniChart(_monthlyData),
         _buildRecentNotes(_monthlyData),
       ],
     );
@@ -518,7 +505,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     totalEarnings: _prevMonthlyData!.totalEarnings,
                     lang: widget.lang,
                   ),
-                  _buildMiniChart(_prevMonthlyData!),
                   _buildRecentNotes(_prevMonthlyData!),
                 ],
               ),
@@ -550,7 +536,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   totalEarnings: _monthlyData.totalEarnings,
                   lang: widget.lang,
                 ),
-                _buildMiniChart(_monthlyData),
                 _buildRecentNotes(_monthlyData),
               ],
             ),
@@ -633,10 +618,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildGreeting(MonthlyData data) {
     final isTr = widget.lang.currentLang == 'tr';
-    final greeting = AppStrings.get('hello', isTr ? 'tr' : 'en');
-    final motivation = data.totalDays > 0
-        ? (AppStrings.getFormat('worked_days_msg', isTr ? 'tr' : 'en', [data.totalDays]))
-        : AppStrings.get('no_entries_for_this_month_yet_let', isTr ? 'tr' : 'en');
+    final String fullName = widget.currentUser?.fullName ?? '';
+    final String firstName = fullName.trim().isNotEmpty ? fullName.trim().split(' ').first : '';
+    final greeting = AppStrings.getFormat('welcome_user', isTr ? 'tr' : 'en', [firstName]);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
@@ -652,83 +636,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               letterSpacing: -0.5,
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            motivation,
-            style: const TextStyle(
-              fontSize: 15,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMiniChart(MonthlyData data) {
-    if (data.totalDays == 0) return const SizedBox.shrink();
-
-    final daysInMonth = DateUtils.getDaysInMonth(data.year, data.month);
-    
-    List<double> intensities = [];
-    double currentIntensity = 0.0;
-    double maxIntensity = 1.0; 
-
-    for (int i = 1; i <= daysInMonth; i++) {
-      final hasWork = data.getWorkDay(i) != null;
-      if (hasWork) {
-        currentIntensity += 1.0; // Gittikçe yoğunluk artar (tepe oluşur)
-      } else {
-        // İşe gitmedikçe yoğunluk azalır, birkaç gün sonra 0'a iner
-        currentIntensity = (currentIntensity - 0.75).clamp(0.0, double.infinity);
-      }
-      intensities.add(currentIntensity);
-      if (currentIntensity > maxIntensity) {
-        maxIntensity = currentIntensity;
-      }
-    }
-
-    final isTr = widget.lang.currentLang == 'tr';
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider, width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                AppStrings.get('monthly_work_intensity', isTr ? 'tr' : 'en'),
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              Icon(Icons.terrain_rounded, color: AppColors.accentLight, size: 18),
-            ],
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            height: 55,
-            width: double.infinity,
-            child: CustomPaint(
-              painter: IntensityWavePainter(
-                intensities: intensities,
-                maxIntensity: maxIntensity,
-                color: AppColors.accentLight,
-              ),
-            ),
-          ),
-          const SizedBox(height: 5),
         ],
       ),
     );
@@ -847,82 +754,3 @@ class BackgroundPatternPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-/// İş yoğunluğunu dalgalı bir alan (area chart) olarak çizen painter
-class IntensityWavePainter extends CustomPainter {
-  final List<double> intensities;
-  final double maxIntensity;
-  final Color color;
-
-  IntensityWavePainter({
-    required this.intensities,
-    required this.maxIntensity,
-    required this.color,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (intensities.isEmpty) return;
-
-    final stepX = size.width / (intensities.length - 1);
-    final points = <Offset>[];
-
-    for (int i = 0; i < intensities.length; i++) {
-      final x = i * stepX;
-      // Normalizasyon: 0'da dipte (size.height), maxIntensity'de en üstte (0)
-      final normalizedY = intensities[i] / maxIntensity;
-      final y = size.height - (normalizedY * size.height);
-      points.add(Offset(x, y));
-    }
-
-    // Yumuşak Dalga (Bezier) Yolu Oluşturma
-    final wavePath = Path();
-    wavePath.moveTo(points.first.dx, points.first.dy);
-
-    for (int i = 0; i < points.length - 1; i++) {
-      final p0 = points[i];
-      final p1 = points[i + 1];
-      // Yumuşak geçiş (spline)
-      final controlPointX = (p0.dx + p1.dx) / 2;
-      wavePath.cubicTo(
-        controlPointX, p0.dy,
-        controlPointX, p1.dy,
-        p1.dx, p1.dy,
-      );
-    }
-
-    // Alanı (Alt Kısmı) Boyamak İçin Yolu Kapatma
-    final fillPath = Path.from(wavePath);
-    fillPath.lineTo(size.width, size.height);
-    fillPath.lineTo(0, size.height);
-    fillPath.close();
-
-    // Boya: Yukarıdan aşağıya opasitesi azalan gradient
-    final fillPaint = Paint()
-      ..shader = LinearGradient(
-        colors: [
-          color.withValues(alpha: 0.5),
-          color.withValues(alpha: 0.0),
-        ],
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
-      ..style = PaintingStyle.fill;
-
-    canvas.drawPath(fillPath, fillPaint);
-
-    // Çizgi: Dalganın üst sınır çizgisi
-    final linePaint = Paint()
-      ..color = color
-      ..strokeWidth = 2.5
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    canvas.drawPath(wavePath, linePaint);
-
-
-  }
-
-  @override
-  bool shouldRepaint(covariant IntensityWavePainter oldDelegate) => true;
-}

@@ -292,8 +292,9 @@ class AppStrings {
     'username_required': {'tr': 'Kullanıcı adı gerekli', 'en': 'Username is required'},
     'notifications': {'tr': 'Bildirimler', 'en': 'Notifications'},
     'sayim_reminder': {'tr': 'Sayım Hatırlatıcı', 'en': 'Count Reminder'},
-      // Newly extracted
+    // Newly extracted
     'hello': {'tr': 'Merhaba,', 'en': 'Hello,'},
+    'welcome_user': {'tr': 'Hoşgeldin {0}!', 'en': 'Welcome {0}!'},
     'no_entries_for_this_month_yet_let': {'tr': 'Bu ay için henüz kayıt girmedin. Hadi başlayalım!', 'en': 'No entries for this month yet. Let\'s start!'},
     'monthly_work_intensity': {'tr': 'Aylık İş Yoğunluğu', 'en': 'Monthly Work Intensity'},
     'recent_notes': {'tr': 'Son Notlar', 'en': 'Recent Notes'},
