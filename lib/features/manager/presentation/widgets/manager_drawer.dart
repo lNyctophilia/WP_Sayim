@@ -3,6 +3,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
+import '../../../../core/theme/theme_service.dart';
 import '../../presentation/pages/manager_panel_page.dart';
 import '../../../settings/presentation/pages/global_settings_page.dart';
 import '../../../home/presentation/pages/home_page.dart';
@@ -15,6 +16,7 @@ class ManagerDrawer extends StatelessWidget {
   final AppUser currentUser;
   final LanguageService lang;
   final StorageService storage;
+  final ThemeService themeService;
   final Function(String)? onPanelSelected;
 
   const ManagerDrawer({
@@ -22,6 +24,7 @@ class ManagerDrawer extends StatelessWidget {
     required this.currentUser,
     required this.lang,
     required this.storage,
+    required this.themeService,
     this.onPanelSelected,
   });
 
@@ -34,12 +37,12 @@ class ManagerDrawer extends StatelessWidget {
       child: Column(
         children: [
           UserAccountsDrawerHeader(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.card,
             ),
             accountName: Text(
               currentUser.fullName,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
@@ -57,7 +60,7 @@ class ManagerDrawer extends StatelessWidget {
               backgroundColor: AppColors.accentLight.withValues(alpha: 0.2),
               child: Text(
                 currentUser.fullName.isNotEmpty ? currentUser.fullName[0].toUpperCase() : '?',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.accentLight,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -75,9 +78,9 @@ class ManagerDrawer extends StatelessWidget {
                   _buildSectionTitle(lang.tr('staff_panel')),
                   
                   ListTile(
-                    leading: const Icon(Icons.calendar_month_rounded, color: AppColors.textSecondary),
-                    title: Text(lang.tr('calendar_dashboard'), style: const TextStyle(color: AppColors.textPrimary)),
-                    subtitle: Text(lang.tr('staff_home'), style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
+                    leading: Icon(Icons.calendar_month_rounded, color: AppColors.textSecondary),
+                    title: Text(lang.tr('calendar_dashboard'), style: TextStyle(color: AppColors.textPrimary)),
+                    subtitle: Text(lang.tr('staff_home'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
                     onTap: () {
                       Navigator.pop(context); // Close drawer
                       Navigator.pushReplacement(
@@ -87,6 +90,7 @@ class ManagerDrawer extends StatelessWidget {
                             currentUser: currentUser,
                             storage: storage,
                             lang: lang,
+                            themeService: themeService,
                           ),
                           transitionDuration: Duration.zero,
                         ),
@@ -94,14 +98,14 @@ class ManagerDrawer extends StatelessWidget {
                     },
                   ),
                   
-                  const Divider(color: AppColors.divider),
+                  Divider(color: AppColors.divider),
                 ],
                 _buildSectionTitle(lang.tr('manager_tools')),
                 
                 ListTile(
-                  leading: const Icon(Icons.dashboard_rounded, color: AppColors.textSecondary),
-                  title: Text(lang.tr('manager_panel'), style: const TextStyle(color: AppColors.textPrimary)),
-                  subtitle: Text(lang.tr('manager_panel_desc'), style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
+                  leading: Icon(Icons.dashboard_rounded, color: AppColors.textSecondary),
+                  title: Text(lang.tr('manager_panel'), style: TextStyle(color: AppColors.textPrimary)),
+                  subtitle: Text(lang.tr('manager_panel_desc'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
                   onTap: () {
                     Navigator.pop(context); // Close drawer
                     if (onPanelSelected != null) {
@@ -115,6 +119,7 @@ class ManagerDrawer extends StatelessWidget {
                             currentUser: currentUser,
                             storage: storage,
                             lang: lang,
+                            themeService: themeService,
                             onLogout: () {},
                           ),
                           transitionDuration: Duration.zero,
@@ -125,9 +130,9 @@ class ManagerDrawer extends StatelessWidget {
                 ),
                 
                 ListTile(
-                  leading: const Icon(Icons.directions_bus_rounded, color: AppColors.textSecondary),
-                  title: Text(lang.tr('shuttle_planning'), style: const TextStyle(color: AppColors.textPrimary)),
-                  subtitle: Text(lang.tr('shuttle_route_desc'), style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
+                  leading: Icon(Icons.directions_bus_rounded, color: AppColors.textSecondary),
+                  title: Text(lang.tr('shuttle_planning'), style: TextStyle(color: AppColors.textPrimary)),
+                  subtitle: Text(lang.tr('shuttle_route_desc'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
                   onTap: () {
                     Navigator.pop(context); // Close drawer
                     if (onPanelSelected != null) {
@@ -140,6 +145,7 @@ class ManagerDrawer extends StatelessWidget {
                             currentUser: currentUser,
                             lang: lang,
                             storage: storage,
+                            themeService: themeService,
                           ),
                           transitionDuration: Duration.zero,
                         ),
@@ -149,9 +155,9 @@ class ManagerDrawer extends StatelessWidget {
                 ),
                 
                 ListTile(
-                  leading: const Icon(Icons.table_view_rounded, color: AppColors.textSecondary),
-                  title: Text(lang.tr('export_excel'), style: const TextStyle(color: AppColors.textPrimary)),
-                  subtitle: Text(lang.tr('export_reports'), style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
+                  leading: Icon(Icons.table_view_rounded, color: AppColors.textSecondary),
+                  title: Text(lang.tr('export_excel'), style: TextStyle(color: AppColors.textPrimary)),
+                  subtitle: Text(lang.tr('export_reports'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
                   onTap: () {
                     Navigator.pop(context); // Close drawer
                     if (onPanelSelected != null) {
@@ -164,6 +170,7 @@ class ManagerDrawer extends StatelessWidget {
                             lang: lang,
                             currentUser: currentUser,
                             storage: storage,
+                            themeService: themeService,
                           ),
                           transitionDuration: Duration.zero,
                         ),
@@ -173,12 +180,12 @@ class ManagerDrawer extends StatelessWidget {
                 ),
                 
                 if (currentUser.isOwner) ...[
-                  const Divider(color: AppColors.divider),
+                  Divider(color: AppColors.divider),
                   _buildSectionTitle(lang.tr('system_tools')),
 
                   ListTile(
-                    leading: const Icon(Icons.manage_accounts_rounded, color: AppColors.textSecondary),
-                    title: Text(lang.tr('edit_profiles'), style: const TextStyle(color: AppColors.textPrimary)),
+                    leading: Icon(Icons.manage_accounts_rounded, color: AppColors.textSecondary),
+                    title: Text(lang.tr('edit_profiles'), style: TextStyle(color: AppColors.textPrimary)),
                     onTap: () {
                       Navigator.pop(context); // Close drawer
                       if (onPanelSelected != null) {
@@ -191,6 +198,7 @@ class ManagerDrawer extends StatelessWidget {
                               currentUser: currentUser,
                               lang: lang,
                               storage: storage,
+                              themeService: themeService,
                             ),
                             transitionDuration: Duration.zero,
                           ),
@@ -200,8 +208,8 @@ class ManagerDrawer extends StatelessWidget {
                   ),
                   
                   ListTile(
-                    leading: const Icon(Icons.history_edu_rounded, color: AppColors.textSecondary),
-                    title: Text(lang.tr('add_past_count'), style: const TextStyle(color: AppColors.textPrimary)),
+                    leading: Icon(Icons.history_edu_rounded, color: AppColors.textSecondary),
+                    title: Text(lang.tr('add_past_count'), style: TextStyle(color: AppColors.textPrimary)),
                     onTap: () {
                       Navigator.pop(context); // Close drawer
                       if (onPanelSelected != null) {
@@ -214,6 +222,7 @@ class ManagerDrawer extends StatelessWidget {
                               currentUser: currentUser,
                               lang: lang,
                               storage: storage,
+                              themeService: themeService,
                             ),
                             transitionDuration: Duration.zero,
                           ),
@@ -223,8 +232,8 @@ class ManagerDrawer extends StatelessWidget {
                   ),
                   
                   ListTile(
-                    leading: const Icon(Icons.settings_suggest_rounded, color: AppColors.textSecondary),
-                    title: Text(lang.tr('global_wage_settings'), style: const TextStyle(color: AppColors.textPrimary)),
+                    leading: Icon(Icons.settings_suggest_rounded, color: AppColors.textSecondary),
+                    title: Text(lang.tr('global_wage_settings'), style: TextStyle(color: AppColors.textPrimary)),
                     onTap: () {
                       Navigator.pop(context); // Close drawer
                       if (onPanelSelected != null) {
@@ -237,6 +246,7 @@ class ManagerDrawer extends StatelessWidget {
                               lang: lang,
                               currentUser: currentUser,
                               storage: storage,
+                              themeService: themeService,
                             ),
                             transitionDuration: Duration.zero,
                           ),
@@ -257,10 +267,10 @@ class ManagerDrawer extends StatelessWidget {
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           color: AppColors.accentLight,
           fontSize: 13,
           fontWeight: FontWeight.bold,

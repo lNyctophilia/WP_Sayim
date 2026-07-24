@@ -46,7 +46,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (_) => const Center(child: CircularProgressIndicator(color: AppColors.accentLight)),
+        builder: (_) => Center(child: CircularProgressIndicator(color: AppColors.accentLight)),
       );
 
       await _davetService.acceptDavet(davet.id);
@@ -54,7 +54,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
       if (mounted) {
         Navigator.pop(context); // Yükleniyor'u kapat
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Davet kabul edildi ve takvime eklendi!'),
             backgroundColor: AppColors.success,
           ),
@@ -78,7 +78,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (_) => const Center(child: CircularProgressIndicator(color: AppColors.accentLight)),
+        builder: (_) => Center(child: CircularProgressIndicator(color: AppColors.accentLight)),
       );
 
       await _davetService.declineDavet(davet.id);
@@ -86,7 +86,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
       if (mounted) {
         Navigator.pop(context); // Yükleniyor'u kapat
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Davet reddedildi.'),
             backgroundColor: AppColors.textHint,
           ),
@@ -112,7 +112,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
       appBar: AppBar(
         backgroundColor: AppColors.card,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Davetler',
           style: TextStyle(
             color: AppColors.textPrimary,
@@ -121,7 +121,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -129,14 +129,14 @@ class _InvitationsPageState extends State<InvitationsPage> {
         stream: _davetStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.accentLight));
+            return Center(child: CircularProgressIndicator(color: AppColors.accentLight));
           }
 
           if (snapshot.hasError) {
             return Center(
               child: Text(
                 'Bir hata oluştu: ${snapshot.error}',
-                style: const TextStyle(color: AppColors.danger),
+                style: TextStyle(color: AppColors.danger),
               ),
             );
           }
@@ -169,8 +169,8 @@ class _InvitationsPageState extends State<InvitationsPage> {
                     size: 64,
                     color: AppColors.textHint.withValues(alpha: 0.5),
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
+                  SizedBox(height: 16),
+                  Text(
                     'Bekleyen davetiniz bulunmuyor.',
                     style: TextStyle(
                       color: AppColors.textHint,
@@ -219,7 +219,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
               color: AppColors.card,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Center(
+            child: Center(
               child: CircularProgressIndicator(color: AppColors.accentLight),
             ),
           );
@@ -265,7 +265,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
                       color: AppColors.accentLight.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.event_available_rounded, color: AppColors.accentLight, size: 20),
+                    child: Icon(Icons.event_available_rounded, color: AppColors.accentLight, size: 20),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -274,7 +274,7 @@ class _InvitationsPageState extends State<InvitationsPage> {
                       children: [
                         Text(
                           sayim.note,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -282,10 +282,10 @@ class _InvitationsPageState extends State<InvitationsPage> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Text(
                           '$dateStr - ${grup.saat}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
@@ -318,13 +318,13 @@ class _InvitationsPageState extends State<InvitationsPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Ücret',
                         style: TextStyle(color: AppColors.textHint, fontSize: 12),
                       ),
                       Text(
                         '₺${davet.ucret.toStringAsFixed(0)}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 18,
                           fontWeight: FontWeight.w800,

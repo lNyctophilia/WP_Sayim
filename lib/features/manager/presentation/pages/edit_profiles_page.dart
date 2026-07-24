@@ -10,11 +10,13 @@ import '../../../../core/services/storage_service.dart';
 import '../widgets/manager_drawer.dart';
 import '../../../../features/home/presentation/widgets/custom_top_bar.dart';
 import 'manager_panel_page.dart';
+import '../../../../core/theme/theme_service.dart';
 
 class EditProfilesPage extends StatefulWidget {
   final AppUser currentUser;
   final LanguageService lang;
   final StorageService storage;
+  final ThemeService themeService;
   final bool isEmbedded;
 
   const EditProfilesPage({
@@ -22,6 +24,7 @@ class EditProfilesPage extends StatefulWidget {
     required this.currentUser,
     required this.lang,
     required this.storage,
+    required this.themeService,
     this.isEmbedded = false,
   });
 
@@ -145,7 +148,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
           SnackBar(
             content: Text(
               AppStrings.get('user_details_updated', isTr ? 'tr' : 'en'),
-              style: const TextStyle(color: AppColors.textPrimary),
+              style: TextStyle(color: AppColors.textPrimary),
             ),
             backgroundColor: AppColors.card,
           ),
@@ -173,12 +176,17 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
     Widget content = Column(
       children: [
         if (!widget.isEmbedded)
-          CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
+          CustomTopBar(
+            currentUser: widget.currentUser, 
+            lang: widget.lang, 
+            storage: widget.storage,
+            themeService: widget.themeService,
+          ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              const Icon(Icons.manage_accounts_rounded, color: AppColors.accentLight),
+              Icon(Icons.manage_accounts_rounded, color: AppColors.accentLight),
               const SizedBox(width: 8),
               Text(
                 AppStrings.get('edit_profiles', isTr ? 'tr' : 'en'),
@@ -193,7 +201,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
         ),
         Expanded(
           child: _isLoading
-              ? const Center(child: CircularProgressIndicator(color: AppColors.accentLight))
+              ? Center(child: CircularProgressIndicator(color: AppColors.accentLight))
               : SingleChildScrollView(
                   padding: const EdgeInsets.all(24),
                   child: Column(
@@ -217,7 +225,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                         ),
                         value: _selectedUser,
                         dropdownColor: AppColors.card,
-                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
+                        icon: Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
                         items: _allUsers.map((user) {
                           return DropdownMenuItem<AppUser?>(
                             value: user,
@@ -315,7 +323,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                                 isExpanded: true,
                                 value: _selectedRole,
                                 dropdownColor: AppColors.card,
-                                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
+                                icon: Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
                                 items: [
                                   DropdownMenuItem(value: UserRole.staff, child: Text(AppStrings.get('staff', isTr ? 'tr' : 'en'), style: GoogleFonts.inter(color: AppColors.textPrimary))),
                                   DropdownMenuItem(value: UserRole.manager, child: Text(AppStrings.get('manager', isTr ? 'tr' : 'en'), style: GoogleFonts.inter(color: AppColors.textPrimary))),
@@ -331,8 +339,8 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
 
                           if (_errorMessage != null)
                             Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: Text(_errorMessage!, style: const TextStyle(color: AppColors.danger)),
+                              padding: EdgeInsets.only(bottom: 16),
+                              child: Text(_errorMessage!, style: TextStyle(color: AppColors.danger)),
                             ),
 
                           SizedBox(
@@ -376,6 +384,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
               currentUser: widget.currentUser,
               storage: widget.storage,
               lang: widget.lang,
+              themeService: widget.themeService,
               onLogout: () {},
             ),
             transitionDuration: Duration.zero,
@@ -388,6 +397,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
           currentUser: widget.currentUser,
           lang: widget.lang,
           storage: widget.storage,
+          themeService: widget.themeService,
         ),
         body: SafeArea(child: content),
       ),

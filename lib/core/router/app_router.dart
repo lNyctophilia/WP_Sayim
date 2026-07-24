@@ -8,6 +8,7 @@ import '../services/storage_service.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/manager/presentation/pages/manager_shell_page.dart';
+import '../theme/theme_service.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../services/notification_service.dart';
 import '../../features/auth/presentation/pages/install_prompt_page.dart';
@@ -23,11 +24,13 @@ import '../utils/bottom_toast.dart';
 class AppRouter extends StatefulWidget {
   final StorageService storage;
   final LanguageService lang;
+  final ThemeService themeService;
 
   const AppRouter({
     super.key,
     required this.storage,
     required this.lang,
+    required this.themeService,
   });
 
   @override
@@ -51,7 +54,7 @@ class _AppRouterState extends State<AppRouter> {
 
         final isMobileWeb = kIsWeb && isMobileBrowser();
         if (isMobileWeb && !isPWA()) {
-          return const InstallPromptPage();
+          return InstallPromptPage(lang: widget.lang);
         }
 
         // Kullanıcı giriş yapmamış
@@ -158,6 +161,7 @@ class _AppRouterState extends State<AppRouter> {
         currentUser: user,
         storage: widget.storage,
         lang: widget.lang,
+        themeService: widget.themeService,
         initialPanel: lastPanel.isEmpty ? 'manager' : lastPanel,
         onLogout: () {},
       );
@@ -169,6 +173,7 @@ class _AppRouterState extends State<AppRouter> {
           currentUser: user,
           storage: widget.storage,
           lang: widget.lang,
+          themeService: widget.themeService,
           initialPanel: lastPanel.isEmpty ? 'manager' : lastPanel,
           onLogout: () {},
         );
@@ -178,6 +183,7 @@ class _AppRouterState extends State<AppRouter> {
     return HomePage(
       storage: widget.storage,
       lang: widget.lang,
+      themeService: widget.themeService,
       currentUser: user,
     );
   }

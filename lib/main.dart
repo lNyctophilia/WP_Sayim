@@ -7,6 +7,7 @@ import 'firebase_options.dart';
 import 'core/services/language_service.dart';
 import 'core/services/storage_service.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_service.dart';
 import 'core/router/app_router.dart';
 
 @pragma('vm:entry-point')
@@ -43,18 +44,21 @@ void main() async {
   await storage.init();
 
   final lang = LanguageService(storage);
+  final themeService = ThemeService(storage);
 
-  runApp(DayTrackApp(storage: storage, lang: lang));
+  runApp(DayTrackApp(storage: storage, lang: lang, themeService: themeService));
 }
 
 class DayTrackApp extends StatefulWidget {
   final StorageService storage;
   final LanguageService lang;
+  final ThemeService themeService;
 
   const DayTrackApp({
     super.key,
     required this.storage,
     required this.lang,
+    required this.themeService,
   });
 
   @override
@@ -65,17 +69,19 @@ class _DayTrackAppState extends State<DayTrackApp> {
   @override
   void initState() {
     super.initState();
-    // Dil değişiminde rebuild
-    widget.lang.addListener(_onLanguageChanged);
+    // Dil ve Tema değişiminde rebuild
+    widget.lang.addListener(_onRebuild);
+    widget.themeService.addListener(_onRebuild);
   }
 
   @override
   void dispose() {
-    widget.lang.removeListener(_onLanguageChanged);
+    widget.lang.removeListener(_onRebuild);
+    widget.themeService.removeListener(_onRebuild);
     super.dispose();
   }
 
-  void _onLanguageChanged() {
+  void _onRebuild() {
     setState(() {});
   }
 
@@ -88,6 +94,7 @@ class _DayTrackAppState extends State<DayTrackApp> {
       home: AppRouter(
         storage: widget.storage,
         lang: widget.lang,
+        themeService: widget.themeService,
       ),
     );
   }

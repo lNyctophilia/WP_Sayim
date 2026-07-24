@@ -3,6 +3,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
+import '../../../../core/theme/theme_service.dart';
 import '../../../../features/home/presentation/widgets/custom_top_bar.dart';
 import '../widgets/manager_drawer.dart';
 
@@ -17,6 +18,7 @@ class ManagerShellPage extends StatefulWidget {
   final AppUser currentUser;
   final StorageService storage;
   final LanguageService lang;
+  final ThemeService themeService;
   final String initialPanel;
   final VoidCallback? onLogout;
 
@@ -25,6 +27,7 @@ class ManagerShellPage extends StatefulWidget {
     required this.currentUser,
     required this.storage,
     required this.lang,
+    required this.themeService,
     this.initialPanel = 'manager',
     this.onLogout,
   });
@@ -70,6 +73,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
           currentUser: widget.currentUser,
           lang: widget.lang,
           storage: widget.storage,
+          themeService: widget.themeService,
           onPanelSelected: switchPanel,
         ),
         body: Column(
@@ -78,6 +82,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
               currentUser: widget.currentUser,
               lang: widget.lang,
               storage: widget.storage,
+              themeService: widget.themeService,
             ),
             Expanded(
               child: _buildBody(),
@@ -95,6 +100,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
           currentUser: widget.currentUser,
           storage: widget.storage,
           lang: widget.lang,
+          themeService: widget.themeService,
           isEmbedded: true,
         );
       case 'export':
@@ -102,6 +108,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
           currentUser: widget.currentUser,
           storage: widget.storage,
           lang: widget.lang,
+          themeService: widget.themeService,
           isEmbedded: true,
         );
       case 'edit_profiles':
@@ -110,6 +117,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
             currentUser: widget.currentUser,
             storage: widget.storage,
             lang: widget.lang,
+            themeService: widget.themeService,
             isEmbedded: true,
           );
         }
@@ -120,6 +128,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
             currentUser: widget.currentUser,
             storage: widget.storage,
             lang: widget.lang,
+            themeService: widget.themeService,
             isEmbedded: true,
           );
         }
@@ -130,6 +139,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
             currentUser: widget.currentUser,
             storage: widget.storage,
             lang: widget.lang,
+            themeService: widget.themeService,
             isEmbedded: true,
           );
         }
@@ -140,6 +150,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
           currentUser: widget.currentUser,
           storage: widget.storage,
           lang: widget.lang,
+          themeService: widget.themeService,
           onLogout: widget.onLogout ?? () {},
           isEmbedded: true,
         );
@@ -149,6 +160,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
       currentUser: widget.currentUser,
       storage: widget.storage,
       lang: widget.lang,
+      themeService: widget.themeService,
       onLogout: widget.onLogout ?? () {},
       isEmbedded: true,
     );

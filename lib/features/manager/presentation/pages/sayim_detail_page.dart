@@ -65,19 +65,19 @@ class _SayimDetailPageState extends State<SayimDetailPage>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.background,
-        title: Text(AppStrings.get('delete_count', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.textPrimary)),
+        title: Text(AppStrings.get('delete_count', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textPrimary)),
         content: Text(
           AppStrings.get('are_you_sure_you_want_to_delete_this_count_and_all_related_invitations_calendar_records_this_action_cannot_be_undone', isTr ? 'tr' : 'en'),
-          style: const TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(AppStrings.get('cancel', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.textHint)),
+            child: Text(AppStrings.get('cancel', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textHint)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(AppStrings.get('delete', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.danger)),
+            child: Text(AppStrings.get('delete', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
@@ -104,7 +104,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
       stream: _sayimService.getSayimStream(widget.sayim.id),
       builder: (context, sayimSnapshot) {
         if (sayimSnapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
+          return Scaffold(
             backgroundColor: AppColors.background,
             body: Center(child: CircularProgressIndicator(color: AppColors.accentLight)),
           );
@@ -118,11 +118,11 @@ class _SayimDetailPageState extends State<SayimDetailPage>
               backgroundColor: Colors.transparent,
               elevation: 0,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
                 onPressed: () => Navigator.pop(context),
               ),
             ),
-            body: Center(child: Text(AppStrings.get('count_not_found_or_deleted', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.textSecondary))),
+            body: Center(child: Text(AppStrings.get('count_not_found_or_deleted', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textSecondary))),
           );
         }
 
@@ -130,7 +130,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
           stream: _davetService.getDavetlerBySayim(currentSayim.id),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Scaffold(
+              return Scaffold(
                 backgroundColor: AppColors.background,
                 body: Center(child: CircularProgressIndicator(color: AppColors.accentLight)),
               );
@@ -162,13 +162,13 @@ class _SayimDetailPageState extends State<SayimDetailPage>
             elevation: 0,
             centerTitle: true,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              icon: Icon(Icons.arrow_back_ios_new_rounded,
                   color: AppColors.textPrimary, size: 20),
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
               AppStrings.get('count_details', isTr ? 'tr' : 'en'),
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -177,7 +177,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
             actions: [
               if (widget.currentUser.id == currentSayim.createdBy || widget.currentUser.isOwner) ...[
                 IconButton(
-                  icon: const Icon(Icons.edit_rounded, color: AppColors.textPrimary, size: 20),
+                  icon: Icon(Icons.edit_rounded, color: AppColors.textPrimary, size: 20),
                   tooltip: AppStrings.get('edit', isTr ? 'tr' : 'en'),
                   onPressed: () {
                     Navigator.push(
@@ -194,7 +194,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                   },
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete_rounded, color: AppColors.danger, size: 20),
+                  icon: Icon(Icons.delete_rounded, color: AppColors.danger, size: 20),
                   tooltip: AppStrings.get('delete_count', isTr ? 'tr' : 'en'),
                   onPressed: _confirmDeleteSayim,
                 ),
@@ -228,12 +228,12 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.warning_amber_rounded, color: AppColors.warning),
-                      const SizedBox(width: 12),
+                      Icon(Icons.warning_amber_rounded, color: AppColors.warning),
+                      SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           AppStrings.get('missing_people_prefix', isTr ? 'tr' : 'en') + (missingPersonel > 0 ? AppStrings.getFormat('missing_staff', isTr ? 'tr' : 'en', [missingPersonel]) : '') + (missingYonetici > 0 ? AppStrings.getFormat('missing_manager', isTr ? 'tr' : 'en', [missingYonetici]) : '') + (isTr ? ' eksik.' : ' missing.'),
-                          style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.w600, fontSize: 13),
+                          style: TextStyle(color: AppColors.warning, fontWeight: FontWeight.w600, fontSize: 13),
                         ),
                       ),
                     ],
@@ -283,7 +283,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
       return Center(
         child: Text(
           AppStrings.get('no_one_found', isTr ? 'tr' : 'en'),
-          style: const TextStyle(color: AppColors.textHint),
+          style: TextStyle(color: AppColors.textHint),
         ),
       );
     }
@@ -314,7 +314,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                     backgroundColor: AppColors.accentLight.withValues(alpha: 0.1),
                     child: Text(
                       userName.isNotEmpty ? userName[0].toUpperCase() : '?',
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppColors.accentLight, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -369,10 +369,10 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                             ],
                           ],
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Text(
                           '${AppStrings.get('wage', isTr ? 'tr' : 'en')}: ₺${davet.ucret.toStringAsFixed(0)}${grupAdi.isNotEmpty ? ' • Saat: $grupAdi' : ''}',
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: AppColors.textSecondary, fontSize: 13),
                         ),
                       ],
@@ -380,7 +380,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                   ),
                   if (status == DavetStatus.pending && isCreator) ...[
                     IconButton(
-                      icon: const Icon(Icons.notifications_active_rounded,
+                      icon: Icon(Icons.notifications_active_rounded,
                           color: AppColors.accentLight, size: 20),
                       tooltip: AppStrings.get('remind', isTr ? 'tr' : 'en'),
                       onPressed: () async {
@@ -413,7 +413,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                       },
                     ),
                     IconButton(
-                      icon: const Icon(Icons.person_remove_rounded,
+                      icon: Icon(Icons.person_remove_rounded,
                           color: AppColors.danger, size: 20),
                       tooltip: AppStrings.get('cancel', isTr ? 'tr' : 'en'),
                       onPressed: () async {
@@ -428,7 +428,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                   ],
                   if (status == DavetStatus.accepted && isCreator) ...[
                     IconButton(
-                      icon: const Icon(Icons.person_remove_rounded,
+                      icon: Icon(Icons.person_remove_rounded,
                           color: AppColors.danger, size: 20),
                       tooltip: AppStrings.get('remove', isTr ? 'tr' : 'en'),
                       onPressed: () async {
@@ -436,19 +436,19 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                           context: context,
                           builder: (context) => AlertDialog(
                             backgroundColor: AppColors.background,
-                            title: Text(AppStrings.get('remove_person', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.textPrimary)),
+                            title: Text(AppStrings.get('remove_person', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textPrimary)),
                             content: Text(
                               AppStrings.getFormat('are_you_sure_you_want_to_remove_username_from_this_count_a_cancellation_notification_will_be_sent_to_the_user', isTr ? 'tr' : 'en', [userName]),
-                              style: const TextStyle(color: AppColors.textSecondary),
+                              style: TextStyle(color: AppColors.textSecondary),
                             ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context, false),
-                                child: Text(AppStrings.get('cancel', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.textHint)),
+                                child: Text(AppStrings.get('cancel', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textHint)),
                               ),
                               TextButton(
                                 onPressed: () => Navigator.pop(context, true),
-                                child: Text(AppStrings.get('remove', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.danger)),
+                                child: Text(AppStrings.get('remove', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.danger)),
                               ),
                             ],
                           ),
@@ -476,7 +476,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                   ],
                   if (status == DavetStatus.declined && isCreator) ...[
                     IconButton(
-                      icon: const Icon(Icons.refresh_rounded,
+                      icon: Icon(Icons.refresh_rounded,
                           color: AppColors.success, size: 20),
                       tooltip: AppStrings.get('re_invite', isTr ? 'tr' : 'en'),
                       onPressed: () async {
@@ -492,7 +492,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                       },
                     ),
                     IconButton(
-                      icon: const Icon(Icons.person_remove_rounded,
+                      icon: Icon(Icons.person_remove_rounded,
                           color: AppColors.danger, size: 20),
                       tooltip: AppStrings.get('remove', isTr ? 'tr' : 'en'),
                       onPressed: () async {

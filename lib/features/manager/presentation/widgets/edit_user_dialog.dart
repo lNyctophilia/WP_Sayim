@@ -92,7 +92,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
           SnackBar(
             content: Text(
               widget.lang.tr('user_details_updated'),
-              style: const TextStyle(color: AppColors.textPrimary),
+              style: TextStyle(color: AppColors.textPrimary),
             ),
             backgroundColor: AppColors.card,
           ),
@@ -116,7 +116,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
         : widget.lang.tr('edit_staff');
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -185,7 +185,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
                 ),
                 decoration: InputDecoration(
                   hintText: widget.lang.tr('full_name_hint'),
-                  prefixIcon: const Icon(Icons.badge_outlined,
+                  prefixIcon: Icon(Icons.badge_outlined,
                       color: AppColors.textSecondary, size: 20),
                 ),
                 validator: (value) {
@@ -215,7 +215,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
                 ),
                 decoration: InputDecoration(
                   hintText: widget.lang.tr('username_hint'),
-                  prefixIcon: const Icon(Icons.alternate_email_rounded,
+                  prefixIcon: Icon(Icons.alternate_email_rounded,
                       color: AppColors.textSecondary, size: 20),
                 ),
                 validator: (value) {
@@ -243,7 +243,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
                 ),
                 decoration: InputDecoration(
                   hintText: widget.lang.tr('password_leave_empty'),
-                  prefixIcon: const Icon(Icons.lock_outline_rounded,
+                  prefixIcon: Icon(Icons.lock_outline_rounded,
                       color: AppColors.textSecondary, size: 20),
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -283,7 +283,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline_rounded,
+                      Icon(Icons.error_outline_rounded,
                           color: AppColors.danger, size: 18),
                       const SizedBox(width: 8),
                       Expanded(

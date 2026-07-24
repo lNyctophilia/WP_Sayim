@@ -9,6 +9,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
+import '../../../../core/theme/theme_service.dart';
 import '../../data/models/monthly_data.dart';
 import '../../data/models/work_day.dart';
 import '../../data/repositories/work_day_repository.dart';
@@ -22,11 +23,13 @@ class HomePage extends StatefulWidget {
   final StorageService storage;
   final LanguageService lang;
   final AppUser? currentUser;
+  final ThemeService themeService;
 
   const HomePage({
     super.key,
     required this.storage,
     required this.lang,
+    required this.themeService,
     this.currentUser,
   });
 
@@ -277,7 +280,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     Expanded(
                       child: Text(
                         formattedDate,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textSecondary,
@@ -294,7 +297,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           color: AppColors.card,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.close_rounded,
                           color: AppColors.textHint,
                           size: 16,
@@ -347,7 +350,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             child: Text(
                               existing.note.trim(),
                               textAlign: TextAlign.left,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 15,
                                 height: 1.5,
                                 color: AppColors.textPrimary,
@@ -372,7 +375,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 ? widget.lang.tr('no_note')
                                 : widget.lang.tr('no_entry'),
                             textAlign: TextAlign.left,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
                               color: AppColors.textHint,
                             ),
@@ -397,6 +400,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               currentUser: widget.currentUser!,
               lang: widget.lang,
               storage: widget.storage,
+              themeService: widget.themeService,
             )
           : null,
       body: Stack(
@@ -413,12 +417,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             children: [
               // Üst bar — farklı renk, yuvarlak alt köşeler
               Builder(
-                builder: (context) => CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
+                builder: (context) => CustomTopBar(
+                  currentUser: widget.currentUser, 
+                  lang: widget.lang, 
+                  storage: widget.storage,
+                  themeService: widget.themeService,
+                ),
               ),
               // Takvim + Ay navigasyonu + Özet — kaydırılabilir, ortalanmış
               Expanded(
                 child: _isLoading
-                    ? const Center(
+                    ? Center(
                         child: CircularProgressIndicator(
                           color: AppColors.accentLight,
                         ),
@@ -561,7 +570,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             // Sol ok
             IconButton(
               onPressed: _previousMonth,
-              icon: const Icon(
+              icon: Icon(
                 Icons.chevron_left_rounded,
                 color: AppColors.textPrimary,
                 size: 28,
@@ -582,7 +591,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   children: [
                     Text(
                       widget.lang.monthName(month),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
@@ -591,7 +600,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                     Text(
                       '$year',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         color: AppColors.textSecondary,
                       ),
@@ -604,7 +613,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             // Sağ ok
             IconButton(
               onPressed: _nextMonth,
-              icon: const Icon(
+              icon: Icon(
                 Icons.chevron_right_rounded,
                 color: AppColors.textPrimary,
                 size: 28,
@@ -626,7 +635,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       padding: const EdgeInsets.fromLTRB(24, 32, 24, 12),
       child: Text(
         greeting,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 26,
           fontWeight: FontWeight.w800,
           color: AppColors.textPrimary,
@@ -650,7 +659,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           child: Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
@@ -662,7 +671,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: Text(
               isTr ? 'Bu ay henüz rota eklenmedi.' : 'No routes added this month yet.',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 color: AppColors.textHint,
                 fontStyle: FontStyle.italic,
@@ -695,11 +704,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.sticky_note_2_rounded, size: 14, color: AppColors.accentLight),
+                          Icon(Icons.sticky_note_2_rounded, size: 14, color: AppColors.accentLight),
                           const SizedBox(width: 6),
                           Text(
                             dateStr,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: AppColors.textSecondary,
@@ -713,7 +722,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           day.note.trim(),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
                             color: AppColors.textPrimary,
                             height: 1.4,

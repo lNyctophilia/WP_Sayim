@@ -11,6 +11,7 @@ class StorageService {
   static const String _prefsLastMonth = 'last_viewed_month';
   static const String _prefsSessionId = 'session_id';
   static const String _prefsLastPanel = 'last_active_panel';
+  static const String _prefsTheme = 'app_theme_type';
 
   late SharedPreferences _prefs;
 
@@ -24,6 +25,17 @@ class StorageService {
 
   Future<void> setLanguage(String lang) async {
     await _prefs.setString(_prefsLang, lang);
+  }
+
+  // ─── Tema ──────────────────────────────────────────────────
+  
+  // StorageService'in kendisi enum'u import etmek istemiyorsa int olarak da saklayabiliriz,
+  // ama ThemeService enum'u ThemeService dosyasında olduğu için import etmemiz gerekir.
+  // Bağımlılık döngüsünü kırmamak için int olarak saklayalım.
+  int getThemeIndex() => _prefs.getInt(_prefsTheme) ?? 0;
+  
+  Future<void> setThemeIndex(int index) async {
+    await _prefs.setInt(_prefsTheme, index);
   }
 
   // ─── Oturum (Session) ─────────────────────────────────────

@@ -77,7 +77,7 @@ class _GrupSelectorState extends State<GrupSelector> {
           data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
           child: Theme(
             data: ThemeData.dark().copyWith(
-              colorScheme: const ColorScheme.dark(
+              colorScheme: ColorScheme.dark(
                 primary: AppColors.accentLight,
                 surface: AppColors.card,
               ),
@@ -109,7 +109,7 @@ class _GrupSelectorState extends State<GrupSelector> {
           children: [
             Text(
               AppStrings.get('time_groups_max', widget.isTr ? 'tr' : 'en'),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textSecondary,
@@ -154,10 +154,10 @@ class _GrupSelectorState extends State<GrupSelector> {
                         children: [
                           Icon(Icons.access_time_rounded,
                               size: 18, color: AppColors.textSecondary),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8),
                           Text(
                             '${AppStrings.get('group', widget.isTr ? 'tr' : 'en')} ${index + 1}: ${grup.saat}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textPrimary,
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -170,7 +170,7 @@ class _GrupSelectorState extends State<GrupSelector> {
                 ),
                 if (_gruplar.length > 1)
                   IconButton(
-                    icon: const Icon(Icons.remove_circle_outline_rounded,
+                    icon: Icon(Icons.remove_circle_outline_rounded,
                         color: AppColors.danger),
                     onPressed: () => _removeGroup(index),
                   ),

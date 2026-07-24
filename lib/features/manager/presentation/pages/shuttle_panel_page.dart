@@ -9,11 +9,13 @@ import '../../../../core/services/storage_service.dart';
 import '../widgets/manager_drawer.dart';
 import '../../../../features/home/presentation/widgets/custom_top_bar.dart';
 import 'manager_panel_page.dart';
+import '../../../../core/theme/theme_service.dart';
 
 class ShuttlePanelPage extends StatefulWidget {
   final AppUser currentUser;
   final LanguageService lang;
   final StorageService storage;
+  final ThemeService themeService;
   final bool isEmbedded;
 
   const ShuttlePanelPage({
@@ -21,6 +23,7 @@ class ShuttlePanelPage extends StatefulWidget {
     required this.currentUser,
     required this.lang,
     required this.storage,
+    required this.themeService,
     this.isEmbedded = false,
   });
 
@@ -195,20 +198,21 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
         currentUser: widget.currentUser,
         lang: widget.lang,
         storage: widget.storage,
+        themeService: widget.themeService,
       ),
       body: Column(
         children: [
           if (!widget.isEmbedded)
-            CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
+            CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage, themeService: widget.themeService),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
-                const Icon(Icons.directions_bus_rounded, color: AppColors.accentLight),
-                const SizedBox(width: 8),
+                Icon(Icons.directions_bus_rounded, color: AppColors.accentLight),
+                SizedBox(width: 8),
                 Text(
                   AppStrings.get('shuttle_route_planning', isTr ? 'tr' : 'en'),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -219,7 +223,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
           ),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: AppColors.accentLight))
+                ? Center(child: CircularProgressIndicator(color: AppColors.accentLight))
                 : Column(
                       children: [
                 Container(
@@ -235,12 +239,12 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.info_outline, color: AppColors.accentLight, size: 20),
+                          Icon(Icons.info_outline, color: AppColors.accentLight, size: 20),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               AppStrings.getFormat('shuttle_route_desc', isTr ? 'tr' : 'en', [widget.currentUser.fullName]),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.textPrimary,
                                 fontSize: 13,
                               ),
@@ -254,7 +258,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
                         children: [
                           Text(
                             AppStrings.getFormat('shuttle_selected_count', isTr ? 'tr' : 'en', [_selectedStaff.length, _maxSelection]),
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textSecondary,
                               fontWeight: FontWeight.w600,
                             ),
@@ -288,7 +292,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
                         ),
                         title: Text(
                           staff.fullName,
-                          style: const TextStyle(color: AppColors.textPrimary),
+                          style: TextStyle(color: AppColors.textPrimary),
                         ),
                         subtitle: Text(
                           hasLocation
@@ -360,6 +364,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
               currentUser: widget.currentUser,
               storage: widget.storage,
               lang: widget.lang,
+              themeService: widget.themeService,
               onLogout: () {},
             ),
             transitionDuration: Duration.zero,

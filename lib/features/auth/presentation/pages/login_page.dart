@@ -315,7 +315,7 @@ class _LoginPageState extends State<LoginPage>
       width: 80,
       height: 80,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
@@ -357,7 +357,7 @@ class _LoginPageState extends State<LoginPage>
               fontSize: 15,
             ),
             decoration: InputDecoration(
-              prefixIcon: const Icon(
+              prefixIcon: Icon(
                 Icons.person_outline_rounded,
                 color: AppColors.textSecondary,
                 size: 22,
@@ -386,7 +386,7 @@ class _LoginPageState extends State<LoginPage>
               fontSize: 15,
             ),
             decoration: InputDecoration(
-              prefixIcon: const Icon(
+              prefixIcon: Icon(
                 Icons.lock_outline_rounded,
                 color: AppColors.textSecondary,
                 size: 22,
@@ -435,7 +435,7 @@ class _LoginPageState extends State<LoginPage>
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.error_outline_rounded,
             color: AppColors.danger,
             size: 20,

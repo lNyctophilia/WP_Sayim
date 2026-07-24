@@ -9,6 +9,7 @@ import '../widgets/user_list_tab.dart';
 import '../widgets/sayim_list_tab.dart';
 import '../../../../features/home/presentation/widgets/custom_top_bar.dart';
 import '../widgets/manager_drawer.dart';
+import '../../../../core/theme/theme_service.dart';
 
 /// Yönetici Paneli — Tab yapısı
 /// Owner: Yönetici Yönetimi + Personel Yönetimi + Sayımlar
@@ -17,6 +18,7 @@ class ManagerPanelPage extends StatefulWidget {
   final AppUser currentUser;
   final StorageService storage;
   final LanguageService lang;
+  final ThemeService themeService;
   final VoidCallback onLogout;
   final bool isEmbedded;
 
@@ -25,6 +27,7 @@ class ManagerPanelPage extends StatefulWidget {
     required this.currentUser,
     required this.storage,
     required this.lang,
+    required this.themeService,
     required this.onLogout,
     this.isEmbedded = false,
   });
@@ -81,6 +84,7 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
         currentUser: widget.currentUser,
         lang: widget.lang,
         storage: widget.storage,
+        themeService: widget.themeService,
       ),
       body: SafeArea(
         child: Column(
@@ -89,6 +93,7 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
               currentUser: widget.currentUser,
               lang: widget.lang,
               storage: widget.storage,
+              themeService: widget.themeService,
             ),
             _buildTabBar(),
             Expanded(child: _buildTabContent()),

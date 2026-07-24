@@ -148,12 +148,12 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded, color: AppColors.textPrimary),
+          icon: Icon(Icons.close_rounded, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           AppStrings.get('add_person', isTr ? 'tr' : 'en'),
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -161,7 +161,7 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.accentLight))
+          ? Center(child: CircularProgressIndicator(color: AppColors.accentLight))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(

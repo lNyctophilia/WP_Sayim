@@ -28,17 +28,17 @@ class SayimListTab extends StatelessWidget {
           stream: sayimService.getSayimlar(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
+              return Center(
                   child: CircularProgressIndicator(color: AppColors.accentLight));
             }
 
             if (snapshot.hasError) {
               return Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: EdgeInsets.all(16.0),
                   child: Text(
                     lang.tr('error_occurred') + '${snapshot.error}',
-                    style: const TextStyle(color: AppColors.danger),
+                    style: TextStyle(color: AppColors.danger),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -60,7 +60,7 @@ class SayimListTab extends StatelessWidget {
                     const SizedBox(height: 12),
                     Text(
                       lang.tr('no_counts_found'),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         color: AppColors.textHint,
                         fontWeight: FontWeight.w500,
@@ -138,7 +138,7 @@ class SayimListTab extends StatelessWidget {
                   sayim.note.isNotEmpty
                       ? sayim.note
                       : lang.tr('unnamed_count'),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
@@ -166,33 +166,33 @@ class SayimListTab extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Row(
             children: [
-              const Icon(Icons.calendar_today_rounded,
+              Icon(Icons.calendar_today_rounded,
                   size: 14, color: AppColors.textSecondary),
               const SizedBox(width: 6),
               Text(
                 '${sayim.date.day.toString().padLeft(2, '0')}.${sayim.date.month.toString().padLeft(2, '0')}.${sayim.date.year}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   color: AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(width: 16),
-              const Icon(Icons.group_rounded,
+              SizedBox(width: 16),
+              Icon(Icons.group_rounded,
                   size: 14, color: AppColors.textSecondary),
               const SizedBox(width: 6),
               Text(
                 '${sayim.invitedUserIds.length}/${sayim.maxKisi + sayim.maxYonetici}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   color: AppColors.textSecondary,
                 ),
               ),
               if (sayim.invitedUserIds.length < (sayim.maxKisi + sayim.maxYonetici)) ...[
-                const SizedBox(width: 6),
-                const Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.warning),
+                SizedBox(width: 6),
+                Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.warning),
               ],
             ],
           ),

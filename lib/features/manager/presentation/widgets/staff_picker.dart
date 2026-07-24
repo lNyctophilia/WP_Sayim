@@ -240,7 +240,7 @@ class _StaffPickerState extends State<StaffPicker> {
   @override
   Widget build(BuildContext context) {
     if (_isLoadingSettings) {
-      return const Center(
+      return Center(
         child: Padding(
           padding: EdgeInsets.all(16.0),
           child: CircularProgressIndicator(color: AppColors.accentLight),
@@ -251,10 +251,10 @@ class _StaffPickerState extends State<StaffPicker> {
     if (_configs.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.0),
           child: Text(
             AppStrings.get('no_personnel_available', widget.isTr ? 'tr' : 'en'),
-            style: const TextStyle(color: AppColors.textHint),
+            style: TextStyle(color: AppColors.textHint),
           ),
         ),
       );
@@ -271,7 +271,7 @@ class _StaffPickerState extends State<StaffPicker> {
               children: [
                 Text(
                   AppStrings.get('staff_selection', widget.isTr ? 'tr' : 'en'),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textSecondary,
@@ -280,7 +280,7 @@ class _StaffPickerState extends State<StaffPicker> {
                 const SizedBox(height: 4),
                 Text(
                   AppStrings.getFormat('staff_selection_count', widget.isTr ? 'tr' : 'en', [_configs.where((c) => c.isSelected && c.role == DavetRole.staff).length + widget.alreadySelectedPersonel, widget.targetPersonel, _configs.where((c) => c.isSelected && c.role == DavetRole.manager).length + widget.alreadySelectedYonetici, widget.targetYonetici]),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                     color: AppColors.accentLight,
@@ -412,7 +412,7 @@ class _StaffPickerState extends State<StaffPicker> {
                   children: [
                     Text(
                       u.fullName + (isMe ? AppStrings.get('me_suffix', widget.isTr ? 'tr' : 'en') : ''),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textPrimary,
@@ -420,7 +420,7 @@ class _StaffPickerState extends State<StaffPicker> {
                     ),
                     Text(
                       u.username,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,
                       ),
@@ -433,13 +433,13 @@ class _StaffPickerState extends State<StaffPicker> {
                   DropdownButton<DavetRole>(
                     value: config.role,
                     dropdownColor: AppColors.surface,
-                    underline: const SizedBox(),
-                    style: const TextStyle(
+                    underline: SizedBox(),
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: AppColors.accentLight,
                     ),
-                    icon: const Icon(Icons.arrow_drop_down,
+                    icon: Icon(Icons.arrow_drop_down,
                         color: AppColors.accentLight, size: 20),
                     items: [
                       DropdownMenuItem(
@@ -479,7 +479,7 @@ class _StaffPickerState extends State<StaffPicker> {
                     padding: const EdgeInsets.only(right: 8.0),
                     child: Text(
                       AppStrings.get('role_staff', widget.isTr ? 'tr' : 'en'),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: AppColors.textHint,
@@ -489,7 +489,7 @@ class _StaffPickerState extends State<StaffPicker> {
             ],
           ),
           if (config.isSelected && config.isExpanded) ...[
-            const Divider(color: AppColors.surface),
+            Divider(color: AppColors.surface),
             Row(
               children: [
                 Expanded(
@@ -497,7 +497,7 @@ class _StaffPickerState extends State<StaffPicker> {
                     initialValue: config.grupId,
                     decoration: InputDecoration(
                       labelText: AppStrings.get('select_group', widget.isTr ? 'tr' : 'en'),
-                      labelStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                      labelStyle: TextStyle(color: AppColors.textSecondary, fontSize: 12),
                       border: InputBorder.none,
                       filled: true,
                       fillColor: AppColors.surface,
@@ -508,7 +508,7 @@ class _StaffPickerState extends State<StaffPicker> {
                         value: g.grupId,
                         child: Text(
                           '${AppStrings.get('group', widget.isTr ? 'tr' : 'en')} ${g.grupId} (${g.saat})',
-                          style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+                          style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
                         ),
                       );
                     }).toList(),
@@ -526,7 +526,7 @@ class _StaffPickerState extends State<StaffPicker> {
                     initialValue: config.multiplier,
                     decoration: InputDecoration(
                       labelText: AppStrings.get('multiplier', widget.isTr ? 'tr' : 'en'),
-                      labelStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                      labelStyle: TextStyle(color: AppColors.textSecondary, fontSize: 12),
                       border: InputBorder.none,
                       filled: true,
                       fillColor: AppColors.surface,
@@ -537,7 +537,7 @@ class _StaffPickerState extends State<StaffPicker> {
                         value: m,
                         child: Text(
                           '${m}x',
-                          style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+                          style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
                         ),
                       );
                     }).toList(),
@@ -558,11 +558,11 @@ class _StaffPickerState extends State<StaffPicker> {
             TextFormField(
               key: ValueKey('wage_${config.user.id}_${widget.sayimSehirTipi}_${config.multiplier}_${config.role}'),
               initialValue: config.ucret > 0 ? config.ucret.toStringAsFixed(0) : '',
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
               decoration: InputDecoration(
                 labelText: AppStrings.get('wage', widget.isTr ? 'tr' : 'en'),
-                labelStyle: const TextStyle(color: AppColors.textHint, fontSize: 13),
+                labelStyle: TextStyle(color: AppColors.textHint, fontSize: 13),
                 filled: true,
                 fillColor: AppColors.surface,
                 border: OutlineInputBorder(

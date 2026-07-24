@@ -119,7 +119,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
       builder: (context, child) {
         return Theme(
           data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
+            colorScheme: ColorScheme.dark(
               primary: AppColors.accentLight,
               surface: AppColors.card,
             ),
@@ -188,19 +188,19 @@ class _EditSayimPageState extends State<EditSayimPage> {
         context: context,
         builder: (context) => AlertDialog(
           backgroundColor: AppColors.background,
-          title: Text(AppStrings.get('missing_personnel_title', widget.lang.currentLang), style: const TextStyle(color: AppColors.textPrimary)),
+          title: Text(AppStrings.get('missing_personnel_title', widget.lang.currentLang), style: TextStyle(color: AppColors.textPrimary)),
           content: Text(
             AppStrings.getFormat('not_enough_people_update_msg', widget.lang.currentLang, [targetPersonel - selectedPersonel, targetYonetici - selectedYonetici]),
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text(AppStrings.get('cancel', widget.lang.currentLang), style: const TextStyle(color: AppColors.textHint)),
+              child: Text(AppStrings.get('cancel', widget.lang.currentLang), style: TextStyle(color: AppColors.textHint)),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text(AppStrings.get('update_btn', widget.lang.currentLang), style: const TextStyle(color: AppColors.accentLight)),
+              child: Text(AppStrings.get('update_btn', widget.lang.currentLang), style: TextStyle(color: AppColors.accentLight)),
             ),
           ],
         ),
@@ -301,10 +301,10 @@ class _EditSayimPageState extends State<EditSayimPage> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
       body: _isLoading && _allUsers.isEmpty
-          ? const Center(child: CircularProgressIndicator(color: AppColors.accentLight))
+          ? Center(child: CircularProgressIndicator(color: AppColors.accentLight))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Form(
@@ -314,20 +314,20 @@ class _EditSayimPageState extends State<EditSayimPage> {
                   children: [
                     // --- TEMEL BİLGİLER ---
                     _buildSectionTitle(AppStrings.get('basic_info', isTr ? 'tr' : 'en')),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     TextFormField(
                       controller: _noteController,
-                      style: const TextStyle(color: AppColors.textPrimary),
+                      style: TextStyle(color: AppColors.textPrimary),
                       decoration: InputDecoration(
                         labelText: AppStrings.get('note_job_location', isTr ? 'tr' : 'en'),
-                        labelStyle: const TextStyle(color: AppColors.textHint),
+                        labelStyle: TextStyle(color: AppColors.textHint),
                         filled: true,
                         fillColor: AppColors.surface,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
                         ),
-                        prefixIcon: const Icon(Icons.place_rounded, color: AppColors.textSecondary),
+                        prefixIcon: Icon(Icons.place_rounded, color: AppColors.textSecondary),
                       ),
                       validator: (val) => val == null || val.trim().isEmpty
                           ? (AppStrings.get('cannot_be_empty', isTr ? 'tr' : 'en'))
@@ -345,11 +345,11 @@ class _EditSayimPageState extends State<EditSayimPage> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.calendar_today_rounded, color: AppColors.textSecondary, size: 20),
-                            const SizedBox(width: 8),
+                            Icon(Icons.calendar_today_rounded, color: AppColors.textSecondary, size: 20),
+                            SizedBox(width: 8),
                             Text(
                               '${_selectedDate.day.toString().padLeft(2, '0')}.${_selectedDate.month.toString().padLeft(2, '0')}.${_selectedDate.year}',
-                              style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
+                              style: TextStyle(color: AppColors.textPrimary, fontSize: 16),
                             ),
                           ],
                         ),
@@ -363,17 +363,17 @@ class _EditSayimPageState extends State<EditSayimPage> {
                             controller: _maxKisiController,
                             keyboardType: TextInputType.number,
                             onChanged: (_) => setState((){}),
-                            style: const TextStyle(color: AppColors.textPrimary),
+                            style: TextStyle(color: AppColors.textPrimary),
                             decoration: InputDecoration(
                               labelText: AppStrings.get('standard_personnel', isTr ? 'tr' : 'en'),
-                              labelStyle: const TextStyle(color: AppColors.textHint),
+                              labelStyle: TextStyle(color: AppColors.textHint),
                               filled: true,
                               fillColor: AppColors.surface,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide.none,
                               ),
-                              prefixIcon: const Icon(Icons.group_rounded, color: AppColors.textSecondary),
+                              prefixIcon: Icon(Icons.group_rounded, color: AppColors.textSecondary),
                             ),
                           ),
                         ),
@@ -383,17 +383,17 @@ class _EditSayimPageState extends State<EditSayimPage> {
                             controller: _maxYoneticiController,
                             keyboardType: TextInputType.number,
                             onChanged: (_) => setState((){}),
-                            style: const TextStyle(color: AppColors.textPrimary),
+                            style: TextStyle(color: AppColors.textPrimary),
                             decoration: InputDecoration(
                               labelText: AppStrings.get('standard_manager', isTr ? 'tr' : 'en'),
-                              labelStyle: const TextStyle(color: AppColors.textHint),
+                              labelStyle: TextStyle(color: AppColors.textHint),
                               filled: true,
                               fillColor: AppColors.surface,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide.none,
                               ),
-                              prefixIcon: const Icon(Icons.supervisor_account_rounded, color: AppColors.textSecondary),
+                              prefixIcon: Icon(Icons.supervisor_account_rounded, color: AppColors.textSecondary),
                             ),
                           ),
                         ),
@@ -410,12 +410,12 @@ class _EditSayimPageState extends State<EditSayimPage> {
                               filled: true,
                               fillColor: AppColors.surface,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                             ),
                             dropdownColor: AppColors.card,
                             items: [
-                              DropdownMenuItem(value: SehirTipi.ici, child: Text(AppStrings.get('in_city', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.textPrimary))),
-                              DropdownMenuItem(value: SehirTipi.disi, child: Text(AppStrings.get('out_of_city', isTr ? 'tr' : 'en'), style: const TextStyle(color: AppColors.textPrimary))),
+                              DropdownMenuItem(value: SehirTipi.ici, child: Text(AppStrings.get('in_city', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textPrimary))),
+                              DropdownMenuItem(value: SehirTipi.disi, child: Text(AppStrings.get('out_of_city', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textPrimary))),
                             ],
                             onChanged: (val) {
                               if (val != null) setState(() => _sehirTipi = val);
@@ -431,11 +431,11 @@ class _EditSayimPageState extends State<EditSayimPage> {
                               filled: true,
                               fillColor: AppColors.surface,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                             ),
                             dropdownColor: AppColors.card,
                             items: [1.0, 1.5, 2.0].map((m) {
-                              return DropdownMenuItem(value: m, child: Text('${m}x', style: const TextStyle(color: AppColors.textPrimary)));
+                              return DropdownMenuItem(value: m, child: Text('${m}x', style: TextStyle(color: AppColors.textPrimary)));
                             }).toList(),
                             onChanged: (val) {
                               if (val != null) setState(() => _globalMultiplier = val);
@@ -445,8 +445,8 @@ class _EditSayimPageState extends State<EditSayimPage> {
                       ],
                     ),
                     
-                    const SizedBox(height: 24),
-                    const Divider(color: AppColors.surface),
+                    SizedBox(height: 24),
+                    Divider(color: AppColors.surface),
                     const SizedBox(height: 16),
 
                     // --- GRUP SEÇİMİ ---
@@ -460,8 +460,8 @@ class _EditSayimPageState extends State<EditSayimPage> {
                       },
                     ),
 
-                    const SizedBox(height: 24),
-                    const Divider(color: AppColors.surface),
+                    SizedBox(height: 24),
+                    Divider(color: AppColors.surface),
                     const SizedBox(height: 16),
 
                     // --- PERSONEL SEÇİMİ ---
@@ -524,7 +524,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
         color: AppColors.textSecondary,

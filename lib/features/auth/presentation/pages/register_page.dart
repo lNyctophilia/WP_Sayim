@@ -90,7 +90,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
             content: Text(
               widget.lang.tr('register_success'),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textPrimary),
+              style: TextStyle(color: AppColors.textPrimary),
             ),
             actions: [
               TextButton(
@@ -138,7 +138,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -300,7 +300,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline_rounded, color: AppColors.danger, size: 20),
+          Icon(Icons.error_outline_rounded, color: AppColors.danger, size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Text(

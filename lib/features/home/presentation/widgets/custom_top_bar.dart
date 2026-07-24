@@ -7,17 +7,20 @@ import '../../../staff/presentation/pages/invitations_page.dart';
 import '../../../settings/presentation/pages/settings_page.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/language_service.dart';
+import '../../../../core/theme/theme_service.dart';
 
 class CustomTopBar extends StatelessWidget {
   final AppUser? currentUser;
   final LanguageService lang;
   final StorageService storage;
+  final ThemeService themeService;
   
   const CustomTopBar({
     super.key,
     required this.currentUser,
     required this.lang,
     required this.storage,
+    required this.themeService,
   });
 
   @override
@@ -26,7 +29,7 @@ class CustomTopBar extends StatelessWidget {
     final davetService = DavetService();
     
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.vertical(
           bottom: Radius.circular(20),
@@ -58,7 +61,7 @@ class CustomTopBar extends StatelessWidget {
               ),
               SizedBox(width: hasDrawer ? 30 : 10),
               // App isim — ayrı yazılış
-              const Text(
+              Text(
                 'WP Sayım',
                 style: TextStyle(
                   fontSize: 22,
@@ -92,7 +95,7 @@ class CustomTopBar extends StatelessWidget {
                               ),
                             );
                           },
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.notifications_rounded,
                             color: AppColors.textSecondary,
                             size: 24,
@@ -109,8 +112,8 @@ class CustomTopBar extends StatelessWidget {
                             top: -2,
                             right: -2,
                             child: Container(
-                              padding: const EdgeInsets.all(5),
-                              decoration: const BoxDecoration(
+                              padding: EdgeInsets.all(5),
+                              decoration: BoxDecoration(
                                 color: AppColors.danger,
                                 shape: BoxShape.circle,
                               ),
@@ -138,11 +141,12 @@ class CustomTopBar extends StatelessWidget {
                         builder: (_) => SettingsPage(
                           lang: lang,
                           storage: storage,
+                          themeService: themeService,
                         ),
                       ),
                     );
                   },
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.settings_rounded,
                     color: AppColors.textSecondary,
                     size: 24,

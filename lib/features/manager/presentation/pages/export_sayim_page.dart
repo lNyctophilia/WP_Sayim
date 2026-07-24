@@ -16,11 +16,13 @@ import '../../../../core/services/storage_service.dart';
 import '../widgets/manager_drawer.dart';
 import '../../../../features/home/presentation/widgets/custom_top_bar.dart';
 import 'manager_panel_page.dart';
+import '../../../../core/theme/theme_service.dart';
 
 class ExportSayimPage extends StatefulWidget {
   final LanguageService lang;
   final StorageService storage;
   final AppUser currentUser;
+  final ThemeService themeService;
   final bool isEmbedded;
 
   const ExportSayimPage({
@@ -28,6 +30,7 @@ class ExportSayimPage extends StatefulWidget {
     required this.lang,
     required this.storage,
     required this.currentUser,
+    required this.themeService,
     this.isEmbedded = false,
   });
 
@@ -209,16 +212,21 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
     Widget content = Column(
       children: [
         if (!widget.isEmbedded)
-          CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
+          CustomTopBar(
+            currentUser: widget.currentUser, 
+            lang: widget.lang, 
+            storage: widget.storage,
+            themeService: widget.themeService,
+          ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              const Icon(Icons.table_view_rounded, color: AppColors.accentLight),
-              const SizedBox(width: 8),
+              Icon(Icons.table_view_rounded, color: AppColors.accentLight),
+              SizedBox(width: 8),
               Text(
                 AppStrings.get('export_excel', isTr ? 'tr' : 'en'),
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -235,19 +243,19 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
               children: [
             Text(
               AppStrings.get('please_select_a_count_to_export_to_excel', isTr ? 'tr' : 'en'),
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
             ),
             const SizedBox(height: 16),
             StreamBuilder<List<Sayim>>(
               stream: _sayimService.getSayimlar(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator(color: AppColors.accentLight));
+                  return Center(child: CircularProgressIndicator(color: AppColors.accentLight));
                 }
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return Text(
                     AppStrings.get('no_counts_found', isTr ? 'tr' : 'en'),
-                    style: const TextStyle(color: AppColors.textSecondary),
+                    style: TextStyle(color: AppColors.textSecondary),
                   );
                 }
 
@@ -267,7 +275,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                   initialValue: _selectedSayim,
                   hint: Text(
                     AppStrings.get('select_count', isTr ? 'tr' : 'en'),
-                    style: const TextStyle(color: AppColors.textHint),
+                    style: TextStyle(color: AppColors.textHint),
                   ),
                   items: sayimlar.map((sayim) {
                     final dateStr = DateFormat('dd.MM.yyyy').format(sayim.date);
@@ -275,7 +283,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                       value: sayim,
                       child: Text(
                         '${sayim.note} ($dateStr)',
-                        style: const TextStyle(color: AppColors.textPrimary),
+                        style: TextStyle(color: AppColors.textPrimary),
                       ),
                     );
                   }).toList(),
@@ -301,7 +309,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                   children: [
                     Text(
                       AppStrings.get('count_summary', isTr ? 'tr' : 'en'),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.accentLight,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -364,6 +372,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
               currentUser: widget.currentUser,
               storage: widget.storage,
               lang: widget.lang,
+              themeService: widget.themeService,
               onLogout: () {},
             ),
             transitionDuration: Duration.zero,
@@ -376,6 +385,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
           currentUser: widget.currentUser,
           lang: widget.lang,
           storage: widget.storage,
+          themeService: widget.themeService,
         ),
         body: SafeArea(child: content),
       ),
@@ -386,11 +396,11 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
     return Row(
       children: [
         Icon(icon, color: AppColors.textSecondary, size: 18),
-        const SizedBox(width: 8),
+        SizedBox(width: 8),
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+            style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
           ),
         ),
       ],

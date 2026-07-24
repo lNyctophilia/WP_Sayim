@@ -9,11 +9,13 @@ import '../../../../core/services/storage_service.dart';
 import '../../../home/presentation/widgets/custom_top_bar.dart';
 import '../../../manager/presentation/widgets/manager_drawer.dart';
 import '../../../manager/presentation/pages/manager_panel_page.dart';
+import '../../../../core/theme/theme_service.dart';
 
 class GlobalSettingsPage extends StatefulWidget {
   final LanguageService lang;
   final AppUser currentUser;
   final StorageService storage;
+  final ThemeService themeService;
   final bool isEmbedded;
 
   const GlobalSettingsPage({
@@ -21,6 +23,7 @@ class GlobalSettingsPage extends StatefulWidget {
     required this.lang,
     required this.currentUser,
     required this.storage,
+    required this.themeService,
     this.isEmbedded = false,
   });
 
@@ -99,6 +102,7 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
               currentUser: widget.currentUser,
               storage: widget.storage,
               lang: widget.lang,
+              themeService: widget.themeService,
               onLogout: () {},
             ),
             transitionDuration: Duration.zero,
@@ -125,16 +129,21 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
     Widget content = Column(
       children: [
         if (!widget.isEmbedded)
-          CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage),
+          CustomTopBar(
+            currentUser: widget.currentUser, 
+            lang: widget.lang, 
+            storage: widget.storage,
+            themeService: widget.themeService,
+          ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              const Icon(Icons.settings_rounded, color: AppColors.accentLight),
-              const SizedBox(width: 8),
+              Icon(Icons.settings_rounded, color: AppColors.accentLight),
+              SizedBox(width: 8),
               Text(
                 widget.lang.tr('global_settings'),
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -145,7 +154,7 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
         ),
         Expanded(
             child: _isLoading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(color: AppColors.accentLight))
                 : SingleChildScrollView(
               padding: const EdgeInsets.all(24),
@@ -156,7 +165,7 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
                   children: [
                     Text(
                       widget.lang.tr('default_wages'),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.accentLight,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -232,6 +241,7 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
               currentUser: widget.currentUser,
               storage: widget.storage,
               lang: widget.lang,
+              themeService: widget.themeService,
               onLogout: () {},
             ),
             transitionDuration: Duration.zero,
@@ -244,6 +254,7 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
           currentUser: widget.currentUser,
           lang: widget.lang,
           storage: widget.storage,
+          themeService: widget.themeService,
         ),
         body: SafeArea(child: content),
       ),
@@ -257,14 +268,14 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
   }) {
     return TextFormField(
       controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      style: const TextStyle(color: AppColors.textPrimary),
+      keyboardType: TextInputType.numberWithOptions(decimal: true),
+      style: TextStyle(color: AppColors.textPrimary),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: AppColors.textHint),
+        labelStyle: TextStyle(color: AppColors.textHint),
         prefixIcon: Icon(icon, color: AppColors.accentLight),
         suffixText: '₺',
-        suffixStyle: const TextStyle(color: AppColors.textHint),
+        suffixStyle: TextStyle(color: AppColors.textHint),
         filled: true,
         fillColor: AppColors.surface,
         border: OutlineInputBorder(

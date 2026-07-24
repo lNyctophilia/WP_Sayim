@@ -121,8 +121,8 @@ class AppStrings {
       'en': '1. Tap the Share (⬆) icon in Safari\'s bottom menu'
     },
     'install_ios_step2': {
-      'tr': '2. "Daha Fazla" seçeneğine basıp oradan "Ana Ekrana Ekle"ye dokunun',
-      'en': '2. Tap on "More" and from there tap on "Add to Home Screen"'
+      'tr': '2. Biraz aşağı kaydırıp gri listeden "Ana Ekrana Ekle"ye dokunun. (Eğer görünmüyorsa "Daha Fazla" seçeneği içinden bulabilirsiniz)',
+      'en': '2. Scroll down a bit and tap "Add to Home Screen" from the gray list. (If not visible, tap "More" to find it)'
     },
     'install_ios_step3': {
       'tr': '3. Açılan pencerede onaylayarak işlemi tamamlayın',

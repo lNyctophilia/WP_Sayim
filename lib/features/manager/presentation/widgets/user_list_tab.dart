@@ -69,10 +69,10 @@ class _UserListTabState extends State<UserListTab>
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(user.fullName, style: const TextStyle(color: AppColors.textPrimary)),
+        title: Text(user.fullName, style: TextStyle(color: AppColors.textPrimary)),
         content: Text(
           widget.lang.tr('reject_delete_confirm'),
-          style: const TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(widget.lang.tr('cancel'))),
@@ -98,10 +98,10 @@ class _UserListTabState extends State<UserListTab>
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(user.fullName, style: const TextStyle(color: AppColors.textPrimary, fontSize: 16)),
+        title: Text(user.fullName, style: TextStyle(color: AppColors.textPrimary, fontSize: 16)),
         content: Text(
           widget.lang.tr('delete_user_confirm'),
-          style: const TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(widget.lang.tr('cancel'))),
@@ -131,7 +131,7 @@ class _UserListTabState extends State<UserListTab>
       onRefresh: _loadUsers,
       color: AppColors.accentLight,
       child: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.accentLight))
+          ? Center(child: CircularProgressIndicator(color: AppColors.accentLight))
           : CustomScrollView(
               slivers: [
                 if (!isManagerList && _pendingUsers.isNotEmpty) ...[
@@ -230,7 +230,7 @@ class _UserListTabState extends State<UserListTab>
                   child: Center(
                     child: Text(
                       user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : '?',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.warning),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.warning),
                     ),
                   ),
                 ),
@@ -239,24 +239,24 @@ class _UserListTabState extends State<UserListTab>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(user.fullName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                      const SizedBox(height: 4),
-                      Text(user.phone ?? '', style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                      Text(user.fullName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                      SizedBox(height: 4),
+                      Text(user.phone ?? '', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                     ],
                   ),
                 ),
               ],
             ),
             if (user.address != null && user.address!.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Row(
                 children: [
-                  const Icon(Icons.location_on_outlined, size: 16, color: AppColors.textHint),
-                  const SizedBox(width: 6),
+                  Icon(Icons.location_on_outlined, size: 16, color: AppColors.textHint),
+                  SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       user.address!,
-                      style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                      style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
                     ),
                   ),
                 ],
@@ -270,7 +270,7 @@ class _UserListTabState extends State<UserListTab>
                     onPressed: () => _rejectUser(user),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.danger,
-                      side: const BorderSide(color: AppColors.danger),
+                      side: BorderSide(color: AppColors.danger),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                     child: Text(widget.lang.tr('reject')),
@@ -344,7 +344,7 @@ class _UserListTabState extends State<UserListTab>
           children: [
             Text(
               user.phone ?? '@${user.username}',
-              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
             const SizedBox(width: 8),
             Container(
