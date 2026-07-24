@@ -5,9 +5,6 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/notification_service.dart';
-import 'dart:convert';
-import 'dart:async';
-import 'package:http/http.dart' as http;
 
 class RegisterPage extends StatefulWidget {
   final LanguageService lang;
@@ -25,7 +22,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
   final _phoneController = TextEditingController();
-  TextEditingController? _addressController;
+  final _addressController = TextEditingController();
   final _passwordController = TextEditingController();
   
   final _authService = AuthService();
@@ -33,9 +30,6 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   bool _isLoading = false;
   bool _obscurePassword = true;
   String? _errorMessage;
-  double? _latitude;
-  double? _longitude;
-  String? _lastSelectedAddressText;
 
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
@@ -59,7 +53,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     _animController.dispose();
     _fullNameController.dispose();
     _phoneController.dispose();
-    _addressController?.dispose();
+    _addressController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -81,9 +75,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
         phone: _phoneController.text.trim(),
         password: _passwordController.text,
         fullName: _fullNameController.text.trim(),
-        address: _addressController?.text.trim() ?? '',
-        latitude: _latitude,
-        longitude: _longitude,
+        address: _addressController.text.trim(),
         fcmToken: token,
       );
 
@@ -137,72 +129,6 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     }
   }
 
-  Timer? _debounce;
-  Completer<Iterable<Map<String, dynamic>>>? _completer;
-
-  Future<Iterable<Map<String, dynamic>>> _searchPlaces(String query) async {
-    if (query.length < 3) return const [];
-    
-    if (_debounce?.isActive ?? false) {
-      _debounce!.cancel();
-    }
-    if (_completer != null && !_completer!.isCompleted) {
-      _completer!.complete(const []);
-    }
-    
-    _completer = Completer<Iterable<Map<String, dynamic>>>();
-    
-    _debounce = Timer(const Duration(milliseconds: 600), () async {
-      try {
-        final url = 'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query)}&format=json&addressdetails=1&countrycodes=tr';
-        final response = await http.get(
-          Uri.parse(url),
-          headers: {'User-Agent': 'WPSayimApp/1.0'}, 
-        );
-        if (response.statusCode == 200) {
-          final List<dynamic> data = json.decode(response.body);
-          final options = data.map((e) {
-            final address = e['address'] as Map<String, dynamic>?;
-            String description = e['display_name'];
-            if (address != null) {
-               final parts = <String>[];
-               if (address['road'] != null) parts.add(address['road']);
-               if (address['neighbourhood'] != null) parts.add(address['neighbourhood']);
-               if (address['suburb'] != null && address['suburb'] != address['neighbourhood']) parts.add(address['suburb']);
-               if (address['city_district'] != null) parts.add(address['city_district']);
-               if (address['city'] != null) {
-                 parts.add(address['city']);
-               } else if (address['town'] != null) {
-                 parts.add(address['town']);
-               } else if (address['village'] != null) {
-                 parts.add(address['village']);
-               }
-               if (address['province'] != null && address['province'] != address['city'] && address['province'] != address['town']) {
-                 parts.add(address['province']);
-               }
-               
-               if (parts.isNotEmpty) {
-                 description = parts.join(', ');
-               }
-            }
-            return {
-              'description': description,
-              'lat': double.parse(e['lat'].toString()),
-              'lng': double.parse(e['lon'].toString()),
-            };
-          }).toList();
-          if (!_completer!.isCompleted) _completer!.complete(options);
-        } else {
-          if (!_completer!.isCompleted) _completer!.complete(const []);
-        }
-      } catch (e) {
-        debugPrint('Autocomplete error: $e');
-        if (!_completer!.isCompleted) _completer!.complete(const []);
-      }
-    });
-    
-    return _completer!.future;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -295,75 +221,11 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           ),
           const SizedBox(height: 14),
 
-          Autocomplete<Map<String, dynamic>>(
-            optionsBuilder: (TextEditingValue textEditingValue) async {
-              if (textEditingValue.text.isEmpty) {
-                return const Iterable<Map<String, dynamic>>.empty();
-              }
-              return await _searchPlaces(textEditingValue.text);
-            },
-            displayStringForOption: (option) => option['description'] as String,
-            onSelected: (option) {
-              setState(() {
-                _latitude = option['lat'] as double;
-                _longitude = option['lng'] as double;
-                _lastSelectedAddressText = option['description'] as String;
-              });
-              FocusScope.of(context).unfocus();
-            },
-            fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-              _addressController = controller;
-
-              return TextFormField(
-                controller: controller,
-                focusNode: focusNode,
-                onFieldSubmitted: (String value) => onFieldSubmitted(),
-                style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 15),
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.location_on_outlined, color: AppColors.textSecondary, size: 22),
-                  hintText: widget.lang.tr('address_hint'),
-                  filled: true,
-                  fillColor: AppColors.surface,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) return widget.lang.tr('address_required');
-                  if (_latitude == null || _longitude == null || value.trim() != _lastSelectedAddressText) {
-                    return widget.lang.tr('address_required'); // Force selection from list
-                  }
-                  return null;
-                },
-              );
-            },
-            optionsViewBuilder: (context, onSelected, options) {
-              return Align(
-                alignment: Alignment.topLeft,
-                child: Material(
-                  elevation: 4.0,
-                  color: AppColors.surface,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width - 64, // Accounts for padding
-                    child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      shrinkWrap: true,
-                      itemCount: options.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final option = options.elementAt(index);
-                        return ListTile(
-                          leading: const Icon(Icons.location_city, color: AppColors.accentLight),
-                          title: Text(option['description'] as String, style: const TextStyle(color: AppColors.textPrimary)),
-                          onTap: () => onSelected(option),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              );
-            },
+          _buildTextField(
+            controller: _addressController,
+            hintText: widget.lang.tr('address_hint'),
+            icon: Icons.location_on_outlined,
+            validator: (value) => (value == null || value.trim().isEmpty) ? widget.lang.tr('address_required') : null,
           ),
           Padding(
             padding: const EdgeInsets.only(left: 12, top: 4),

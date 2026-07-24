@@ -609,11 +609,6 @@ class CompiledApp {
         }
         return null;
       },
-      _1911: () => {
-        return typeof process != "undefined" &&
-               Object.prototype.toString.call(process) == "[object process]" &&
-               process.platform == "win32"
-      },
       _1912: () => new WeakMap(),
       _1913: (map, o) => map.get(o),
       _1914: (map, o, v) => map.set(o, v),
@@ -864,7 +859,6 @@ class CompiledApp {
       _2176: (a, i) => a.splice(i, 1),
       _2177: (a, s) => a.join(s),
       _2178: (a, s, e) => a.slice(s, e),
-      _2180: (a, b) => a == b ? 0 : (a > b ? 1 : -1),
       _2181: a => a.length,
       _2183: (a, i) => a[i],
       _2184: (a, i, v) => a[i] = v,

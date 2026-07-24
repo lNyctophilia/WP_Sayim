@@ -624,19 +624,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            greeting,
-            style: const TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
-              letterSpacing: -0.5,
-            ),
+      child: Center(
+        child: Text(
+          greeting,
+          style: const TextStyle(
+            fontSize: 26,
+            fontWeight: FontWeight.w800,
+            color: AppColors.textPrimary,
+            letterSpacing: -0.5,
           ),
-        ],
+        ),
       ),
     );
   }
@@ -644,8 +641,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget _buildRecentNotes(MonthlyData data) {
     final daysWithNotes = data.workDays.where((d) => d.note.trim().isNotEmpty).toList();
     daysWithNotes.sort((a, b) => b.date.compareTo(a.date));
-
-    if (daysWithNotes.isEmpty) return const SizedBox.shrink();
 
     final isTr = widget.lang.currentLang == 'tr';
     final title = AppStrings.get('recent_notes', isTr ? 'tr' : 'en');
@@ -664,62 +659,75 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
           ),
         ),
-        SizedBox(
-          height: 100,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: daysWithNotes.length,
-            itemBuilder: (context, index) {
-              final day = daysWithNotes[index];
-              final monthName = widget.lang.monthName(day.date.month);
-              final dateStr = '${day.date.day} $monthName';
+        if (daysWithNotes.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: Text(
+              isTr ? 'Bu ay henüz not eklenmedi.' : 'No notes added this month yet.',
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.textHint,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          )
+        else
+          SizedBox(
+            height: 100,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              itemCount: daysWithNotes.length,
+              itemBuilder: (context, index) {
+                final day = daysWithNotes[index];
+                final monthName = widget.lang.monthName(day.date.month);
+                final dateStr = '${day.date.day} $monthName';
 
-              return Container(
-                width: 220,
-                margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.card,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.divider, width: 1),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.sticky_note_2_rounded, size: 14, color: AppColors.accentLight),
-                        const SizedBox(width: 6),
-                        Text(
-                          dateStr,
+                return Container(
+                  width: 220,
+                  margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.card,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.divider, width: 1),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.sticky_note_2_rounded, size: 14, color: AppColors.accentLight),
+                          const SizedBox(width: 6),
+                          Text(
+                            dateStr,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: Text(
+                          day.note.trim(),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
+                            fontSize: 13,
+                            color: AppColors.textPrimary,
+                            height: 1.4,
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: Text(
-                        day.note.trim(),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textPrimary,
-                          height: 1.4,
-                        ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
-        ),
         const SizedBox(height: 20),
       ],
     );
