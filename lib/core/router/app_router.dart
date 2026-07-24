@@ -8,7 +8,10 @@ import '../services/storage_service.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/manager/presentation/pages/manager_shell_page.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../services/notification_service.dart';
+import '../../features/auth/presentation/pages/install_prompt_page.dart';
+import '../utils/pwa_check.dart';
 
 /// Ana yönlendirici widget — Auth durumuna göre Login veya Ana Ekranı gösterir
 ///
@@ -47,6 +50,10 @@ class _AppRouterState extends State<AppRouter> {
 
         // Kullanıcı giriş yapmamış
         if (!snapshot.hasData || snapshot.data == null) {
+          if (kIsWeb && !isPWA()) {
+            return const InstallPromptPage();
+          }
+          
           return LoginPage(
             lang: widget.lang,
             onLoginSuccess: (_) {
