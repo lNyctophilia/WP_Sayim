@@ -80,8 +80,12 @@ class _LoginPageState extends State<LoginPage>
       final lockedUntil = DateTime.parse(lockedUntilStr);
       if (DateTime.now().isBefore(lockedUntil)) {
         final diff = lockedUntil.difference(DateTime.now());
-        final minutes = diff.inMinutes > 0 ? diff.inMinutes : 1;
-        throw LockoutException('Hesap kilitli. Lütfen $minutes dakika sonra tekrar deneyin.');
+        if (diff.inSeconds < 60) {
+          throw LockoutException('Hesap kilitli. Lütfen ${diff.inSeconds} saniye sonra tekrar deneyin.');
+        } else {
+          final minutes = diff.inMinutes;
+          throw LockoutException('Hesap kilitli. Lütfen $minutes dakika sonra tekrar deneyin.');
+        }
       }
     }
   }
@@ -92,17 +96,17 @@ class _LoginPageState extends State<LoginPage>
     attempts++;
     await prefs.setInt('login_failed_attempts_$username', attempts);
 
-    if (attempts >= 3) {
-      int minutesToLock = 15;
-      if (attempts > 3) {
-        minutesToLock = 15 * (1 << (attempts - 3)); // 15, 30, 60, 120...
-      }
-      if (minutesToLock > 1440) minutesToLock = 1440; // max 24 hours
+    if (attempts >= 30) {
+      int secondsToLock = 30 * (1 << ((attempts - 30) ~/ 2));
+      if (secondsToLock > 86400) secondsToLock = 86400; // max 24 hours
 
-      final lockedUntil = DateTime.now().add(Duration(minutes: minutesToLock));
+      final lockedUntil = DateTime.now().add(Duration(seconds: secondsToLock));
       await prefs.setString('login_locked_until_$username', lockedUntil.toIso8601String());
       
-      throw LockoutException('Çok fazla hatalı giriş. Hesap $minutesToLock dakika kilitlendi.');
+      final lockMessage = secondsToLock < 60 
+          ? '$secondsToLock saniye' 
+          : '${secondsToLock ~/ 60} dakika';
+      throw LockoutException('Çok fazla hatalı giriş. Hesap $lockMessage kilitlendi.');
     }
   }
 

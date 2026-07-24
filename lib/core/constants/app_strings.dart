@@ -297,7 +297,7 @@ class AppStrings {
     'welcome_user': {'tr': 'Hoşgeldin {0}', 'en': 'Welcome {0}'},
     'no_entries_for_this_month_yet_let': {'tr': 'Bu ay için henüz kayıt girmedin. Hadi başlayalım!', 'en': 'No entries for this month yet. Let\'s start!'},
     'monthly_work_intensity': {'tr': 'Aylık İş Yoğunluğu', 'en': 'Monthly Work Intensity'},
-    'recent_notes': {'tr': 'Son Notlar', 'en': 'Recent Notes'},
+    'recent_notes': {'tr': 'Son Rotalar', 'en': 'Recent Routes'},
     'error_loading_data': {'tr': 'Veriler yüklenirken hata oluştu', 'en': 'Error loading data'},
     'invites_sent': {'tr': 'Davetler gönderildi!', 'en': 'Invites sent!'},
     'an_error_occurred': {'tr': 'Hata oluştu', 'en': 'An error occurred'},

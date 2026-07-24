@@ -623,16 +623,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final greeting = AppStrings.getFormat('welcome_user', isTr ? 'tr' : 'en', [firstName]);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-      child: Center(
-        child: Text(
-          greeting,
-          style: const TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
-            letterSpacing: -0.5,
-          ),
+      padding: const EdgeInsets.fromLTRB(24, 32, 24, 12),
+      child: Text(
+        greeting,
+        style: const TextStyle(
+          fontSize: 26,
+          fontWeight: FontWeight.w800,
+          color: AppColors.textPrimary,
+          letterSpacing: -0.5,
         ),
       ),
     );
@@ -663,7 +661,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: Text(
-              isTr ? 'Bu ay henüz not eklenmedi.' : 'No notes added this month yet.',
+              isTr ? 'Bu ay henüz rota eklenmedi.' : 'No routes added this month yet.',
               style: const TextStyle(
                 fontSize: 14,
                 color: AppColors.textHint,
