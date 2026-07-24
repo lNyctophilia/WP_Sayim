@@ -225,8 +225,12 @@ class _StaffPickerState extends State<StaffPicker> {
       for (var c in _configs) {
         if (!widget.busyUserIds.contains(c.user.id)) {
           c.isSelected = val;
+          if (!val) {
+            c.isExpanded = false;
+          }
         } else {
           c.isSelected = false;
+          c.isExpanded = false;
         }
       }
     });
@@ -348,8 +352,6 @@ class _StaffPickerState extends State<StaffPicker> {
         config.role = config.user.isManager || config.user.isOwner ? DavetRole.manager : DavetRole.staff;
         config.ucret = _calculateWage(config.role, config.multiplier);
         config.isExpanded = false;
-      } else {
-        config.isExpanded = true;
       }
       _selectAll = _configs.every((c) => c.isSelected || widget.busyUserIds.contains(c.user.id));
     });
