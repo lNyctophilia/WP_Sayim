@@ -407,15 +407,10 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                         if (userSnapshot.data != null && userSnapshot.data!.email != null && userSnapshot.data!.email!.isNotEmpty) {
                           final NotificationService _notificationService = NotificationService();
                           final sayimTarihi = "${currentSayim.date.day.toString().padLeft(2, '0')}.${currentSayim.date.month.toString().padLeft(2, '0')}.${currentSayim.date.year}";
-                          final subject = isTr ? 'WP Sayım Hatırlatması' : 'WP Sayim Reminder';
-                          final body = isTr 
-                              ? 'Merhaba ${userSnapshot.data!.fullName},\n\n$sayimTarihi tarihindeki sayım için hatırlatma! Lütfen durumu kontrol ediniz.\n\nİyi çalışmalar.' 
-                              : 'Hello ${userSnapshot.data!.fullName},\n\nReminder for the count on $sayimTarihi! Please check your status.\n\nBest regards.';
-                          
                           await _notificationService.sendEmailNotification(
                             targetUserId: davet.userId,
-                            subject: subject,
-                            textContent: body,
+                            subject: AppStrings.get('new_sayim_invitation', isTr ? 'tr' : 'en') ?? 'Yeni Sayım Daveti',
+                            textContent: 'Merhaba ${userSnapshot.data!.fullName},\n\nYeni bir sayım için davet edildiniz!\n\nTarih: $sayimTarihi\nSaat: $grupAdi\nNot: ${currentSayim.note}\n\nLütfen uygulamaya girerek daveti yanıtlayın.',
                           );
                         }
 

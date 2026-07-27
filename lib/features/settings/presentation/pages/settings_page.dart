@@ -205,81 +205,88 @@ class _SettingsPageState extends State<SettingsPage> {
             ],
           ),
           const SizedBox(height: 16),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: AppThemeType.values.map((theme) {
-                final color = widget.themeService.getThemeColorPreview(theme);
-                final isSelected = widget.themeService.currentTheme == theme;
-                return GestureDetector(
-                  onTap: () async {
-                    if (theme == AppThemeType.custom) {
-                      Color pickerColor = Color(widget.storage.getCustomThemeColor());
-                      bool? changed = await showDialog<bool>(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            backgroundColor: AppColors.card,
-                            title: Text(
-                              widget.lang.currentLang == 'tr' ? 'Renk Seç' : 'Pick Color',
-                              style: TextStyle(color: AppColors.textPrimary)
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    Color pickerColor = widget.themeService.currentTheme == AppThemeType.custom 
+                        ? Color(widget.storage.getCustomThemeColor()) 
+                        : AppColors.accent;
+                    bool? changed = await showDialog<bool>(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          backgroundColor: AppColors.card,
+                          title: Text(
+                            widget.lang.currentLang == 'tr' ? 'Renk Seç' : 'Pick Color',
+                            style: TextStyle(color: AppColors.textPrimary)
+                          ),
+                          content: SingleChildScrollView(
+                            child: ColorPicker(
+                              pickerColor: pickerColor,
+                              onColorChanged: (color) {
+                                pickerColor = color;
+                              },
+                              pickerAreaHeightPercent: 0.8,
+                              enableAlpha: false,
+                              displayThumbColor: true,
+                              paletteType: PaletteType.hsvWithHue,
                             ),
-                            content: SingleChildScrollView(
-                              child: ColorPicker(
-                                pickerColor: pickerColor,
-                                onColorChanged: (color) {
-                                  pickerColor = color;
-                                },
-                                pickerAreaHeightPercent: 0.8,
-                                enableAlpha: false,
-                                displayThumbColor: true,
-                                paletteType: PaletteType.hsvWithHue,
-                              ),
+                          ),
+                          actions: [
+                            TextButton(
+                              child: Text(widget.lang.tr('cancel'), style: TextStyle(color: AppColors.textHint)),
+                              onPressed: () => Navigator.of(context).pop(false),
                             ),
-                            actions: [
-                              TextButton(
-                                child: Text(widget.lang.tr('cancel'), style: TextStyle(color: AppColors.textHint)),
-                                onPressed: () => Navigator.of(context).pop(false),
-                              ),
-                              TextButton(
-                                child: Text(widget.lang.tr('save') ?? 'Seç', style: TextStyle(color: AppColors.accentLight)),
-                                onPressed: () => Navigator.of(context).pop(true),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                      
-                      if (changed == true && mounted) {
-                        // ignore: deprecated_member_use
-                        await widget.storage.setCustomThemeColor(pickerColor.value);
-                        await widget.themeService.setTheme(theme);
-                        setState(() {});
-                      }
-                    } else {
-                      widget.themeService.setTheme(theme);
+                            TextButton(
+                              child: Text(widget.lang.tr('save') ?? 'Seç', style: TextStyle(color: AppColors.accentLight)),
+                              onPressed: () => Navigator.of(context).pop(true),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                    
+                    if (changed == true && mounted) {
+                      // ignore: deprecated_member_use
+                      await widget.storage.setCustomThemeColor(pickerColor.value);
+                      await widget.themeService.setTheme(AppThemeType.custom);
                       setState(() {});
                     }
                   },
-                  child: Container(
-                    margin: const EdgeInsets.only(right: 12),
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isSelected ? Colors.white : Colors.transparent,
-                        width: 2,
-                      ),
+                  icon: const Icon(Icons.color_lens_rounded),
+                  label: Text(widget.lang.currentLang == 'tr' ? 'Özel Renk Seç' : 'Pick Custom Color'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.surface,
+                    foregroundColor: AppColors.textPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    child: isSelected
-                        ? const Icon(Icons.check_rounded, color: Colors.white, size: 20)
-                        : null,
                   ),
-                );
-              }).toList(),
-            ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    await widget.themeService.setTheme(AppThemeType.defaultDark);
+                    setState(() {});
+                  },
+                  icon: const Icon(Icons.refresh_rounded),
+                  label: Text(widget.lang.currentLang == 'tr' ? 'Sıfırla' : 'Reset'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textSecondary,
+                    side: BorderSide(color: AppColors.divider),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

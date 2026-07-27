@@ -76,9 +76,16 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
       // Bildirim iznini yükleme ekranı başlamadan İLK BAŞTA iste.
       // Kullanıcı ile doğrudan etkileşim anı olduğu için PWA vs sorun çıkarmaz.
       final token = await NotificationService().getTokenForRegistration();
+      
+      String phone = _phoneController.text.trim();
+      
+      // Kullanıcı 10 haneli girerse (başında 0 olmadan), otomatik 0 ekle.
+      if (phone.length == 10 && !phone.startsWith('0')) {
+        phone = '0$phone';
+      }
 
       await _authService.register(
-        phone: _phoneController.text.trim(),
+        phone: phone,
         password: _passwordController.text,
         fullName: _fullNameController.text.trim(),
         address: _addressController.text.trim(),

@@ -124,7 +124,12 @@ class _LoginPageState extends State<LoginPage>
       _errorMessage = null;
     });
 
-    final username = _usernameController.text.trim().toLowerCase();
+    String username = _usernameController.text.trim().toLowerCase();
+
+    // Kullanıcı 10 haneli girerse (başında 0 olmadan), otomatik 0 ekle.
+    if (username.length == 10 && !username.startsWith('0')) {
+      username = '0$username';
+    }
 
     try {
       await _checkLockoutStatus(username);

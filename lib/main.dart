@@ -27,17 +27,8 @@ void main() async {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   }
 
-  // Durum çubuğu şeffaf — Web'de etkisiz ama hata vermez
-  if (!kIsWeb) {
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        systemNavigationBarColor: Color(0xFF0A1128),
-        systemNavigationBarIconBrightness: Brightness.light,
-      ),
-    );
-  }
+  // Durum çubuğu yönetimi ThemeService tarafından yapılıyor
+  // main.dart içerisinde statik bir atama yapmaya gerek yok.
 
   // Servisleri başlat
   final storage = StorageService();
