@@ -226,13 +226,6 @@ class _SettingsPageState extends State<SettingsPage> {
                         color: isSelected ? Colors.white : Colors.transparent,
                         width: 2,
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: color.withValues(alpha: 0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
                     ),
                     child: isSelected
                         ? const Icon(Icons.check_rounded, color: Colors.white, size: 20)

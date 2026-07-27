@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../constants/app_colors.dart';
 import '../services/storage_service.dart';
 
@@ -46,107 +47,167 @@ class ThemeService extends ChangeNotifier {
         AppColors.accentLight = const Color(0xFF3A86FF);
         AppColors.todayBorder = const Color(0xFF3A86FF);
         AppColors.divider = const Color(0xFF1E3050);
+        AppColors.textPrimary = const Color(0xFFFFFFFF);
+        AppColors.textSecondary = const Color(0xFF8899AA);
+        AppColors.textHint = const Color(0xFF556677);
+        AppColors.cityInner = const Color(0xFF48BFE3);
+        AppColors.cityOuter = const Color(0xFFF9A826);
         break;
 
       case AppThemeType.pastelPink:
-        AppColors.background = const Color(0xFF1A1115);
-        AppColors.surface = const Color(0xFF261820);
-        AppColors.card = const Color(0xFF341F2B);
-        AppColors.cardLight = const Color(0xFF422837);
-        AppColors.accent = const Color(0xFFB56576);
-        AppColors.accentLight = const Color(0xFFFFB5A7); // Pastel Pink
-        AppColors.todayBorder = const Color(0xFFFFB5A7);
-        AppColors.divider = const Color(0xFF4A303F);
+        AppColors.background = const Color(0xFFFFF0F5);
+        AppColors.surface = const Color(0xFFFFE4E1);
+        AppColors.card = const Color(0xFFFFD1DC);
+        AppColors.cardLight = const Color(0xFFFFB6C1);
+        AppColors.accent = const Color(0xFFD87093);
+        AppColors.accentLight = const Color(0xFFFF69B4);
+        AppColors.todayBorder = const Color(0xFFFF69B4);
+        AppColors.divider = const Color(0xFFF8BBD0);
+        AppColors.textPrimary = const Color(0xFF333333);
+        AppColors.textSecondary = const Color(0xFF666666);
+        AppColors.textHint = const Color(0xFF999999);
+        AppColors.cityInner = const Color(0xFF0077B6);
+        AppColors.cityOuter = const Color(0xFFF57C00);
         break;
 
       case AppThemeType.pastelYellow:
-        AppColors.background = const Color(0xFF1A1A10);
-        AppColors.surface = const Color(0xFF252516);
-        AppColors.card = const Color(0xFF31311C);
-        AppColors.cardLight = const Color(0xFF3F3F24);
-        AppColors.accent = const Color(0xFFBFA15F);
-        AppColors.accentLight = const Color(0xFFFDF0D5); // Pastel Yellow
-        AppColors.todayBorder = const Color(0xFFFDF0D5);
-        AppColors.divider = const Color(0xFF48482A);
+        AppColors.background = const Color(0xFFFFFFE0);
+        AppColors.surface = const Color(0xFFFFFACD);
+        AppColors.card = const Color(0xFFFFF8DC);
+        AppColors.cardLight = const Color(0xFFFFE4B5);
+        AppColors.accent = const Color(0xFFDAA520);
+        AppColors.accentLight = const Color(0xFFFFA000); // Sarı-Turuncu tonu belirgin
+        AppColors.todayBorder = const Color(0xFFFFA000);
+        AppColors.divider = const Color(0xFFF0E68C);
+        AppColors.textPrimary = const Color(0xFF333333);
+        AppColors.textSecondary = const Color(0xFF666666);
+        AppColors.textHint = const Color(0xFF999999);
+        AppColors.cityInner = const Color(0xFF0077B6);
+        AppColors.cityOuter = const Color(0xFFE65100);
         break;
 
       case AppThemeType.pastelOrange:
-        AppColors.background = const Color(0xFF1A1410);
-        AppColors.surface = const Color(0xFF261D16);
-        AppColors.card = const Color(0xFF34261C);
-        AppColors.cardLight = const Color(0xFF423024);
-        AppColors.accent = const Color(0xFFC07C50);
-        AppColors.accentLight = const Color(0xFFFFD6BA); // Pastel Orange
-        AppColors.todayBorder = const Color(0xFFFFD6BA);
-        AppColors.divider = const Color(0xFF4A382A);
+        AppColors.background = const Color(0xFFFFF5E6);
+        AppColors.surface = const Color(0xFFFFE4CC);
+        AppColors.card = const Color(0xFFFFD6B3);
+        AppColors.cardLight = const Color(0xFFFFC299);
+        AppColors.accent = const Color(0xFFE67300);
+        AppColors.accentLight = const Color(0xFFFF8C1A);
+        AppColors.todayBorder = const Color(0xFFFF8C1A);
+        AppColors.divider = const Color(0xFFFFDAB9);
+        AppColors.textPrimary = const Color(0xFF333333);
+        AppColors.textSecondary = const Color(0xFF666666);
+        AppColors.textHint = const Color(0xFF999999);
+        AppColors.cityInner = const Color(0xFF0077B6);
+        AppColors.cityOuter = const Color(0xFFD84315);
         break;
 
       case AppThemeType.pastelPurple:
-        AppColors.background = const Color(0xFF14111A);
-        AppColors.surface = const Color(0xFF1E1826);
-        AppColors.card = const Color(0xFF281F34);
-        AppColors.cardLight = const Color(0xFF332842);
-        AppColors.accent = const Color(0xFF8860D0);
-        AppColors.accentLight = const Color(0xFFC1B3D7); // Pastel Purple
-        AppColors.todayBorder = const Color(0xFFC1B3D7);
-        AppColors.divider = const Color(0xFF3E314F);
+        AppColors.background = const Color(0xFFF8F4FF);
+        AppColors.surface = const Color(0xFFE6DDF2);
+        AppColors.card = const Color(0xFFD4C4E5);
+        AppColors.cardLight = const Color(0xFFC2ABD8);
+        AppColors.accent = const Color(0xFF6A4C93);
+        AppColors.accentLight = const Color(0xFF8860D0);
+        AppColors.todayBorder = const Color(0xFF8860D0);
+        AppColors.divider = const Color(0xFFDCD0FF);
+        AppColors.textPrimary = const Color(0xFF333333);
+        AppColors.textSecondary = const Color(0xFF666666);
+        AppColors.textHint = const Color(0xFF999999);
+        AppColors.cityInner = const Color(0xFF0077B6);
+        AppColors.cityOuter = const Color(0xFFF57C00);
         break;
 
       case AppThemeType.pastelBlue:
-        AppColors.background = const Color(0xFF0F141A);
-        AppColors.surface = const Color(0xFF161E26);
-        AppColors.card = const Color(0xFF1E2834);
-        AppColors.cardLight = const Color(0xFF283442);
-        AppColors.accent = const Color(0xFF5B8E7D);
-        AppColors.accentLight = const Color(0xFFA8D0E6); // Pastel Light Blue
-        AppColors.todayBorder = const Color(0xFFA8D0E6);
-        AppColors.divider = const Color(0xFF324152);
+        AppColors.background = const Color(0xFFF0F8FF);
+        AppColors.surface = const Color(0xFFE1F0FF);
+        AppColors.card = const Color(0xFFCCE5FF);
+        AppColors.cardLight = const Color(0xFFB3D9FF);
+        AppColors.accent = const Color(0xFF3385FF);
+        AppColors.accentLight = const Color(0xFF66A3FF);
+        AppColors.todayBorder = const Color(0xFF66A3FF);
+        AppColors.divider = const Color(0xFFB0E0E6);
+        AppColors.textPrimary = const Color(0xFF333333);
+        AppColors.textSecondary = const Color(0xFF666666);
+        AppColors.textHint = const Color(0xFF999999);
+        AppColors.cityInner = const Color(0xFF0277BD);
+        AppColors.cityOuter = const Color(0xFFF57C00);
         break;
 
       case AppThemeType.pastelGreen:
-        AppColors.background = const Color(0xFF0F1A14);
-        AppColors.surface = const Color(0xFF16261D);
-        AppColors.card = const Color(0xFF1E3426);
-        AppColors.cardLight = const Color(0xFF284230);
-        AppColors.accent = const Color(0xFF6A997D);
-        AppColors.accentLight = const Color(0xFFB8E0D2); // Pastel Green
-        AppColors.todayBorder = const Color(0xFFB8E0D2);
-        AppColors.divider = const Color(0xFF304F3A);
+        AppColors.background = const Color(0xFFF0FFF0);
+        AppColors.surface = const Color(0xFFE1FFE1);
+        AppColors.card = const Color(0xFFCCFFCC);
+        AppColors.cardLight = const Color(0xFFB3FFB3);
+        AppColors.accent = const Color(0xFF2E8B57);
+        AppColors.accentLight = const Color(0xFF3CB371);
+        AppColors.todayBorder = const Color(0xFF3CB371);
+        AppColors.divider = const Color(0xFFC1E1C1);
+        AppColors.textPrimary = const Color(0xFF333333);
+        AppColors.textSecondary = const Color(0xFF666666);
+        AppColors.textHint = const Color(0xFF999999);
+        AppColors.cityInner = const Color(0xFF0077B6);
+        AppColors.cityOuter = const Color(0xFFF57C00);
         break;
 
       case AppThemeType.monochromeBlack:
         AppColors.background = const Color(0xFF000000);
-        AppColors.surface = const Color(0xFF0A0A0A);
-        AppColors.card = const Color(0xFF141414);
-        AppColors.cardLight = const Color(0xFF1E1E1E);
-        AppColors.accent = const Color(0xFF666666);
-        AppColors.accentLight = const Color(0xFFE0E0E0);
-        AppColors.todayBorder = const Color(0xFFE0E0E0);
-        AppColors.divider = const Color(0xFF2C2C2C);
+        AppColors.surface = const Color(0xFF121212);
+        AppColors.card = const Color(0xFF1E1E1E);
+        AppColors.cardLight = const Color(0xFF2C2C2C);
+        AppColors.accent = const Color(0xFF757575);
+        AppColors.accentLight = const Color(0xFFBDBDBD);
+        AppColors.todayBorder = const Color(0xFFBDBDBD);
+        AppColors.divider = const Color(0xFF333333);
+        AppColors.textPrimary = const Color(0xFFFFFFFF);
+        AppColors.textSecondary = const Color(0xFFAAAAAA);
+        AppColors.textHint = const Color(0xFF777777);
+        AppColors.cityInner = const Color(0xFF4FC3F7);
+        AppColors.cityOuter = const Color(0xFFFFB74D);
         break;
 
       case AppThemeType.monochromeWhite:
-        AppColors.background = const Color(0xFF121212);
-        AppColors.surface = const Color(0xFF1C1C1C);
-        AppColors.card = const Color(0xFF262626);
-        AppColors.cardLight = const Color(0xFF333333);
-        AppColors.accent = const Color(0xFFA3A3A3);
-        AppColors.accentLight = const Color(0xFFFFFFFF);
-        AppColors.todayBorder = const Color(0xFFFFFFFF);
-        AppColors.divider = const Color(0xFF404040);
+        AppColors.background = const Color(0xFFFFFFFF);
+        AppColors.surface = const Color(0xFFF5F5F5);
+        AppColors.card = const Color(0xFFEBEBEB);
+        AppColors.cardLight = const Color(0xFFE0E0E0);
+        AppColors.accent = const Color(0xFF333333);
+        AppColors.accentLight = const Color(0xFF666666);
+        AppColors.todayBorder = const Color(0xFF666666);
+        AppColors.divider = const Color(0xFFDDDDDD);
+        AppColors.textPrimary = const Color(0xFF111111);
+        AppColors.textSecondary = const Color(0xFF555555);
+        AppColors.textHint = const Color(0xFF888888);
+        AppColors.cityInner = const Color(0xFF0077B6);
+        AppColors.cityOuter = const Color(0xFFE65100);
         break;
 
       case AppThemeType.monochromeGray:
-        AppColors.background = const Color(0xFF161618);
-        AppColors.surface = const Color(0xFF202023);
-        AppColors.card = const Color(0xFF2A2A2E);
-        AppColors.cardLight = const Color(0xFF36363B);
-        AppColors.accent = const Color(0xFF6D6D75);
-        AppColors.accentLight = const Color(0xFFB0B0B8);
-        AppColors.todayBorder = const Color(0xFFB0B0B8);
-        AppColors.divider = const Color(0xFF43434A);
+        AppColors.background = const Color(0xFFF0F0F0);
+        AppColors.surface = const Color(0xFFE0E0E0);
+        AppColors.card = const Color(0xFFD6D6D6);
+        AppColors.cardLight = const Color(0xFFCCCCCC);
+        AppColors.accent = const Color(0xFF424242);
+        AppColors.accentLight = const Color(0xFF757575);
+        AppColors.todayBorder = const Color(0xFF757575);
+        AppColors.divider = const Color(0xFFBDBDBD);
+        AppColors.textPrimary = const Color(0xFF212121);
+        AppColors.textSecondary = const Color(0xFF616161);
+        AppColors.textHint = const Color(0xFF9E9E9E);
+        AppColors.cityInner = const Color(0xFF0077B6);
+        AppColors.cityOuter = const Color(0xFFE65100);
         break;
     }
+
+    // Update the system overlay to match the background color
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: AppColors.background,
+        statusBarIconBrightness: AppColors.background.computeLuminance() > 0.5 ? Brightness.dark : Brightness.light,
+        systemNavigationBarColor: AppColors.background,
+        systemNavigationBarIconBrightness: AppColors.background.computeLuminance() > 0.5 ? Brightness.dark : Brightness.light,
+      ),
+    );
   }
 
   String getThemeName(AppThemeType type) {
