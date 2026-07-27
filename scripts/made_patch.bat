@@ -20,7 +20,7 @@ echo Son Web Surumu algilandi: %LAST_VERSION%
 echo.
 
 :: Shorebird kullanarak sadece kod guncellemesini buluta atiyoruz
-call C:\Users\Halil\.shorebird\bin\shorebird.bat patch android -- --dart-define="BUILD_VERSION=%LAST_VERSION%"
+call C:\Users\Halil\.shorebird\bin\shorebird.bat patch android --release-version=latest -- --dart-define="BUILD_VERSION=%LAST_VERSION%"
 
 if errorlevel 1 (
     echo.

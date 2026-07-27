@@ -24,7 +24,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0_auto_bump.ps1"
 echo.
 
 :: Shorebird kullanarak Base Release APK olusturuyoruz
-call C:\Users\Halil\.shorebird\bin\shorebird.bat release android -- --dart-define="BUILD_VERSION=%LAST_VERSION%"
+call C:\Users\Halil\.shorebird\bin\shorebird.bat release android --artifact=apk -- --dart-define="BUILD_VERSION=%LAST_VERSION%"
 
 if errorlevel 1 (
     echo.
