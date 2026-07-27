@@ -19,6 +19,10 @@ if "%LAST_VERSION%"=="" (
 echo Son Web Surumu algilandi: %LAST_VERSION%
 echo.
 
+:: Otomatik versiyon numarasi artirma (pubspec.yaml)
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0_auto_bump.ps1"
+echo.
+
 :: Shorebird kullanarak Base Release APK olusturuyoruz
 call C:\Users\Halil\.shorebird\bin\shorebird.bat release android -- --dart-define="BUILD_VERSION=%LAST_VERSION%"
 
