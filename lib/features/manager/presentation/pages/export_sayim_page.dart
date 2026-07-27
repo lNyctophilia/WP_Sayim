@@ -2,7 +2,7 @@ import 'package:daytrack/core/constants/app_strings.dart';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_saver/file_saver.dart';
-import 'package:excel/excel.dart' as ex;
+import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xlsio;
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
@@ -79,105 +79,76 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       }
 
       // 4. Excel Oluştur
-      var excel = ex.Excel.createExcel();
-      ex.Sheet sheetObject = excel['Sayım Raporu'];
-      excel.setDefaultSheet('Sayım Raporu');
-
-      ex.CellStyle subTitleStyle = ex.CellStyle(
-        bold: true,
-        fontSize: 12,
-        fontFamily: ex.getFontFamily(ex.FontFamily.Calibri),
-        horizontalAlign: ex.HorizontalAlign.Left,
-      );
-
-      ex.CellStyle headerStyle = ex.CellStyle(
-        bold: true,
-        fontFamily: ex.getFontFamily(ex.FontFamily.Calibri),
-        horizontalAlign: ex.HorizontalAlign.Center,
-      );
-
-      ex.CellStyle cellStyle = ex.CellStyle(
-        fontFamily: ex.getFontFamily(ex.FontFamily.Calibri),
-        horizontalAlign: ex.HorizontalAlign.Left,
-      );
+      final xlsio.Workbook workbook = xlsio.Workbook();
+      final xlsio.Worksheet sheet = workbook.worksheets[0];
+      sheet.name = 'Sayım Raporu';
 
       // Title
-      sheetObject.appendRow([ex.TextCellValue('Konum: ${_selectedSayim!.note}')]);
-      var titleCell = sheetObject.cell(ex.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0));
-      titleCell.cellStyle = subTitleStyle;
-      sheetObject.merge(ex.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0), ex.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 0));
+      sheet.getRangeByIndex(1, 1).setText('Konum: ${_selectedSayim!.note}');
+      sheet.getRangeByIndex(1, 1).cellStyle.bold = true;
+      sheet.getRangeByIndex(1, 1).cellStyle.fontSize = 12;
+      sheet.getRangeByIndex(1, 1, 1, 2).merge();
 
       // Date
       final dateStrFormatted = DateFormat('dd.MM.yyyy').format(_selectedSayim!.date);
-      sheetObject.appendRow([ex.TextCellValue('Tarih: $dateStrFormatted')]);
-      var dateCell = sheetObject.cell(ex.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1));
-      dateCell.cellStyle = subTitleStyle;
-      sheetObject.merge(ex.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1), ex.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 1));
-
-      sheetObject.appendRow([ex.TextCellValue('')]); // Empty row
+      sheet.getRangeByIndex(2, 1).setText('Tarih: $dateStrFormatted');
+      sheet.getRangeByIndex(2, 1).cellStyle.bold = true;
+      sheet.getRangeByIndex(2, 1).cellStyle.fontSize = 12;
+      sheet.getRangeByIndex(2, 1, 2, 2).merge();
 
       final managerDavetler = acceptedDavetler.where((d) => userMap[d.userId]?.isManager == true).toList();
       final personnelDavetler = acceptedDavetler.where((d) => userMap[d.userId]?.isManager != true).toList();
 
-      int currentRow = 3;
+      int currentRow = 4;
 
       void addSection(String sectionTitle, List<Davet> davetList) {
         // Section Title
-        sheetObject.appendRow([ex.TextCellValue(sectionTitle)]);
-        var sectionCell = sheetObject.cell(ex.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow));
-        sectionCell.cellStyle = subTitleStyle;
-        sheetObject.merge(ex.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow), ex.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow));
+        sheet.getRangeByIndex(currentRow, 1).setText(sectionTitle);
+        sheet.getRangeByIndex(currentRow, 1).cellStyle.bold = true;
+        sheet.getRangeByIndex(currentRow, 1).cellStyle.fontSize = 12;
+        sheet.getRangeByIndex(currentRow, 1, currentRow, 2).merge();
         currentRow++;
 
         // Table Header
-        var rowHeader = ['İsim Soyisim'];
-        sheetObject.appendRow(rowHeader.map((e) => ex.TextCellValue(e)).toList());
-        for (int col = 0; col < rowHeader.length; col++) {
-          var cell = sheetObject.cell(ex.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: currentRow));
-          cell.cellStyle = headerStyle;
-        }
+        sheet.getRangeByIndex(currentRow, 1).setText('İsim Soyisim');
+        sheet.getRangeByIndex(currentRow, 1).cellStyle.bold = true;
+        sheet.getRangeByIndex(currentRow, 1).cellStyle.hAlign = xlsio.HAlignType.center;
         currentRow++;
 
         // Table Data
         if (davetList.isEmpty) {
-          sheetObject.appendRow([ex.TextCellValue('Kayıt bulunamadı.')]);
-          sheetObject.merge(ex.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow), ex.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow));
+          sheet.getRangeByIndex(currentRow, 1).setText('Kayıt bulunamadı.');
+          sheet.getRangeByIndex(currentRow, 1, currentRow, 2).merge();
           currentRow++;
         } else {
           for (var davet in davetList) {
             final user = userMap[davet.userId];
             final fullName = user?.fullName ?? 'Bilinmeyen Kullanıcı';
 
-            sheetObject.appendRow([
-              ex.TextCellValue(fullName),
-            ]);
-            
-            for (int col = 0; col < 1; col++) {
-               var cell = sheetObject.cell(ex.CellIndex.indexByColumnRow(columnIndex: col, rowIndex: currentRow));
-               cell.cellStyle = cellStyle;
-            }
+            sheet.getRangeByIndex(currentRow, 1).setText(fullName);
+            sheet.getRangeByIndex(currentRow, 1).cellStyle.hAlign = xlsio.HAlignType.left;
             currentRow++;
           }
         }
         
-        sheetObject.appendRow([ex.TextCellValue('')]); // Empty row after section
         currentRow++;
       }
 
       addSection('Yöneticiler', managerDavetler);
       addSection('Personeller', personnelDavetler);
 
-      try {
-        sheetObject.setColumnWidth(0, 40.0);
-      } catch (_) {}
+      sheet.setColumnWidthInPixels(1, 250);
 
       // 6. Dosyayı Kaydet
       final dateStr = DateFormat('yyyy-MM-dd').format(_selectedSayim!.date);
       final String fileName = 'Sayim_Detay_$dateStr';
 
+      final List<int> bytes = workbook.saveAsStream();
+      workbook.dispose();
+
       final savedPath = await FileSaver.instance.saveFile(
         name: fileName,
-        bytes: Uint8List.fromList(excel.encode()!),
+        bytes: Uint8List.fromList(bytes),
         fileExtension: 'xlsx',
         mimeType: MimeType.microsoftExcel,
       );
