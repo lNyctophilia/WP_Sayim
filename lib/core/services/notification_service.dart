@@ -2,6 +2,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../models/app_notification.dart';
 
 class NotificationService {
@@ -196,6 +198,53 @@ class NotificationService {
       });
     } catch (e) {
       debugPrint('Sistem logu oluşturulurken hata: $e');
+    }
+  }
+
+  /// EmailJS ile E-posta Bildirimi
+  /// Sadece veritabanında "email" alanı dolu olan (örn: eski iOS kullanan) kullanıcılara e-posta atar
+  Future<void> sendEmailNotification({
+    required String targetUserId,
+    required String subject,
+    required String textContent,
+  }) async {
+    try {
+      final doc = await _firestore.collection('users').doc(targetUserId).get();
+      if (!doc.exists) return;
+      
+      final email = doc.data()?['email'] as String?;
+      if (email == null || email.trim().isEmpty) return; // Kullanıcının mail adresi yoksa gönderme
+      
+      // EmailJS API Ayarları (Site üzerinden alacağın kodları buraya yapıştır)
+      const serviceId = 'service_qjvatbn';
+      const templateId = 'template_9wd7j5s';
+      const publicKey = '6Ybd1Uu2O5Es_Rdtq';
+
+      final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'service_id': serviceId,
+          'template_id': templateId,
+          'user_id': publicKey,
+          'template_params': {
+            'to_email': email,
+            'subject': subject,
+            'message': textContent,
+          }
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        debugPrint('E-posta başarıyla gönderildi: $email');
+      } else {
+        debugPrint('E-posta gönderilemedi. Hata: ${response.body}');
+      }
+    } catch (e) {
+      debugPrint('E-posta gönderilirken hata: $e');
     }
   }
 }

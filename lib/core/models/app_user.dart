@@ -22,6 +22,7 @@ class AppUser {
   final double? latitude;
   final double? longitude;
   final bool isApproved;
+  final String? email;
 
   const AppUser({
     required this.id,
@@ -41,6 +42,7 @@ class AppUser {
     this.latitude,
     this.longitude,
     this.isApproved = false,
+    this.email,
   });
 
   /// En yüksek yetki seviyesi
@@ -75,6 +77,7 @@ class AppUser {
       latitude: (data['latitude'] as num?)?.toDouble(),
       longitude: (data['longitude'] as num?)?.toDouble(),
       isApproved: data['isApproved'] as bool? ?? false,
+      email: data['email'] as String?,
     );
   }
 
@@ -96,6 +99,7 @@ class AppUser {
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
       'isApproved': isApproved,
+      if (email != null) 'email': email,
     };
   }
 
@@ -117,6 +121,7 @@ class AppUser {
     double? latitude,
     double? longitude,
     bool? isApproved,
+    String? email,
   }) {
     return AppUser(
       id: id ?? this.id,
@@ -136,6 +141,7 @@ class AppUser {
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       isApproved: isApproved ?? this.isApproved,
+      email: email ?? this.email,
     );
   }
 }

@@ -8,6 +8,7 @@ import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/davet_service.dart';
 import '../../../../core/services/sayim_service.dart';
 import '../../../../core/services/language_service.dart';
+import '../../../../core/services/notification_service.dart';
 import '../widgets/staff_picker.dart';
 
 class AddPersonToSayimPage extends StatefulWidget {
@@ -30,6 +31,7 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
   final AuthService _authService = AuthService();
   final DavetService _davetService = DavetService();
   final SayimService _sayimService = SayimService();
+  final NotificationService _notificationService = NotificationService();
 
   List<AppUser> _availableUsers = [];
   List<SelectedUserConfig> _selectedConfigs = [];
@@ -108,6 +110,16 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
         );
         final davetId = await _davetService.createDavet(davet);
         
+        // E-posta gönderimi tetikleniyor (sadece mail adresi olanlar için)
+        final sayimTarihi = '${widget.sayim.date.day.toString().padLeft(2, '0')}.${widget.sayim.date.month.toString().padLeft(2, '0')}.${widget.sayim.date.year}';
+        final grupSaati = widget.sayim.gruplar.firstWhere((g) => g.grupId == config.grupId, orElse: () => const SayimGrup(grupId: 1, saat: '')).saat;
+        
+        await _notificationService.sendEmailNotification(
+          targetUserId: config.user.id,
+          subject: AppStrings.get('new_sayim_invitation', isTr ? 'tr' : 'en') ?? 'Yeni Sayım Daveti',
+          textContent: 'Merhaba ${config.user.fullName},\n\nYeni bir sayım için davet edildiniz!\n\nTarih: $sayimTarihi\nSaat: $grupSaati\nNot: ${widget.sayim.note}\n\nLütfen uygulamaya girerek daveti yanıtlayın.',
+        );
+
         // Eğer yönetici kendini eklediyse otomatik kabul et
         if (config.user.id == widget.currentUser.id) {
           await _davetService.acceptDavet(davetId);

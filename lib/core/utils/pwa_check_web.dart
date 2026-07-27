@@ -1,4 +1,6 @@
 import 'package:web/web.dart' as web;
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 
 bool isPWA() {
   final isStandalone = web.window.matchMedia('(display-mode: standalone)').matches;
@@ -13,4 +15,10 @@ bool isMobileBrowser() {
          userAgent.contains('ipad') || 
          userAgent.contains('android') ||
          userAgent.contains('mobile');
+}
+
+bool requiresEmailForNotifications() {
+  // GECICI TEST KODU: Her cihazda e-posta alanini gormek icin true donduruyoruz.
+  // Test bitince orijinal haline (iOS + no PushManager kontrolü) cevirecegiz.
+  return true;
 }

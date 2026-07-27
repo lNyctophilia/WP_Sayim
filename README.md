@@ -50,7 +50,8 @@ Uygulamayı telefonunuza indirmek yerine, doğrudan tarayıcınız üzerinden an
 
 **📜 Lisans**
 
-- MIT Lisansı.
+- **All Rights Reserved.** 
+  Bu proje Halil Köse (lNyctophilia) aittir. İzinsiz kullanılamaz, kopyalanamaz veya dağıtılamaz. Daha fazla detay için lütfen [LICENSE](LICENSE) dosyasına bakınız.
 
 ---
 

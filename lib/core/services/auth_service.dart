@@ -98,12 +98,13 @@ class AuthService {
     double? latitude,
     double? longitude,
     String? fcmToken,
+    String? email,
   }) async {
-    final email = _toEmail(phone);
+    final authEmail = _toEmail(phone);
 
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
-        email: email,
+        email: authEmail,
         password: password,
       );
 
@@ -123,6 +124,7 @@ class AuthService {
         isDeleted: false,
         isApproved: false, // Yönetici onayı bekleyecek
         createdAt: DateTime.now(),
+        email: email, // Gerçek email, bildirim için
       );
 
       final userData = appUser.toFirestore();

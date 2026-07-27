@@ -378,10 +378,21 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             value: user.sayimReminderEnabled,
             onChanged: (bool value) async {
-              await FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(uid)
-                  .update({'sayimReminderEnabled': value});
+              try {
+                await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(uid)
+                    .update({'sayimReminderEnabled': value});
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Ayarlar kaydedilirken bir hata oluştu: $e'),
+                      backgroundColor: AppColors.danger,
+                    ),
+                  );
+                }
+              }
             },
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),

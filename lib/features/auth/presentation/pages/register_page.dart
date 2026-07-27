@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../../core/utils/pwa_check.dart';
 
 class RegisterPage extends StatefulWidget {
   final LanguageService lang;
@@ -24,11 +25,13 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _emailController = TextEditingController();
   
   final _authService = AuthService();
 
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _requiresEmail = false;
   String? _errorMessage;
 
   late AnimationController _animController;
@@ -38,6 +41,8 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
+    _requiresEmail = requiresEmailForNotifications();
+    
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -55,6 +60,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     _phoneController.dispose();
     _addressController.dispose();
     _passwordController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -77,6 +83,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
         fullName: _fullNameController.text.trim(),
         address: _addressController.text.trim(),
         fcmToken: token,
+        email: _requiresEmail ? _emailController.text.trim() : null,
       );
 
       if (mounted) {
@@ -251,6 +258,32 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
             ),
             validator: (value) => (value == null || value.isEmpty) ? widget.lang.tr('login_password_required') : null,
           ),
+
+          if (_requiresEmail) ...[
+            const SizedBox(height: 14),
+            _buildTextField(
+              controller: _emailController,
+              hintText: 'E-posta (Bildirimler için gerekli)',
+              icon: Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Cihazınız bildirimleri desteklemiyor. Bildirimler için e-posta zorunludur.';
+                }
+                if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value)) {
+                  return 'Geçerli bir e-posta adresi giriniz.';
+                }
+                return null;
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 12, top: 4),
+              child: Text(
+                'Cihazınız (eski iOS sürümü vb.) yerleşik bildirimleri desteklemediği için sayım duyuruları e-posta olarak gönderilecektir.',
+                style: GoogleFonts.inter(fontSize: 11, color: AppColors.warning),
+              ),
+            ),
+          ],
         ],
       ),
     );

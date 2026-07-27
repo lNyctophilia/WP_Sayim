@@ -32,7 +32,7 @@ service cloud.firestore {
         request.resource.data.roles[0] == 'staff'
       );
       allow update: if isOwner() || isManager() || 
-                    (request.auth.uid == userId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fcmToken']));
+                    (request.auth.uid == userId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fcmToken', 'sessionId', 'fcmError', 'sayimReminderEnabled']));
     }
 
     match /sayimlar/{sayimId} {
