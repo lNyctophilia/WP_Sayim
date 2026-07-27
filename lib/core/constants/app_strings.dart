@@ -313,6 +313,7 @@ class AppStrings {
     'global_multiplier': {'tr': 'Yevmiye Çarpanı', 'en': 'Global Multiplier'},
     'save_count': {'tr': 'Sayımı Kaydet', 'en': 'Save Count'},
     'create_new_count': {'tr': 'Yeni Sayım Oluştur', 'en': 'Create New Count'},
+    'new_sayim_invitation': {'tr': 'Yeni Sayım Daveti', 'en': 'New Count Invitation'},
     'send_invitations': {'tr': 'Davet Gönder', 'en': 'Send Invitations'},
     'an_error_occurred_during_update': {'tr': 'Güncelleme sırasında bir hata oluştu.', 'en': 'An error occurred during update.'},
     'select_user': {'tr': 'Kullanıcı Seçin', 'en': 'Select User'},

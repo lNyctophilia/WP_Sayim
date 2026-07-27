@@ -48,19 +48,25 @@ class _SettingsPageState extends State<SettingsPage> {
           // ─── Genel ─────────────────────────────────────
           _buildSectionHeader(widget.lang.tr('general')),
           _buildLanguageTile(),
-          _buildThemeTile(),
-          _buildLogoutTile(),
+          _buildReminderToggle(),
 
           const SizedBox(height: 24),
 
-          // ─── Bildirimler ───────────────────────────────
-          _buildSectionHeader('Bildirimler'),
-          _buildReminderToggle(),
+          // ─── Görünüm ───────────────────────────────────
+          _buildSectionHeader(widget.lang.currentLang == 'tr' ? 'Görünüm' : 'Appearance'),
+          _buildThemeTile(),
+
           const SizedBox(height: 24),
 
           // ─── Hakkında ──────────────────────────────────
           _buildSectionHeader(widget.lang.tr('about')),
           _buildAboutSection(),
+          
+          const SizedBox(height: 24),
+
+          // ─── Hesap ─────────────────────────────────────
+          _buildLogoutTile(),
+          
           const SizedBox(height: 32),
         ],
       ),
