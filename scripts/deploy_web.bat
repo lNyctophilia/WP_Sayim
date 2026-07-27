@@ -49,7 +49,12 @@ git push origin main
 echo.
 
 echo ===================================
-echo   DEPLOY TAMAMLANDI!
+echo   WEB DEPLOY TAMAMLANDI!
 echo   Site: https://lnyctophilia.github.io/WP_Sayim/
 echo ===================================
-pause
+echo.
+
+echo ===================================
+echo   [5/5] APK YAMASI GONDERILIYOR (Shorebird)
+echo ===================================
+call scripts\made_patch.bat

@@ -43,8 +43,53 @@
 
   <!-- Google Maps JavaScript API -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAIOLuT4e4tAlwXYhKhwxB7qjPojrelZxs"></script>
+
+  <style>
+    body {
+      background-color: #0A1128; /* Uygulamanın ana arka plan rengi */
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+    .web-loader-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1; /* Flutter canvas'ın altında kalması için */
+    }
+    .web-spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(58, 134, 255, 0.15);
+      border-top-color: #3A86FF; /* Vurgu rengi */
+      border-radius: 50%;
+      animation: web-spin 1s linear infinite;
+    }
+    .web-loading-text {
+      margin-top: 16px;
+      color: #8899AA; /* İkincil metin rengi */
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 1.5px;
+    }
+    @keyframes web-spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
+  <div class="web-loader-container">
+    <div class="web-spinner"></div>
+    <div class="web-loading-text">YÜKLENİYOR...</div>
+  </div>
+
   <script>
     // PWA Otomatik Güncelleme ve Hard Cache Temizleme
     async function checkForUpdates() {
