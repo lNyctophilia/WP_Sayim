@@ -251,7 +251,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     if (changed == true && mounted) {
                       // ignore: deprecated_member_use
                       await widget.storage.setCustomThemeColor(pickerColor.value);
-                      await widget.themeService.setTheme(AppThemeType.custom);
+                      await widget.themeService.setTheme(AppThemeType.custom, forceUpdate: true);
                       setState(() {});
                     }
                   },

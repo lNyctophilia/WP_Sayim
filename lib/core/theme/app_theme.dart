@@ -6,11 +6,13 @@ class AppTheme {
   AppTheme._();
 
   static ThemeData get darkTheme {
+    final bool isLight = AppColors.background.computeLuminance() > 0.5;
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: isLight ? Brightness.light : Brightness.dark,
       scaffoldBackgroundColor: AppColors.background,
-      colorScheme: ColorScheme.dark(
+      colorScheme: ColorScheme(
+        brightness: isLight ? Brightness.light : Brightness.dark,
         primary: AppColors.accentLight,
         secondary: AppColors.accent,
         surface: AppColors.surface,
@@ -21,7 +23,7 @@ class AppTheme {
         onError: Colors.white,
       ),
       textTheme: GoogleFonts.interTextTheme(
-        ThemeData.dark().textTheme,
+        isLight ? ThemeData.light().textTheme : ThemeData.dark().textTheme,
       ).apply(
         bodyColor: AppColors.textPrimary,
         displayColor: AppColors.textPrimary,

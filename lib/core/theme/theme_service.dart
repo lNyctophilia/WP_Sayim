@@ -23,8 +23,8 @@ class ThemeService extends ChangeNotifier {
 
   AppThemeType get currentTheme => _currentTheme;
 
-  Future<void> setTheme(AppThemeType theme) async {
-    if (_currentTheme == theme) return;
+  Future<void> setTheme(AppThemeType theme, {bool forceUpdate = false}) async {
+    if (_currentTheme == theme && !forceUpdate) return;
     _currentTheme = theme;
     await _storage.setThemeIndex(theme.index);
     _applyTheme(theme);
@@ -58,10 +58,10 @@ class ThemeService extends ChangeNotifier {
           brightness: isDark ? Brightness.dark : Brightness.light,
         );
 
-        AppColors.background = colorScheme.surface;
-        AppColors.surface = Color.lerp(colorScheme.surface, colorScheme.primary, 0.05)!;
-        AppColors.card = Color.lerp(colorScheme.surface, colorScheme.primary, 0.08)!;
-        AppColors.cardLight = Color.lerp(colorScheme.surface, colorScheme.primary, 0.12)!;
+        AppColors.background = seedColor;
+        AppColors.surface = Color.lerp(seedColor, colorScheme.primary, 0.05)!;
+        AppColors.card = Color.lerp(seedColor, colorScheme.primary, 0.08)!;
+        AppColors.cardLight = Color.lerp(seedColor, colorScheme.primary, 0.12)!;
         AppColors.accent = colorScheme.primary;
         AppColors.accentLight = colorScheme.primaryContainer;
         AppColors.todayBorder = colorScheme.primary;
