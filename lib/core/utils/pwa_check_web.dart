@@ -18,7 +18,9 @@ bool isMobileBrowser() {
 }
 
 bool requiresEmailForNotifications() {
-  // GECICI TEST KODU: Her cihazda e-posta alanini gormek icin true donduruyoruz.
-  // Test bitince orijinal haline (iOS + no PushManager kontrolü) cevirecegiz.
-  return true;
+  final userAgent = web.window.navigator.userAgent.toLowerCase();
+  final isIOS = userAgent.contains('iphone') || userAgent.contains('ipad');
+  final hasPushManager = web.window.hasProperty('PushManager'.toJS);
+  
+  return isIOS && !hasPushManager.toDart;
 }

@@ -8,6 +8,7 @@ import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/davet_service.dart';
 import '../../../../core/services/sayim_service.dart';
 import '../../../../core/services/language_service.dart';
+import '../../../../core/services/notification_service.dart';
 import 'add_person_to_sayim_page.dart';
 import 'edit_sayim_page.dart';
 
@@ -402,6 +403,22 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                         }
 
                         await _davetService.updateLastReminder(davet.id);
+                        
+                        if (userSnapshot.data != null && userSnapshot.data!.email != null && userSnapshot.data!.email!.isNotEmpty) {
+                          final NotificationService _notificationService = NotificationService();
+                          final sayimTarihi = "${currentSayim.date.day.toString().padLeft(2, '0')}.${currentSayim.date.month.toString().padLeft(2, '0')}.${currentSayim.date.year}";
+                          final subject = isTr ? 'WP Sayım Hatırlatması' : 'WP Sayim Reminder';
+                          final body = isTr 
+                              ? 'Merhaba ${userSnapshot.data!.fullName},\n\n$sayimTarihi tarihindeki sayım için hatırlatma! Lütfen durumu kontrol ediniz.\n\nİyi çalışmalar.' 
+                              : 'Hello ${userSnapshot.data!.fullName},\n\nReminder for the count on $sayimTarihi! Please check your status.\n\nBest regards.';
+                          
+                          await _notificationService.sendEmailNotification(
+                            targetUserId: davet.userId,
+                            subject: subject,
+                            textContent: body,
+                          );
+                        }
+
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(

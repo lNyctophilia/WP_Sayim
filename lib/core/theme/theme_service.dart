@@ -14,6 +14,7 @@ enum AppThemeType {
   monochromeBlack,
   monochromeWhite,
   monochromeGray,
+  custom,
 }
 
 class ThemeService extends ChangeNotifier {
@@ -197,12 +198,29 @@ class ThemeService extends ChangeNotifier {
         AppColors.cityInner = const Color(0xFF0077B6);
         AppColors.cityOuter = const Color(0xFFE65100);
         break;
+
+      case AppThemeType.custom:
+        final seedColor = Color(_storage.getCustomThemeColor());
+        AppColors.background = const Color(0xFF121212);
+        AppColors.surface = const Color(0xFF1E1E1E);
+        AppColors.card = const Color(0xFF2C2C2C);
+        AppColors.cardLight = const Color(0xFF3C3C3C);
+        AppColors.accent = seedColor.withValues(alpha: 0.7);
+        AppColors.accentLight = seedColor;
+        AppColors.todayBorder = seedColor;
+        AppColors.divider = const Color(0xFF444444);
+        AppColors.textPrimary = Colors.white;
+        AppColors.textSecondary = Colors.white70;
+        AppColors.textHint = Colors.white54;
+        AppColors.cityInner = const Color(0xFF4FC3F7);
+        AppColors.cityOuter = const Color(0xFFFFB74D);
+        break;
     }
 
     // Update the system overlay to match the background color
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
-        statusBarColor: AppColors.background,
+        statusBarColor: Colors.transparent,
         statusBarIconBrightness: AppColors.background.computeLuminance() > 0.5 ? Brightness.dark : Brightness.light,
         systemNavigationBarColor: AppColors.background,
         systemNavigationBarIconBrightness: AppColors.background.computeLuminance() > 0.5 ? Brightness.dark : Brightness.light,
@@ -232,6 +250,8 @@ class ThemeService extends ChangeNotifier {
         return 'Saf Beyaz';
       case AppThemeType.monochromeGray:
         return 'Nötr Gri';
+      case AppThemeType.custom:
+        return 'Özel Renk';
     }
   }
 
@@ -257,6 +277,9 @@ class ThemeService extends ChangeNotifier {
         return const Color(0xFFFFFFFF);
       case AppThemeType.monochromeGray:
         return const Color(0xFFB0B0B8);
+      case AppThemeType.custom:
+        // Use the actual custom color from storage
+        return Color(_storage.getCustomThemeColor());
     }
   }
 }

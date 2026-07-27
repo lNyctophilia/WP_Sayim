@@ -12,6 +12,7 @@ class StorageService {
   static const String _prefsSessionId = 'session_id';
   static const String _prefsLastPanel = 'last_active_panel';
   static const String _prefsTheme = 'app_theme_type';
+  static const String _prefsCustomColor = 'custom_theme_color';
 
   late SharedPreferences _prefs;
 
@@ -36,6 +37,12 @@ class StorageService {
   
   Future<void> setThemeIndex(int index) async {
     await _prefs.setInt(_prefsTheme, index);
+  }
+
+  int getCustomThemeColor() => _prefs.getInt(_prefsCustomColor) ?? 0xFF3A86FF; // Varsayılan mavi
+
+  Future<void> setCustomThemeColor(int color) async {
+    await _prefs.setInt(_prefsCustomColor, color);
   }
 
   // ─── Oturum (Session) ─────────────────────────────────────

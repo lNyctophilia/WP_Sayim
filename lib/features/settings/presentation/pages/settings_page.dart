@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_config.dart';
 import '../../../../core/services/language_service.dart';
@@ -58,14 +59,14 @@ class _SettingsPageState extends State<SettingsPage> {
 
           const SizedBox(height: 24),
 
+          // ─── Hesap ─────────────────────────────────────
+          _buildLogoutTile(),
+
+          const SizedBox(height: 24),
+
           // ─── Hakkında ──────────────────────────────────
           _buildSectionHeader(widget.lang.tr('about')),
           _buildAboutSection(),
-          
-          const SizedBox(height: 24),
-
-          // ─── Hesap ─────────────────────────────────────
-          _buildLogoutTile(),
           
           const SizedBox(height: 32),
         ],
@@ -211,9 +212,54 @@ class _SettingsPageState extends State<SettingsPage> {
                 final color = widget.themeService.getThemeColorPreview(theme);
                 final isSelected = widget.themeService.currentTheme == theme;
                 return GestureDetector(
-                  onTap: () {
-                    widget.themeService.setTheme(theme);
-                    setState(() {});
+                  onTap: () async {
+                    if (theme == AppThemeType.custom) {
+                      Color pickerColor = Color(widget.storage.getCustomThemeColor());
+                      bool? changed = await showDialog<bool>(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            backgroundColor: AppColors.card,
+                            title: Text(
+                              widget.lang.currentLang == 'tr' ? 'Renk Seç' : 'Pick Color',
+                              style: TextStyle(color: AppColors.textPrimary)
+                            ),
+                            content: SingleChildScrollView(
+                              child: ColorPicker(
+                                pickerColor: pickerColor,
+                                onColorChanged: (color) {
+                                  pickerColor = color;
+                                },
+                                pickerAreaHeightPercent: 0.8,
+                                enableAlpha: false,
+                                displayThumbColor: true,
+                                paletteType: PaletteType.hsvWithHue,
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                child: Text(widget.lang.tr('cancel'), style: TextStyle(color: AppColors.textHint)),
+                                onPressed: () => Navigator.of(context).pop(false),
+                              ),
+                              TextButton(
+                                child: Text(widget.lang.tr('save') ?? 'Seç', style: TextStyle(color: AppColors.accentLight)),
+                                onPressed: () => Navigator.of(context).pop(true),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                      
+                      if (changed == true && mounted) {
+                        // ignore: deprecated_member_use
+                        await widget.storage.setCustomThemeColor(pickerColor.value);
+                        await widget.themeService.setTheme(theme);
+                        setState(() {});
+                      }
+                    } else {
+                      widget.themeService.setTheme(theme);
+                      setState(() {});
+                    }
                   },
                   child: Container(
                     margin: const EdgeInsets.only(right: 12),
@@ -340,6 +386,9 @@ class _SettingsPageState extends State<SettingsPage> {
         
         final user = snapshot.data!;
         
+        final isOldIos = user.email != null && user.email!.isNotEmpty;
+        final bool isEnabled = isOldIos ? false : user.sayimReminderEnabled;
+
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           decoration: BoxDecoration(
@@ -347,16 +396,18 @@ class _SettingsPageState extends State<SettingsPage> {
             borderRadius: BorderRadius.circular(14),
           ),
           child: SwitchListTile(
-            activeThumbColor: AppColors.accentLight,
+            activeThumbColor: isOldIos ? AppColors.textHint : AppColors.accentLight,
             secondary: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.accentLight.withValues(alpha: 0.15),
+                color: isOldIos 
+                    ? AppColors.divider.withValues(alpha: 0.15) 
+                    : AppColors.accentLight.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 Icons.notifications_active_rounded,
-                color: AppColors.accentLight,
+                color: isOldIos ? AppColors.textHint : AppColors.accentLight,
                 size: 22,
               ),
             ),
@@ -364,19 +415,21 @@ class _SettingsPageState extends State<SettingsPage> {
               'Sayım Hatırlatıcı', // You can use widget.lang.tr('sayim_reminder') if added to language files
               style: TextStyle(
                 fontSize: 15,
-                color: AppColors.textPrimary,
+                color: isOldIos ? AppColors.textHint : AppColors.textPrimary,
                 fontWeight: FontWeight.w500,
               ),
             ),
             subtitle: Text(
-              'Sayıma 3 saat kala bildirim alırsınız',
+              isOldIos 
+                  ? 'Cihazınız bu özelliği desteklemiyor' 
+                  : 'Sayıma 3 saat kala bildirim alırsınız',
               style: TextStyle(
                 fontSize: 12,
-                color: AppColors.textSecondary,
+                color: isOldIos ? AppColors.danger.withValues(alpha: 0.7) : AppColors.textSecondary,
               ),
             ),
-            value: user.sayimReminderEnabled,
-            onChanged: (bool value) async {
+            value: isEnabled,
+            onChanged: isOldIos ? null : (bool value) async {
               try {
                 await FirebaseFirestore.instance
                     .collection('users')
