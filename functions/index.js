@@ -30,11 +30,17 @@ async function sendNotificationAndLog({ userId, title, body, type, relatedId, da
           }
         },
         webpush: {
-          headers: { Topic: tag },
+          headers: { 
+            Topic: tag,
+            Urgency: "high"
+          },
           fcmOptions: { link: link || "https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true" }
         },
         apns: {
-          headers: { "apns-collapse-id": tag }
+          headers: { 
+            "apns-collapse-id": tag,
+            "apns-priority": "10"
+          }
         },
         data: dataPayload
       };
