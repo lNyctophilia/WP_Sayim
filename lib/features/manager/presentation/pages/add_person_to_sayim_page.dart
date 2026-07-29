@@ -96,11 +96,12 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
       
       // 1. Yeni davetleri oluştur
       for (var config in _selectedConfigs) {
+        final isSayimClosed = widget.sayim.isClosed;
         final davet = Davet(
           id: '',
           sayimId: widget.sayim.id,
           userId: config.user.id,
-          status: DavetStatus.pending,
+          status: isSayimClosed ? DavetStatus.accepted : DavetStatus.pending,
           role: config.role,
           grupId: config.grupId,
           sehirIciDisi: widget.sayim.sehirTipi, // Sayımın kendi sehirTipini kullan
@@ -114,14 +115,16 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
         final sayimTarihi = '${widget.sayim.date.day.toString().padLeft(2, '0')}.${widget.sayim.date.month.toString().padLeft(2, '0')}.${widget.sayim.date.year}';
         final grupSaati = widget.sayim.gruplar.firstWhere((g) => g.grupId == config.grupId, orElse: () => const SayimGrup(grupId: 1, saat: '')).saat;
         
-        await _notificationService.sendEmailNotification(
-          targetUserId: config.user.id,
-          subject: AppStrings.get('new_sayim_invitation', isTr ? 'tr' : 'en') ?? 'Yeni Sayım Daveti',
-          textContent: 'Merhaba ${config.user.fullName},\n\nYeni bir sayım için davet edildiniz!\n\nTarih: $sayimTarihi\nSaat: $grupSaati\nNot: ${widget.sayim.note}\n\nLütfen uygulamaya girerek daveti yanıtlayın.',
-        );
+        if (!isSayimClosed) {
+          await _notificationService.sendEmailNotification(
+            targetUserId: config.user.id,
+            subject: AppStrings.get('new_sayim_invitation', isTr ? 'tr' : 'en') ?? 'Yeni Sayım Daveti',
+            textContent: 'Merhaba ${config.user.fullName},\n\nYeni bir sayım için davet edildiniz!\n\nTarih: $sayimTarihi\nSaat: $grupSaati\nNot: ${widget.sayim.note}\n\nLütfen uygulamaya girerek daveti yanıtlayın.',
+          );
+        }
 
-        // Eğer yönetici kendini eklediyse otomatik kabul et
-        if (config.user.id == widget.currentUser.id) {
+        // Eğer yönetici kendini eklediyse veya sayım kapalıysa zaten kabul edildi (gereksiz write engelle)
+        if (!isSayimClosed && config.user.id == widget.currentUser.id) {
           await _davetService.acceptDavet(davetId);
         }
       }

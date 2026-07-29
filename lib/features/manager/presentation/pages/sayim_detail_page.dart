@@ -61,7 +61,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
     return user;
   }
 
-  Future<void> _confirmDeleteSayim(List<Davet> davetler) async {
+  Future<void> _confirmDeleteSayim(List<Davet> davetler, Sayim currentSayim) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -72,10 +72,12 @@ class _SayimDetailPageState extends State<SayimDetailPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              AppStrings.get('are_you_sure_you_want_to_delete_this_count_and_all_related_invitations_calendar_records_this_action_cannot_be_undone', isTr ? 'tr' : 'en'),
+              currentSayim.effectiveStatus == SayimStatus.open
+                  ? AppStrings.get('are_you_sure_you_want_to_delete_this_count_and_all_related_invitations_calendar_records_this_action_cannot_be_undone', isTr ? 'tr' : 'en')
+                  : AppStrings.get('delete_closed_count_msg', isTr ? 'tr' : 'en'),
               style: TextStyle(color: AppColors.textSecondary),
             ),
-            if (widget.sayim.effectiveStatus == SayimStatus.open) ...[
+            if (currentSayim.effectiveStatus == SayimStatus.open) ...[
               const SizedBox(height: 12),
               Text(
                 AppStrings.get('delete_open_count_warning', isTr ? 'tr' : 'en'),
@@ -101,7 +103,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
       if (mounted) {
         showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
       }
-      if (widget.sayim.effectiveStatus == SayimStatus.open) {
+      if (currentSayim.effectiveStatus == SayimStatus.open) {
         final NotificationService notificationService = NotificationService();
         final acceptedDavetler = davetler.where((d) => d.isAccepted).toList();
         for (final davet in acceptedDavetler) {
@@ -110,13 +112,13 @@ class _SayimDetailPageState extends State<SayimDetailPage>
             await notificationService.sendEmailNotification(
               targetUserId: davet.userId,
               subject: AppStrings.get('sayim_cancelled', isTr ? 'tr' : 'en') ?? 'Sayım İptali',
-              textContent: 'Merhaba ${user.fullName},\n\nKabul ettiğiniz "${widget.sayim.note}" isimli sayım iptal edilmiştir.\n\nBilginize.',
+              textContent: 'Merhaba ${user.fullName},\n\nKabul ettiğiniz "${currentSayim.note}" isimli sayım iptal edilmiştir.\n\nBilginize.',
             );
           }
         }
       }
 
-      await _sayimService.deleteSayimFull(widget.sayim.id);
+      await _sayimService.deleteSayimFull(currentSayim.id);
       if (mounted) {
         Navigator.pop(context); // loading pop
         Navigator.pop(context); // page pop
@@ -239,7 +241,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                 IconButton(
                   icon: Icon(Icons.delete_rounded, color: AppColors.danger, size: 20),
                   tooltip: AppStrings.get('delete_count', isTr ? 'tr' : 'en'),
-                  onPressed: () => _confirmDeleteSayim(davetler),
+                  onPressed: () => _confirmDeleteSayim(davetler, currentSayim),
                 ),
               ],
             ],
@@ -577,7 +579,12 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(AppStrings.get('person_successfully_removed_and_notification_sent', isTr ? 'tr' : 'en')),
+                                content: Text(AppStrings.get(
+                                  currentSayim.effectiveStatus == SayimStatus.open
+                                      ? 'person_successfully_removed_and_notification_sent'
+                                      : 'person_successfully_removed',
+                                  isTr ? 'tr' : 'en'
+                                )),
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );

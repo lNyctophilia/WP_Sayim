@@ -232,7 +232,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
       for (var davet in widget.existingDavets) {
         final configIndex = _selectedUsers.indexWhere((c) => c.user.id == davet.userId);
         if (configIndex == -1) {
-          await _davetService.deleteDavet(davet.id);
+          await _davetService.deleteDavet(davet.id, isSayimClosed: updatedSayim.effectiveStatus == SayimStatus.closed);
         } else {
           final config = _selectedUsers[configIndex];
           if (config.ucret != davet.ucret || config.grupId != davet.grupId || config.multiplier != davet.multiplier) {

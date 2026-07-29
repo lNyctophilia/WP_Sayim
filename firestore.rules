@@ -15,7 +15,11 @@ service cloud.firestore {
     }
     
     function isManager() {
-      return hasRole('manager');
+      return hasRole('manager') || hasRole('managerA1') || hasRole('managerA2') || hasRole('managerA3');
+    }
+
+    function hasProtectedRole(rolesList) {
+      return 'owner' in rolesList || 'manager' in rolesList || 'managerA1' in rolesList || 'managerA2' in rolesList || 'managerA3' in rolesList;
     }
 
     match /users/{userId} {
@@ -24,15 +28,13 @@ service cloud.firestore {
       // SADECE Owner herkesi silebilir. Manager'lar ise SADECE personeli (içinde owner/manager rolü OLMAYANLARI) silebilir.
       allow delete: if isOwner() || (
         isManager() && 
-        !('owner' in resource.data.roles) && 
-        !('manager' in resource.data.roles)
+        !hasProtectedRole(resource.data.roles)
       );
       
       // Kayıt olma (create) kuralı: Manager'lar sadece 'staff' oluşturabilir. 
       allow create: if isOwner() || (
         isManager() && 
-        !('owner' in request.resource.data.roles) && 
-        !('manager' in request.resource.data.roles)
+        !hasProtectedRole(request.resource.data.roles)
       ) || (
         request.auth != null && 
         request.auth.uid == userId &&
@@ -46,10 +48,8 @@ service cloud.firestore {
       allow update: if isOwner() || 
         (
           isManager() && 
-          !('owner' in resource.data.roles) && 
-          !('manager' in resource.data.roles) &&
-          !('owner' in request.resource.data.roles) &&
-          !('manager' in request.resource.data.roles)
+          !hasProtectedRole(resource.data.roles) &&
+          !hasProtectedRole(request.resource.data.roles)
         ) || 
         (
           request.auth.uid == userId && 

@@ -156,6 +156,8 @@ class Sayim {
     return status;
   }
 
+  bool get isClosed => effectiveStatus == SayimStatus.closed;
+
   /// Firestore'a yaz
   Map<String, dynamic> toFirestore() {
     return {

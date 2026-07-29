@@ -56,9 +56,18 @@ class _GrupSelectorState extends State<GrupSelector> {
 
   void _removeGroup(int index) {
     if (_gruplar.length > 1) {
+      final int removedGrupId = _gruplar[index].grupId;
       setState(() {
         _gruplar.removeAt(index);
       });
+
+      final int fallbackGrupId = _gruplar.first.grupId;
+      for (var user in widget.selectedUsers) {
+        if (user.grupId == removedGrupId) {
+          widget.onUserGroupChanged(user.user.id, fallbackGrupId);
+        }
+      }
+
       widget.onChanged(_gruplar);
     }
   }
