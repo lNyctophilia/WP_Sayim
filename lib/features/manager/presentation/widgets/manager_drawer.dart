@@ -49,7 +49,9 @@ class ManagerDrawer extends StatelessWidget {
               ),
             ),
             accountEmail: Text(
-              currentUser.roles.isNotEmpty ? currentUser.roles.first.name.toUpperCase() : 'STAFF',
+              currentUser.roles.isNotEmpty 
+                  ? lang.tr(currentUser.roles.first.translationKey)
+                  : lang.tr('staff'),
               style: TextStyle(
                 color: AppColors.accentLight.withValues(alpha: 0.8),
                 fontWeight: FontWeight.w600,

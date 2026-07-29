@@ -118,7 +118,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
         }
       }
 
-      await _sayimService.deleteSayimFull(currentSayim.id);
+      await _sayimService.deleteSayimFull(currentSayim.id, isSayimClosed: currentSayim.effectiveStatus == SayimStatus.closed);
       if (mounted) {
         Navigator.pop(context); // loading pop
         Navigator.pop(context); // page pop
@@ -207,19 +207,18 @@ class _SayimDetailPageState extends State<SayimDetailPage>
             ),
             actions: [
               if (widget.currentUser.id == currentSayim.createdBy || widget.currentUser.isOwner) ...[
-                if (!currentSayim.isSayimInPast)
-                  if (currentSayim.status == SayimStatus.open)
-                    IconButton(
-                      icon: Icon(Icons.lock_outline_rounded, color: AppColors.warning, size: 20),
-                      tooltip: AppStrings.get('close_count', isTr ? 'tr' : 'en'),
-                      onPressed: () => _sayimService.closeSayim(currentSayim.id),
-                    )
-                  else
-                    IconButton(
-                      icon: Icon(Icons.lock_open_rounded, color: AppColors.success, size: 20),
-                      tooltip: AppStrings.get('open_count', isTr ? 'tr' : 'en'),
-                      onPressed: () => _sayimService.openSayim(currentSayim.id),
-                    ),
+                if (currentSayim.effectiveStatus == SayimStatus.open)
+                  IconButton(
+                    icon: Icon(Icons.lock_outline_rounded, color: AppColors.warning, size: 20),
+                    tooltip: AppStrings.get('close_count', isTr ? 'tr' : 'en'),
+                    onPressed: () => _sayimService.closeSayim(currentSayim.id),
+                  )
+                else
+                  IconButton(
+                    icon: Icon(Icons.lock_open_rounded, color: AppColors.success, size: 20),
+                    tooltip: AppStrings.get('open_count', isTr ? 'tr' : 'en'),
+                    onPressed: () => _sayimService.openSayim(currentSayim.id),
+                  ),
                 if (currentSayim.effectiveStatus == SayimStatus.open || widget.currentUser.isOwner)
                   IconButton(
                     icon: Icon(Icons.edit_rounded, color: AppColors.textPrimary, size: 20),
@@ -472,7 +471,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
 
                         await _davetService.updateLastReminder(davet.id);
                         
-                        if (userSnapshot.data != null && userSnapshot.data!.email != null && userSnapshot.data!.email!.isNotEmpty) {
+                        if (currentSayim.effectiveStatus == SayimStatus.open && userSnapshot.data != null && userSnapshot.data!.email != null && userSnapshot.data!.email!.isNotEmpty) {
                           final NotificationService _notificationService = NotificationService();
                           final sayimTarihi = "${currentSayim.date.day.toString().padLeft(2, '0')}.${currentSayim.date.month.toString().padLeft(2, '0')}.${currentSayim.date.year}";
                           await _notificationService.sendEmailNotification(

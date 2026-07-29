@@ -253,6 +253,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
             sehirIciDisi: _sehirTipi,
             ucret: config.ucret,
             multiplier: config.multiplier,
+            status: updatedSayim.effectiveStatus == SayimStatus.closed ? DavetStatus.accepted : DavetStatus.pending,
             createdAt: DateTime.now(),
           );
           final createdId = await _davetService.createDavet(newDavet);

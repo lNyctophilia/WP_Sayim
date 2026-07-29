@@ -43,6 +43,7 @@ class Sayim {
   final SehirTipi sehirTipi;
   final double globalMultiplier;
   final bool isPast;
+  final bool isManualStatus;
   final DateTime createdAt;
 
   const Sayim({
@@ -58,6 +59,7 @@ class Sayim {
     this.sehirTipi = SehirTipi.ici,
     this.globalMultiplier = 1.0,
     this.isPast = false,
+    this.isManualStatus = false,
     required this.createdAt,
   });
 
@@ -74,6 +76,7 @@ class Sayim {
     SehirTipi? sehirTipi,
     double? globalMultiplier,
     bool? isPast,
+    bool? isManualStatus,
     DateTime? createdAt,
   }) {
     return Sayim(
@@ -89,6 +92,7 @@ class Sayim {
       sehirTipi: sehirTipi ?? this.sehirTipi,
       globalMultiplier: globalMultiplier ?? this.globalMultiplier,
       isPast: isPast ?? this.isPast,
+      isManualStatus: isManualStatus ?? this.isManualStatus,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -121,6 +125,7 @@ class Sayim {
       ),
       globalMultiplier: (data['globalMultiplier'] as num?)?.toDouble() ?? 1.0,
       isPast: data['isPast'] as bool? ?? false,
+      isManualStatus: data['isManualStatus'] as bool? ?? false,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -152,6 +157,7 @@ class Sayim {
   }
 
   SayimStatus get effectiveStatus {
+    if (isManualStatus) return status;
     if (isSayimInPast) return SayimStatus.closed;
     return status;
   }
@@ -172,6 +178,7 @@ class Sayim {
       'sehirTipi': sehirTipi.name,
       'globalMultiplier': globalMultiplier,
       'isPast': isPast,
+      'isManualStatus': isManualStatus,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }

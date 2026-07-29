@@ -164,6 +164,7 @@ class SayimService {
   Future<void> closeSayim(String sayimId) async {
     await _firestore.collection('sayimlar').doc(sayimId).update({
       'status': SayimStatus.closed.name,
+      'isManualStatus': true,
     });
   }
 
@@ -171,11 +172,12 @@ class SayimService {
   Future<void> openSayim(String sayimId) async {
     await _firestore.collection('sayimlar').doc(sayimId).update({
       'status': SayimStatus.open.name,
+      'isManualStatus': true,
     });
   }
 
   /// Sayımı, ona bağlı davetleri ve kabul edilen takvim kayıtlarını tamamen siler
-  Future<void> deleteSayimFull(String sayimId) async {
+  Future<void> deleteSayimFull(String sayimId, {bool isSayimClosed = false}) async {
     final sayimDoc = await _firestore.collection('sayimlar').doc(sayimId).get();
     if (!sayimDoc.exists) return;
     
@@ -186,15 +188,18 @@ class SayimService {
         .where('sayimId', isEqualTo: sayimId)
         .get();
 
-    if (sayim.effectiveStatus == SayimStatus.closed) {
+    if (isSayimClosed || sayim.effectiveStatus == SayimStatus.closed) {
       final updateBatch = _firestore.batch();
+      bool hasUpdates = false;
       for (var davetDoc in davetlerQuery.docs) {
         updateBatch.update(davetDoc.reference, {'silentDelete': true});
+        hasUpdates = true;
       }
-      await updateBatch.commit();
-      
-      // Firestore trigger'ının (onDocumentDeleted) yeni datayı (silentDelete: true) görmesi için kısa bir bekleme
-      await Future.delayed(const Duration(milliseconds: 300));
+      if (hasUpdates) {
+        await updateBatch.commit();
+        // Firestore trigger'ının (onDocumentDeleted) yeni datayı (silentDelete: true) görmesi için biraz daha uzun bekleme
+        await Future.delayed(const Duration(milliseconds: 1500));
+      }
     }
 
     final batch = _firestore.batch();

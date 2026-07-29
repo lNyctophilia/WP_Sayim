@@ -90,6 +90,12 @@ exports.sendDavetNotification = onDocumentCreated("davetler/{davetId}", async (e
     if (!sayimDoc.exists) return;
 
     const sayimData = sayimDoc.data();
+    
+    if (sayimData.status === "closed") {
+      console.log(`Davet notification skipped: Sayim is closed (${sayimId}).`);
+      return;
+    }
+
     const sayimName = sayimData.note || "Yeni Sayım";
     const creatorId = sayimData.createdBy;
 

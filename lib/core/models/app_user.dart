@@ -3,6 +3,25 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// Kullanıcı rolleri
 enum UserRole { owner, manager, managerA1, managerA2, managerA3, staff }
 
+extension UserRoleExtension on UserRole {
+  String get translationKey {
+    switch (this) {
+      case UserRole.owner:
+        return 'owner';
+      case UserRole.manager:
+        return 'manager';
+      case UserRole.managerA1:
+        return 'manager_a1';
+      case UserRole.managerA2:
+        return 'manager_a2';
+      case UserRole.managerA3:
+        return 'manager_a3';
+      case UserRole.staff:
+        return 'staff';
+    }
+  }
+}
+
 /// Firestore `users/{userId}` koleksiyonuna karşılık gelen model
 class AppUser {
   final String id;
