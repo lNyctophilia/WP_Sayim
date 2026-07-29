@@ -518,7 +518,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                         );
                         if (confirm != true) return;
 
-                        await _davetService.deleteDavet(davet.id);
+                        await _davetService.deleteDavet(davet.id, isSayimClosed: currentSayim.effectiveStatus == SayimStatus.closed);
                         
                         // Remove from invitedUserIds
                         final updatedInvited = List<String>.from(currentSayim.invitedUserIds)..remove(davet.userId);
@@ -539,7 +539,9 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                             backgroundColor: AppColors.background,
                             title: Text(AppStrings.get('remove_person', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textPrimary)),
                             content: Text(
-                              AppStrings.getFormat('are_you_sure_you_want_to_remove_username_from_this_count_a_cancellation_notification_will_be_sent_to_the_user', isTr ? 'tr' : 'en', [userName]),
+                              currentSayim.effectiveStatus == SayimStatus.open
+                                  ? AppStrings.getFormat('are_you_sure_you_want_to_remove_username_from_this_count_a_cancellation_notification_will_be_sent_to_the_user', isTr ? 'tr' : 'en', [userName])
+                                  : AppStrings.getFormat('are_you_sure_you_want_to_remove_username_from_this_count', isTr ? 'tr' : 'en', [userName]),
                               style: TextStyle(color: AppColors.textSecondary),
                             ),
                             actions: [
@@ -556,7 +558,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                         );
 
                         if (confirm == true) {
-                          if (userSnapshot.data != null && userSnapshot.data!.email != null && userSnapshot.data!.email!.isNotEmpty) {
+                          if (currentSayim.effectiveStatus == SayimStatus.open && userSnapshot.data != null && userSnapshot.data!.email != null && userSnapshot.data!.email!.isNotEmpty) {
                             final NotificationService notificationService = NotificationService();
                             await notificationService.sendEmailNotification(
                               targetUserId: davet.userId,
@@ -565,7 +567,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                             );
                           }
 
-                          await _davetService.deleteDavet(davet.id);
+                          await _davetService.deleteDavet(davet.id, isSayimClosed: currentSayim.effectiveStatus == SayimStatus.closed);
                           
                           // Remove from invitedUserIds
                           final updatedInvited = List<String>.from(currentSayim.invitedUserIds)..remove(davet.userId);
@@ -652,7 +654,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                         );
                         if (confirm != true) return;
 
-                        await _davetService.deleteDavet(davet.id);
+                        await _davetService.deleteDavet(davet.id, isSayimClosed: currentSayim.effectiveStatus == SayimStatus.closed);
                         
                         // Remove from invitedUserIds
                         final updatedInvited = List<String>.from(currentSayim.invitedUserIds)..remove(davet.userId);

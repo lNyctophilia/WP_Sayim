@@ -114,11 +114,18 @@ class DavetService {
   }
 
   /// Daveti siler (Yönetici daveti iptal ederse) ve takvimden de kaldırır
-  Future<void> deleteDavet(String davetId) async {
+  Future<void> deleteDavet(String davetId, {bool isSayimClosed = false}) async {
     final doc = await _firestore.collection('davetler').doc(davetId).get();
     if (!doc.exists) return;
 
     final davet = Davet.fromFirestore(doc);
+    
+    if (isSayimClosed) {
+      await doc.reference.update({'silentDelete': true});
+      // Firestore trigger'ının (onDocumentDeleted) yeni datayı görmesi için kısa bir bekleme
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
+
     final batch = _firestore.batch();
 
     batch.delete(doc.reference);

@@ -361,6 +361,7 @@ class AppStrings {
     'reminder_sent': {'tr': 'Hatırlatma gönderildi.', 'en': 'Reminder sent.'},
     'remove': {'tr': 'Kaldır', 'en': 'Remove'},
     'remove_person': {'tr': 'Kişiyi Çıkar', 'en': 'Remove Person'},
+    'are_you_sure_you_want_to_remove_username_from_this_count': {'tr': '{0} isimli personeli bu sayımdan çıkarmak istediğinize emin misiniz?', 'en': 'Are you sure you want to remove {0} from this count?'},
     'are_you_sure_you_want_to_remove_username_from_this_count_a_cancellation_notification_will_be_sent_to_the_user': {'tr': '{0} isimli personeli bu sayımdan çıkarmak istediğinize emin misiniz? (Kullanıcıya iptal bildirimi gönderilecektir)', 'en': 'Are you sure you want to remove {0} from this count? (A cancellation notification will be sent to the user)'},
     'person_successfully_removed_and_notification_sent': {'tr': 'Kişi başarıyla çıkarıldı ve bildirim gönderildi.', 'en': 'Person successfully removed and notification sent.'},
     'send_reminder_confirm_title': {'tr': 'Hatırlatma Gönder', 'en': 'Send Reminder'},
@@ -407,6 +408,8 @@ class AppStrings {
     'staff_selection_count': {'tr': 'Personel: {0}/{1} | Yönetici: {2}/{3}', 'en': 'Staff: {0}/{1} | Manager: {2}/{3}'},
     'city_inner_short': {'tr': 'Ş. İçi', 'en': 'In City'},
     'city_outer_short': {'tr': 'Ş. Dışı', 'en': 'Out of City'},
+    'assign_personnel': {'tr': 'Bu gruba atanacak kişileri seçin:', 'en': 'Select people to assign to this group:'},
+    'no_personnel_selected': {'tr': 'Önce personellerden kişi seçin.', 'en': 'Select people from staff first.'},
   };
 
   static const List<String> monthKeys = [
