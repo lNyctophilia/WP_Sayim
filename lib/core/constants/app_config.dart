@@ -7,8 +7,10 @@ class AppConfig {
   static String get version {
     if (_buildVersion.isNotEmpty) {
       String displayVersion = _buildVersion;
-      // Harfleri ve alt tireleri temizle (örn: "Cum_24.07.2026-_6:46" -> "24.07.2026-6:46:...")
-      displayVersion = displayVersion.replaceAll(RegExp(r'[A-Za-z_]'), '');
+      // Harfleri, Türkçe karakterleri ve alt tireleri temizle, sadece sayı, nokta, tire ve iki nokta kalsın
+      displayVersion = displayVersion.replaceAll(RegExp(r'[^\d\.\-:]'), '');
+      // Eğer başta veya sonda fazladan tire kaldıysa onları da temizle
+      displayVersion = displayVersion.replaceAll(RegExp(r'^\-+|\-+$'), '');
       
       var parts = displayVersion.split(':');
       if (parts.length >= 2) {
