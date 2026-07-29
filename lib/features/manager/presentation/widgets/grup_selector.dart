@@ -2,17 +2,22 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/sayim.dart';
 import '../../../../core/constants/app_strings.dart';
+import 'staff_picker.dart';
 
 class GrupSelector extends StatefulWidget {
   final List<SayimGrup> initialGruplar;
   final Function(List<SayimGrup>) onChanged;
   final bool isTr;
+  final List<SelectedUserConfig> selectedUsers;
+  final Function(String userId, int newGrupId) onUserGroupChanged;
 
   const GrupSelector({
     super.key,
     required this.initialGruplar,
     required this.onChanged,
     required this.isTr,
+    required this.selectedUsers,
+    required this.onUserGroupChanged,
   });
 
   @override
@@ -58,45 +63,188 @@ class _GrupSelectorState extends State<GrupSelector> {
     }
   }
 
-  Future<void> _pickTime(int index) async {
-    final currentSaat = _gruplar[index].saat;
-    final parts = currentSaat.split(':');
-    TimeOfDay initialTime = TimeOfDay.now();
-    if (parts.length == 2) {
-      initialTime = TimeOfDay(
-        hour: int.tryParse(parts[0]) ?? 8,
-        minute: int.tryParse(parts[1]) ?? 0,
-      );
-    }
-
-    final picked = await showTimePicker(
+  void _showGroupBottomSheet(int index) {
+    showModalBottomSheet(
       context: context,
-      initialTime: initialTime,
-      builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-          child: Theme(
-            data: ThemeData.dark().copyWith(
-              colorScheme: ColorScheme.dark(
-                primary: AppColors.accentLight,
-                surface: AppColors.card,
-              ),
-            ),
-            child: child!,
-          ),
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final grup = _gruplar[index];
+            final selectedUsersForCount = widget.selectedUsers.where((u) => u.isSelected).toList();
+            
+            return DraggableScrollableSheet(
+              expand: false,
+              initialChildSize: 0.6,
+              maxChildSize: 0.9,
+              minChildSize: 0.4,
+              builder: (_, scrollController) {
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${AppStrings.get('group', widget.isTr ? 'tr' : 'en')} ${index + 1}',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.close, color: AppColors.textSecondary),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // Time section
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.access_time_rounded, color: AppColors.accentLight),
+                                const SizedBox(width: 8),
+                                Text(
+                                  grup.saat,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            ElevatedButton(
+                              onPressed: () async {
+                                final parts = grup.saat.split(':');
+                                TimeOfDay initialTime = TimeOfDay.now();
+                                if (parts.length == 2) {
+                                  initialTime = TimeOfDay(
+                                    hour: int.tryParse(parts[0]) ?? 8,
+                                    minute: int.tryParse(parts[1]) ?? 0,
+                                  );
+                                }
+                                
+                                final picked = await showTimePicker(
+                                  context: context,
+                                  initialTime: initialTime,
+                                  builder: (context, child) {
+                                    return MediaQuery(
+                                      data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+                                      child: Theme(
+                                        data: ThemeData.dark().copyWith(
+                                          colorScheme: ColorScheme.dark(
+                                            primary: AppColors.accentLight,
+                                            surface: AppColors.card,
+                                          ),
+                                        ),
+                                        child: child!,
+                                      ),
+                                    );
+                                  },
+                                );
+                                
+                                if (picked != null) {
+                                  final formattedTime = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+                                  setModalState(() {
+                                    _gruplar[index] = SayimGrup(grupId: grup.grupId, saat: formattedTime);
+                                  });
+                                  setState(() {});
+                                  widget.onChanged(_gruplar);
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.card,
+                                foregroundColor: AppColors.textPrimary,
+                                elevation: 0,
+                              ),
+                              child: Text(AppStrings.get('edit', widget.isTr ? 'tr' : 'en') ?? 'Değiştir'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      Text(
+                        AppStrings.get('assign_personnel', widget.isTr ? 'tr' : 'en') ?? 'Bu gruba atanacak kişileri seçin:',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      
+                      // Users List
+                      Expanded(
+                        child: selectedUsersForCount.isEmpty 
+                          ? Center(
+                              child: Text(
+                                AppStrings.get('no_personnel_selected', widget.isTr ? 'tr' : 'en') ?? 'Önce personellerden kişi seçin.',
+                                style: TextStyle(color: AppColors.textHint),
+                              ),
+                            )
+                          : ListView.builder(
+                              controller: scrollController,
+                              itemCount: selectedUsersForCount.length,
+                              itemBuilder: (context, userIndex) {
+                                final userConfig = selectedUsersForCount[userIndex];
+                                final isSelectedForThisGroup = userConfig.grupId == grup.grupId;
+                                
+                                return CheckboxListTile(
+                                  value: isSelectedForThisGroup,
+                                  activeColor: AppColors.accentLight,
+                                  checkColor: Colors.white,
+                                  title: Text(
+                                    userConfig.user.fullName,
+                                    style: TextStyle(color: AppColors.textPrimary, fontSize: 15),
+                                  ),
+                                  subtitle: userConfig.grupId != grup.grupId
+                                      ? Text(
+                                          'Şu an: ${AppStrings.get('group', widget.isTr ? 'tr' : 'en')} ${userConfig.grupId}',
+                                          style: TextStyle(color: AppColors.textHint, fontSize: 12),
+                                        )
+                                      : null,
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      // Eğer unchecked yapıldıysa, ilk gruba dahil et. (ya da _gruplar.first.grupId)
+                                      final fallbackGrupId = _gruplar.isNotEmpty ? _gruplar.first.grupId : 1;
+                                      final newGrupId = val ? grup.grupId : fallbackGrupId;
+                                      widget.onUserGroupChanged(userConfig.user.id, newGrupId);
+                                      setModalState(() {});
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
         );
       },
     );
-
-    if (picked != null) {
-      final formattedTime =
-          '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
-      setState(() {
-        _gruplar[index] =
-            SayimGrup(grupId: _gruplar[index].grupId, saat: formattedTime);
-      });
-      widget.onChanged(_gruplar);
-    }
   }
 
   @override
@@ -139,7 +287,7 @@ class _GrupSelectorState extends State<GrupSelector> {
               children: [
                 Expanded(
                   child: InkWell(
-                    onTap: () => _pickTime(index),
+                    onTap: () => _showGroupBottomSheet(index),
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
                       padding: const EdgeInsets.symmetric(

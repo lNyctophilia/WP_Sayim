@@ -107,7 +107,7 @@ class SayimListTab extends StatelessWidget {
   }
 
   Widget _buildSayimCard(BuildContext context, Sayim sayim, bool isTr) {
-    final bool isOpen = sayim.status == SayimStatus.open;
+    final bool isOpen = sayim.effectiveStatus == SayimStatus.open;
     return GestureDetector(
       onTap: () {
         Navigator.push(

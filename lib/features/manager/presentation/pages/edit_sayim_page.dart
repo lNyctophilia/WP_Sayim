@@ -453,6 +453,15 @@ class _EditSayimPageState extends State<EditSayimPage> {
                     GrupSelector(
                       initialGruplar: _gruplar,
                       isTr: isTr,
+                      selectedUsers: _selectedUsers,
+                      onUserGroupChanged: (userId, newGrupId) {
+                        setState(() {
+                          final idx = _selectedUsers.indexWhere((u) => u.user.id == userId);
+                          if (idx != -1) {
+                            _selectedUsers[idx].grupId = newGrupId;
+                          }
+                        });
+                      },
                       onChanged: (gruplar) {
                         setState(() {
                           _gruplar = gruplar;

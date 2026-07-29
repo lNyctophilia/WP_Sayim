@@ -61,15 +61,28 @@ class _SayimDetailPageState extends State<SayimDetailPage>
     return user;
   }
 
-  Future<void> _confirmDeleteSayim() async {
+  Future<void> _confirmDeleteSayim(List<Davet> davetler) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.background,
         title: Text(AppStrings.get('delete_count', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textPrimary)),
-        content: Text(
-          AppStrings.get('are_you_sure_you_want_to_delete_this_count_and_all_related_invitations_calendar_records_this_action_cannot_be_undone', isTr ? 'tr' : 'en'),
-          style: TextStyle(color: AppColors.textSecondary),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              AppStrings.get('are_you_sure_you_want_to_delete_this_count_and_all_related_invitations_calendar_records_this_action_cannot_be_undone', isTr ? 'tr' : 'en'),
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+            if (widget.sayim.effectiveStatus == SayimStatus.open) ...[
+              const SizedBox(height: 12),
+              Text(
+                AppStrings.get('delete_open_count_warning', isTr ? 'tr' : 'en'),
+                style: TextStyle(color: AppColors.warning, fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+            ],
+          ],
         ),
         actions: [
           TextButton(
@@ -88,6 +101,21 @@ class _SayimDetailPageState extends State<SayimDetailPage>
       if (mounted) {
         showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
       }
+      if (widget.sayim.effectiveStatus == SayimStatus.open) {
+        final NotificationService notificationService = NotificationService();
+        final acceptedDavetler = davetler.where((d) => d.isAccepted).toList();
+        for (final davet in acceptedDavetler) {
+          final user = await _getUser(davet.userId);
+          if (user != null && user.email != null && user.email!.isNotEmpty) {
+            await notificationService.sendEmailNotification(
+              targetUserId: davet.userId,
+              subject: AppStrings.get('sayim_cancelled', isTr ? 'tr' : 'en') ?? 'Sayım İptali',
+              textContent: 'Merhaba ${user.fullName},\n\nKabul ettiğiniz "${widget.sayim.note}" isimli sayım iptal edilmiştir.\n\nBilginize.',
+            );
+          }
+        }
+      }
+
       await _sayimService.deleteSayimFull(widget.sayim.id);
       if (mounted) {
         Navigator.pop(context); // loading pop
@@ -177,27 +205,41 @@ class _SayimDetailPageState extends State<SayimDetailPage>
             ),
             actions: [
               if (widget.currentUser.id == currentSayim.createdBy || widget.currentUser.isOwner) ...[
-                IconButton(
-                  icon: Icon(Icons.edit_rounded, color: AppColors.textPrimary, size: 20),
-                  tooltip: AppStrings.get('edit', isTr ? 'tr' : 'en'),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => EditSayimPage(
-                          sayim: currentSayim,
-                          existingDavets: davetler,
-                          currentUser: widget.currentUser,
-                          lang: widget.lang,
+                if (!currentSayim.isSayimInPast)
+                  if (currentSayim.status == SayimStatus.open)
+                    IconButton(
+                      icon: Icon(Icons.lock_outline_rounded, color: AppColors.warning, size: 20),
+                      tooltip: AppStrings.get('close_count', isTr ? 'tr' : 'en'),
+                      onPressed: () => _sayimService.closeSayim(currentSayim.id),
+                    )
+                  else
+                    IconButton(
+                      icon: Icon(Icons.lock_open_rounded, color: AppColors.success, size: 20),
+                      tooltip: AppStrings.get('open_count', isTr ? 'tr' : 'en'),
+                      onPressed: () => _sayimService.openSayim(currentSayim.id),
+                    ),
+                if (currentSayim.effectiveStatus == SayimStatus.open || widget.currentUser.isOwner)
+                  IconButton(
+                    icon: Icon(Icons.edit_rounded, color: AppColors.textPrimary, size: 20),
+                    tooltip: AppStrings.get('edit', isTr ? 'tr' : 'en'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => EditSayimPage(
+                            sayim: currentSayim,
+                            existingDavets: davetler,
+                            currentUser: widget.currentUser,
+                            lang: widget.lang,
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
                 IconButton(
                   icon: Icon(Icons.delete_rounded, color: AppColors.danger, size: 20),
                   tooltip: AppStrings.get('delete_count', isTr ? 'tr' : 'en'),
-                  onPressed: _confirmDeleteSayim,
+                  onPressed: () => _confirmDeleteSayim(davetler),
                 ),
               ],
             ],
@@ -252,7 +294,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
               ),
             ],
           ),
-          floatingActionButton: (widget.currentUser.id == currentSayim.createdBy || widget.currentUser.isOwner) 
+          floatingActionButton: ((widget.currentUser.id == currentSayim.createdBy || widget.currentUser.isOwner) && (currentSayim.effectiveStatus == SayimStatus.open || widget.currentUser.isOwner)) 
             ? FloatingActionButton.extended(
                 backgroundColor: AppColors.accentLight,
                 foregroundColor: Colors.white,
@@ -289,7 +331,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
       );
     }
 
-    final isCreator = widget.currentUser.id == currentSayim.createdBy || widget.currentUser.isOwner;
+    final isCreator = (widget.currentUser.id == currentSayim.createdBy || widget.currentUser.isOwner) && (currentSayim.effectiveStatus == SayimStatus.open || widget.currentUser.isOwner);
 
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
@@ -385,6 +427,30 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                           color: AppColors.accentLight, size: 20),
                       tooltip: AppStrings.get('remind', isTr ? 'tr' : 'en'),
                       onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            backgroundColor: AppColors.background,
+                            title: Text(AppStrings.get('send_reminder_confirm_title', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textPrimary)),
+                            content: Text(
+                              AppStrings.get('send_reminder_confirm_msg', isTr ? 'tr' : 'en'),
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: Text(AppStrings.get('cancel', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textHint)),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: Text(AppStrings.get('remind', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.accentLight)),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm != true) return;
+
+
                         // Cooldown: 5 dakika dolmadan tekrar hatırlatma atılmasını engelle
                         if (davet.lastReminderAt != null) {
                           final diff = DateTime.now().difference(davet.lastReminderAt!);
@@ -429,6 +495,29 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                           color: AppColors.danger, size: 20),
                       tooltip: AppStrings.get('cancel', isTr ? 'tr' : 'en'),
                       onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            backgroundColor: AppColors.background,
+                            title: Text(AppStrings.get('cancel_invitation_confirm_title', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textPrimary)),
+                            content: Text(
+                              AppStrings.get('cancel_invitation_confirm_msg', isTr ? 'tr' : 'en'),
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: Text(AppStrings.get('cancel', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textHint)),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: Text(AppStrings.get('cancel', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.danger)),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm != true) return;
+
                         await _davetService.deleteDavet(davet.id);
                         
                         // Remove from invitedUserIds
@@ -467,6 +556,15 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                         );
 
                         if (confirm == true) {
+                          if (userSnapshot.data != null && userSnapshot.data!.email != null && userSnapshot.data!.email!.isNotEmpty) {
+                            final NotificationService notificationService = NotificationService();
+                            await notificationService.sendEmailNotification(
+                              targetUserId: davet.userId,
+                              subject: AppStrings.get('sayim_cancelled', isTr ? 'tr' : 'en') ?? 'Sayım İptali',
+                              textContent: 'Merhaba ${userName},\n\nKabul ettiğiniz "${currentSayim.note}" isimli sayımdan çıkarıldınız.\n\nBilginize.',
+                            );
+                          }
+
                           await _davetService.deleteDavet(davet.id);
                           
                           // Remove from invitedUserIds
@@ -492,6 +590,29 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                           color: AppColors.success, size: 20),
                       tooltip: AppStrings.get('re_invite', isTr ? 'tr' : 'en'),
                       onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            backgroundColor: AppColors.background,
+                            title: Text(AppStrings.get('reinvite_confirm_title', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textPrimary)),
+                            content: Text(
+                              AppStrings.get('reinvite_confirm_msg', isTr ? 'tr' : 'en'),
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: Text(AppStrings.get('cancel', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textHint)),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: Text(AppStrings.get('re_invite', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.success)),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm != true) return;
+
                         await _davetService.resetDavet(davet.id);
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -508,6 +629,29 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                           color: AppColors.danger, size: 20),
                       tooltip: AppStrings.get('remove', isTr ? 'tr' : 'en'),
                       onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            backgroundColor: AppColors.background,
+                            title: Text(AppStrings.get('remove_invitation_confirm_title', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textPrimary)),
+                            content: Text(
+                              AppStrings.get('remove_invitation_confirm_msg', isTr ? 'tr' : 'en'),
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: Text(AppStrings.get('cancel', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textHint)),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: Text(AppStrings.get('remove', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.danger)),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm != true) return;
+
                         await _davetService.deleteDavet(davet.id);
                         
                         // Remove from invitedUserIds

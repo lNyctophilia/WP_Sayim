@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Kullanıcı rolleri
-enum UserRole { owner, manager, staff }
+enum UserRole { owner, manager, managerA1, managerA2, managerA3, staff }
 
 /// Firestore `users/{userId}` koleksiyonuna karşılık gelen model
 class AppUser {
@@ -47,7 +47,12 @@ class AppUser {
 
   /// En yüksek yetki seviyesi
   bool get isOwner => roles.contains(UserRole.owner);
-  bool get isManager => roles.contains(UserRole.manager) || isOwner;
+  bool get isManager => 
+      roles.contains(UserRole.manager) || 
+      roles.contains(UserRole.managerA1) ||
+      roles.contains(UserRole.managerA2) ||
+      roles.contains(UserRole.managerA3) ||
+      isOwner;
   bool get isStaff => roles.contains(UserRole.staff);
 
   /// Firestore'dan oku

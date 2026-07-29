@@ -126,7 +126,7 @@ class _StaffPickerState extends State<StaffPicker> {
     }
   }
 
-  double _calculateWage(DavetRole role, double multiplier, [SehirTipi? overrideSehirTipi]) {
+  double _calculateWage(DavetRole role, double multiplier, [SehirTipi? overrideSehirTipi, AppUser? user]) {
     double baseWage = 0.0;
     final sehirTipi = overrideSehirTipi ?? widget.sayimSehirTipi;
     if (role == DavetRole.staff) {
@@ -134,9 +134,16 @@ class _StaffPickerState extends State<StaffPicker> {
           ? _settings.staffSehirIciWage
           : _settings.staffSehirDisiWage;
     } else {
-      baseWage = sehirTipi == SehirTipi.ici
-          ? _settings.managerSehirIciWage
-          : _settings.managerSehirDisiWage;
+      bool isA3 = user?.roles.contains(UserRole.managerA3) ?? false;
+      bool isA2 = user?.roles.contains(UserRole.managerA2) ?? false;
+
+      if (isA3) {
+        baseWage = sehirTipi == SehirTipi.ici ? _settings.managerA3SehirIciWage : _settings.managerA3SehirDisiWage;
+      } else if (isA2) {
+        baseWage = sehirTipi == SehirTipi.ici ? _settings.managerA2SehirIciWage : _settings.managerA2SehirDisiWage;
+      } else {
+        baseWage = sehirTipi == SehirTipi.ici ? _settings.managerA1SehirIciWage : _settings.managerA1SehirDisiWage;
+      }
     }
     return baseWage * multiplier;
   }
@@ -189,14 +196,14 @@ class _StaffPickerState extends State<StaffPicker> {
           grupId: groupExists ? old.grupId : defaultGrupId,
           role: old.role,
           multiplier: newMultiplier,
-          ucret: forceRecalculate ? _calculateWage(old.role, newMultiplier) : (wasManuallyEdited ? old.ucret : _calculateWage(old.role, newMultiplier)), 
+          ucret: forceRecalculate ? _calculateWage(old.role, newMultiplier, null, u) : (wasManuallyEdited ? old.ucret : _calculateWage(old.role, newMultiplier, null, u)), 
           isExpanded: old.isExpanded,
         );
       }
 
       final role = u.isManager || u.isOwner ? DavetRole.manager : DavetRole.staff;
       final multiplier = widget.globalMultiplier;
-      final autoWage = _calculateWage(role, multiplier);
+      final autoWage = _calculateWage(role, multiplier, null, u);
       
       bool isBusy = widget.busyUserIds.contains(u.id);
 
@@ -338,7 +345,7 @@ class _StaffPickerState extends State<StaffPicker> {
       if (config.role == DavetRole.manager && currentY >= widget.targetYonetici) {
         if (currentP < widget.targetPersonel) {
           config.role = DavetRole.staff;
-          config.ucret = _calculateWage(config.role, config.multiplier);
+          config.ucret = _calculateWage(config.role, config.multiplier, null, config.user);
         } else {
           _showLimitSnackBar('Yönetici sınırına ulaştınız!', 'Manager limit reached!');
           return;
@@ -350,7 +357,7 @@ class _StaffPickerState extends State<StaffPicker> {
       config.isSelected = val;
       if (config.isSelected == false) {
         config.role = config.user.isManager || config.user.isOwner ? DavetRole.manager : DavetRole.staff;
-        config.ucret = _calculateWage(config.role, config.multiplier);
+        config.ucret = _calculateWage(config.role, config.multiplier, null, config.user);
         config.isExpanded = false;
       }
       _selectAll = _configs.every((c) => c.isSelected || widget.busyUserIds.contains(c.user.id));
@@ -468,7 +475,7 @@ class _StaffPickerState extends State<StaffPicker> {
                         }
                         setState(() {
                           config.role = val;
-                          config.ucret = _calculateWage(config.role, config.multiplier);
+                          config.ucret = _calculateWage(config.role, config.multiplier, null, config.user);
                         });
                         _notifyChanges();
                       }
@@ -493,35 +500,6 @@ class _StaffPickerState extends State<StaffPicker> {
             Row(
               children: [
                 Expanded(
-                  child: DropdownButtonFormField<int>(
-                    initialValue: config.grupId,
-                    decoration: InputDecoration(
-                      labelText: AppStrings.get('select_group', widget.isTr ? 'tr' : 'en'),
-                      labelStyle: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                      border: InputBorder.none,
-                      filled: true,
-                      fillColor: AppColors.surface,
-                    ),
-                    dropdownColor: AppColors.card,
-                    items: widget.availableGroups.map((g) {
-                      return DropdownMenuItem(
-                        value: g.grupId,
-                        child: Text(
-                          '${AppStrings.get('group', widget.isTr ? 'tr' : 'en')} ${g.grupId} (${g.saat})',
-                          style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() => config.grupId = val);
-                        _notifyChanges();
-                      }
-                    },
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
                   child: DropdownButtonFormField<double>(
                     initialValue: config.multiplier,
                     decoration: InputDecoration(
@@ -545,7 +523,7 @@ class _StaffPickerState extends State<StaffPicker> {
                       if (val != null) {
                         setState(() {
                           config.multiplier = val;
-                          config.ucret = _calculateWage(config.role, val);
+                          config.ucret = _calculateWage(config.role, val, null, config.user);
                         });
                         _notifyChanges();
                       }

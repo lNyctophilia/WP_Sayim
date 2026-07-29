@@ -37,8 +37,12 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
 
   late TextEditingController _staffIciCtrl;
   late TextEditingController _staffDisiCtrl;
-  late TextEditingController _managerIciCtrl;
-  late TextEditingController _managerDisiCtrl;
+  late TextEditingController _managerA1IciCtrl;
+  late TextEditingController _managerA1DisiCtrl;
+  late TextEditingController _managerA2IciCtrl;
+  late TextEditingController _managerA2DisiCtrl;
+  late TextEditingController _managerA3IciCtrl;
+  late TextEditingController _managerA3DisiCtrl;
 
   bool _isLoading = true;
 
@@ -48,8 +52,12 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
     widget.storage.setLastPanel('global_settings');
     _staffIciCtrl = TextEditingController();
     _staffDisiCtrl = TextEditingController();
-    _managerIciCtrl = TextEditingController();
-    _managerDisiCtrl = TextEditingController();
+    _managerA1IciCtrl = TextEditingController();
+    _managerA1DisiCtrl = TextEditingController();
+    _managerA2IciCtrl = TextEditingController();
+    _managerA2DisiCtrl = TextEditingController();
+    _managerA3IciCtrl = TextEditingController();
+    _managerA3DisiCtrl = TextEditingController();
     _loadSettings();
   }
 
@@ -58,8 +66,12 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
     setState(() {
       _staffIciCtrl.text = settings.staffSehirIciWage.toString();
       _staffDisiCtrl.text = settings.staffSehirDisiWage.toString();
-      _managerIciCtrl.text = settings.managerSehirIciWage.toString();
-      _managerDisiCtrl.text = settings.managerSehirDisiWage.toString();
+      _managerA1IciCtrl.text = settings.managerA1SehirIciWage.toString();
+      _managerA1DisiCtrl.text = settings.managerA1SehirDisiWage.toString();
+      _managerA2IciCtrl.text = settings.managerA2SehirIciWage.toString();
+      _managerA2DisiCtrl.text = settings.managerA2SehirDisiWage.toString();
+      _managerA3IciCtrl.text = settings.managerA3SehirIciWage.toString();
+      _managerA3DisiCtrl.text = settings.managerA3SehirDisiWage.toString();
       _isLoading = false;
     });
   }
@@ -68,8 +80,12 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
   void dispose() {
     _staffIciCtrl.dispose();
     _staffDisiCtrl.dispose();
-    _managerIciCtrl.dispose();
-    _managerDisiCtrl.dispose();
+    _managerA1IciCtrl.dispose();
+    _managerA1DisiCtrl.dispose();
+    _managerA2IciCtrl.dispose();
+    _managerA2DisiCtrl.dispose();
+    _managerA3IciCtrl.dispose();
+    _managerA3DisiCtrl.dispose();
     super.dispose();
   }
 
@@ -82,8 +98,12 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
       final newSettings = AppSettings(
         staffSehirIciWage: double.tryParse(_staffIciCtrl.text) ?? 0.0,
         staffSehirDisiWage: double.tryParse(_staffDisiCtrl.text) ?? 0.0,
-        managerSehirIciWage: double.tryParse(_managerIciCtrl.text) ?? 0.0,
-        managerSehirDisiWage: double.tryParse(_managerDisiCtrl.text) ?? 0.0,
+        managerA1SehirIciWage: double.tryParse(_managerA1IciCtrl.text) ?? 0.0,
+        managerA1SehirDisiWage: double.tryParse(_managerA1DisiCtrl.text) ?? 0.0,
+        managerA2SehirIciWage: double.tryParse(_managerA2IciCtrl.text) ?? 0.0,
+        managerA2SehirDisiWage: double.tryParse(_managerA2DisiCtrl.text) ?? 0.0,
+        managerA3SehirIciWage: double.tryParse(_managerA3IciCtrl.text) ?? 0.0,
+        managerA3SehirDisiWage: double.tryParse(_managerA3DisiCtrl.text) ?? 0.0,
       );
 
       await _settingsService.updateSettings(newSettings);
@@ -185,14 +205,38 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
                     ),
                     const SizedBox(height: 16),
                     _buildTextField(
-                      controller: _managerIciCtrl,
-                      label: widget.lang.tr('manager_in_city'),
+                      controller: _managerA1IciCtrl,
+                      label: widget.lang.tr('manager_a1_in_city'),
                       icon: Icons.admin_panel_settings_rounded,
                     ),
                     const SizedBox(height: 16),
                     _buildTextField(
-                      controller: _managerDisiCtrl,
-                      label: widget.lang.tr('manager_out_city'),
+                      controller: _managerA1DisiCtrl,
+                      label: widget.lang.tr('manager_a1_out_city'),
+                      icon: Icons.admin_panel_settings_outlined,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: _managerA2IciCtrl,
+                      label: widget.lang.tr('manager_a2_in_city'),
+                      icon: Icons.admin_panel_settings_rounded,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: _managerA2DisiCtrl,
+                      label: widget.lang.tr('manager_a2_out_city'),
+                      icon: Icons.admin_panel_settings_outlined,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: _managerA3IciCtrl,
+                      label: widget.lang.tr('manager_a3_in_city'),
+                      icon: Icons.admin_panel_settings_rounded,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: _managerA3DisiCtrl,
+                      label: widget.lang.tr('manager_a3_out_city'),
                       icon: Icons.admin_panel_settings_outlined,
                     ),
                     const SizedBox(height: 32),

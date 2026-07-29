@@ -167,6 +167,13 @@ class SayimService {
     });
   }
 
+  /// Sayımı açar
+  Future<void> openSayim(String sayimId) async {
+    await _firestore.collection('sayimlar').doc(sayimId).update({
+      'status': SayimStatus.open.name,
+    });
+  }
+
   /// Sayımı, ona bağlı davetleri ve kabul edilen takvim kayıtlarını tamamen siler
   Future<void> deleteSayimFull(String sayimId) async {
     final sayimDoc = await _firestore.collection('sayimlar').doc(sayimId).get();
@@ -178,6 +185,17 @@ class SayimService {
         .collection('davetler')
         .where('sayimId', isEqualTo: sayimId)
         .get();
+
+    if (sayim.effectiveStatus == SayimStatus.closed) {
+      final updateBatch = _firestore.batch();
+      for (var davetDoc in davetlerQuery.docs) {
+        updateBatch.update(davetDoc.reference, {'silentDelete': true});
+      }
+      await updateBatch.commit();
+      
+      // Firestore trigger'ının (onDocumentDeleted) yeni datayı (silentDelete: true) görmesi için kısa bir bekleme
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
 
     final batch = _firestore.batch();
     

@@ -321,9 +321,14 @@ class AuthService {
 
   /// Sadece belirli roldeki kullanıcıları getir
   Future<List<AppUser>> getUsersByRole(UserRole role) async {
+    List<String> rolesToQuery = [role.name];
+    if (role == UserRole.manager) {
+      rolesToQuery = ['manager', 'managerA1', 'managerA2', 'managerA3'];
+    }
+
     final snapshot = await _firestore
         .collection('users')
-        .where('roles', arrayContains: role.name)
+        .where('roles', arrayContainsAny: rolesToQuery)
         .where('active', isEqualTo: true)
         .get();
     return snapshot.docs.map((doc) => AppUser.fromFirestore(doc)).toList();

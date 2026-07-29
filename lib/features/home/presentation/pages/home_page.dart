@@ -469,8 +469,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           month: _currentMonth,
           monthlyData: _monthlyData,
           lang: widget.lang,
-          onDayTapped: (date, existing) {}, // Manuel giriş geçici olarak kapalı
-          onDayLongPressed: _showNotePreview,
+          onDayTapped: _showNotePreview,
+          onDayLongPressed: (date, existing) {}, // Manuel giriş geçici olarak kapalı
         ),
         const SizedBox(height: 15),
         SummaryCard(
@@ -505,8 +505,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     month: _prevMonth!,
                     monthlyData: _prevMonthlyData!,
                     lang: widget.lang,
-                    onDayTapped: (date, existing) {}, // Manuel giriş geçici olarak kapalı
-                    onDayLongPressed: _showNotePreview,
+                    onDayTapped: _showNotePreview,
+                    onDayLongPressed: (date, existing) {}, // Manuel giriş geçici olarak kapalı
                   ),
                   const SizedBox(height: 15),
                   SummaryCard(
@@ -536,8 +536,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   month: _currentMonth,
                   monthlyData: _monthlyData,
                   lang: widget.lang,
-                  onDayTapped: (date, existing) {}, // Manuel giriş geçici olarak kapalı
-                  onDayLongPressed: _showNotePreview,
+                  onDayTapped: _showNotePreview,
+                  onDayLongPressed: (date, existing) {}, // Manuel giriş geçici olarak kapalı
                 ),
                 const SizedBox(height: 15),
                 SummaryCard(

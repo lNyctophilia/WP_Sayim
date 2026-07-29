@@ -125,6 +125,37 @@ class Sayim {
     );
   }
 
+  bool get isSayimInPast {
+    if (gruplar.isEmpty) {
+      final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
+      return endOfDay.isBefore(DateTime.now());
+    }
+    
+    String latestTime = "00:00";
+    for (var g in gruplar) {
+      if (g.saat.isNotEmpty && g.saat.compareTo(latestTime) > 0) {
+        latestTime = g.saat;
+      }
+    }
+    
+    try {
+      final parts = latestTime.split(':');
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+      
+      final sayimDateTime = DateTime(date.year, date.month, date.day, hour, minute);
+      return sayimDateTime.isBefore(DateTime.now());
+    } catch (e) {
+      final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
+      return endOfDay.isBefore(DateTime.now());
+    }
+  }
+
+  SayimStatus get effectiveStatus {
+    if (isSayimInPast) return SayimStatus.closed;
+    return status;
+  }
+
   /// Firestore'a yaz
   Map<String, dynamic> toFirestore() {
     return {

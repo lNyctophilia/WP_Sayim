@@ -101,7 +101,11 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
         _passwordController.text = user.password ?? '';
         _phoneController.text = user.phone ?? '';
         _addressController.text = user.address ?? '';
-        _selectedRole = user.roles.isNotEmpty ? user.roles.first : UserRole.staff;
+        UserRole role = user.roles.isNotEmpty ? user.roles.first : UserRole.staff;
+        if (role == UserRole.manager) {
+          role = UserRole.managerA1;
+        }
+        _selectedRole = role;
         _errorMessage = null;
       }
     });
@@ -326,7 +330,9 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                                 icon: Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
                                 items: [
                                   DropdownMenuItem(value: UserRole.staff, child: Text(AppStrings.get('staff', isTr ? 'tr' : 'en'), style: GoogleFonts.inter(color: AppColors.textPrimary))),
-                                  DropdownMenuItem(value: UserRole.manager, child: Text(AppStrings.get('manager', isTr ? 'tr' : 'en'), style: GoogleFonts.inter(color: AppColors.textPrimary))),
+                                  DropdownMenuItem(value: UserRole.managerA1, child: Text(AppStrings.get('manager_a1', isTr ? 'tr' : 'en'), style: GoogleFonts.inter(color: AppColors.textPrimary))),
+                                  DropdownMenuItem(value: UserRole.managerA2, child: Text(AppStrings.get('manager_a2', isTr ? 'tr' : 'en'), style: GoogleFonts.inter(color: AppColors.textPrimary))),
+                                  DropdownMenuItem(value: UserRole.managerA3, child: Text(AppStrings.get('manager_a3', isTr ? 'tr' : 'en'), style: GoogleFonts.inter(color: AppColors.textPrimary))),
                                   DropdownMenuItem(value: UserRole.owner, child: Text(AppStrings.get('owner', isTr ? 'tr' : 'en'), style: GoogleFonts.inter(color: AppColors.textPrimary))),
                                 ],
                                 onChanged: (val) {

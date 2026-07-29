@@ -202,6 +202,7 @@ exports.sendDavetCancelledNotification = onDocumentDeleted("davetler/{davetId}",
   const davetData = event.data.data();
   if (!davetData) return;
   if (davetData.status !== "accepted") return;
+  if (davetData.silentDelete === true) return;
 
   const staffId = davetData.userId;
   const sayimId = davetData.sayimId;
