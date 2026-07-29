@@ -46,7 +46,7 @@ class Sayim {
   final bool isManualStatus;
   final DateTime createdAt;
 
-  const Sayim({
+  Sayim({
     required this.id,
     required this.note,
     required this.date,
@@ -130,10 +130,11 @@ class Sayim {
     );
   }
 
-  bool get isSayimInPast {
+  late final DateTime _endDateTime = _calculateEndDateTime();
+
+  DateTime _calculateEndDateTime() {
     if (gruplar.isEmpty) {
-      final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
-      return endOfDay.isBefore(DateTime.now());
+      return DateTime(date.year, date.month, date.day, 23, 59, 59);
     }
     
     String latestTime = "00:00";
@@ -148,13 +149,13 @@ class Sayim {
       final hour = int.parse(parts[0]);
       final minute = int.parse(parts[1]);
       
-      final sayimDateTime = DateTime(date.year, date.month, date.day, hour, minute);
-      return sayimDateTime.isBefore(DateTime.now());
+      return DateTime(date.year, date.month, date.day, hour, minute);
     } catch (e) {
-      final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
-      return endOfDay.isBefore(DateTime.now());
+      return DateTime(date.year, date.month, date.day, 23, 59, 59);
     }
   }
+
+  bool get isSayimInPast => _endDateTime.isBefore(DateTime.now());
 
   SayimStatus get effectiveStatus {
     if (isManualStatus) return status;

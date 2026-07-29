@@ -218,28 +218,13 @@ class _GrupSelectorState extends State<GrupSelector> {
                                 final userConfig = selectedUsersForCount[userIndex];
                                 final isSelectedForThisGroup = userConfig.grupId == grup.grupId;
                                 
-                                return CheckboxListTile(
-                                  value: isSelectedForThisGroup,
-                                  activeColor: AppColors.accentLight,
-                                  checkColor: Colors.white,
-                                  title: Text(
-                                    userConfig.user.fullName,
-                                    style: TextStyle(color: AppColors.textPrimary, fontSize: 15),
-                                  ),
-                                  subtitle: userConfig.grupId != grup.grupId
-                                      ? Text(
-                                          'Şu an: ${AppStrings.get('group', widget.isTr ? 'tr' : 'en')} ${userConfig.grupId}',
-                                          style: TextStyle(color: AppColors.textHint, fontSize: 12),
-                                        )
-                                      : null,
-                                  onChanged: (val) {
-                                    if (val != null) {
-                                      // Eğer unchecked yapıldıysa, ilk gruba dahil et. (ya da _gruplar.first.grupId)
-                                      final fallbackGrupId = _gruplar.isNotEmpty ? _gruplar.first.grupId : 1;
-                                      final newGrupId = val ? grup.grupId : fallbackGrupId;
-                                      widget.onUserGroupChanged(userConfig.user.id, newGrupId);
-                                      setModalState(() {});
-                                    }
+                                return _UserGroupCheckbox(
+                                  userConfig: userConfig,
+                                  grupId: grup.grupId,
+                                  fallbackGrupId: _gruplar.isNotEmpty ? _gruplar.first.grupId : 1,
+                                  isTr: widget.isTr,
+                                  onGroupChanged: (userId, newGrupId) {
+                                    widget.onUserGroupChanged(userId, newGrupId);
                                   },
                                 );
                               },
@@ -336,6 +321,56 @@ class _GrupSelectorState extends State<GrupSelector> {
           );
         }),
       ],
+    );
+  }
+}
+
+class _UserGroupCheckbox extends StatefulWidget {
+  final SelectedUserConfig userConfig;
+  final int grupId;
+  final int fallbackGrupId;
+  final bool isTr;
+  final Function(String, int) onGroupChanged;
+
+  const _UserGroupCheckbox({
+    Key? key,
+    required this.userConfig,
+    required this.grupId,
+    required this.fallbackGrupId,
+    required this.isTr,
+    required this.onGroupChanged,
+  }) : super(key: key);
+
+  @override
+  State<_UserGroupCheckbox> createState() => _UserGroupCheckboxState();
+}
+
+class _UserGroupCheckboxState extends State<_UserGroupCheckbox> {
+  @override
+  Widget build(BuildContext context) {
+    final isSelectedForThisGroup = widget.userConfig.grupId == widget.grupId;
+
+    return CheckboxListTile(
+      value: isSelectedForThisGroup,
+      activeColor: AppColors.accentLight,
+      checkColor: Colors.white,
+      title: Text(
+        widget.userConfig.user.fullName,
+        style: TextStyle(color: AppColors.textPrimary, fontSize: 15),
+      ),
+      subtitle: widget.userConfig.grupId != widget.grupId
+          ? Text(
+              'Şu an: ${AppStrings.get('group', widget.isTr ? 'tr' : 'en')} ${widget.userConfig.grupId}',
+              style: TextStyle(color: AppColors.textHint, fontSize: 12),
+            )
+          : null,
+      onChanged: (val) {
+        if (val != null) {
+          final newGrupId = val ? widget.grupId : widget.fallbackGrupId;
+          widget.onGroupChanged(widget.userConfig.user.id, newGrupId);
+          setState(() {});
+        }
+      },
     );
   }
 }
