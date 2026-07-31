@@ -152,14 +152,17 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
       context: context,
       initialTime: _startTime ?? TimeOfDay.now(),
       builder: (context, child) {
-        return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: ColorScheme.dark(
-              primary: AppColors.accentLight,
-              surface: AppColors.card,
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: Theme(
+            data: ThemeData.dark().copyWith(
+              colorScheme: ColorScheme.dark(
+                primary: AppColors.accentLight,
+                surface: AppColors.card,
+              ),
             ),
+            child: child!,
           ),
-          child: child!,
         );
       },
     );

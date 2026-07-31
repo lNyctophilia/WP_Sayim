@@ -9,6 +9,7 @@ import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/sayim_service.dart';
 import '../../../../core/services/davet_service.dart';
+import '../../../../core/services/notification_service.dart';
 import '../widgets/grup_selector.dart';
 import '../widgets/staff_picker.dart';
 
@@ -162,14 +163,17 @@ class _EditSayimPageState extends State<EditSayimPage> {
       context: context,
       initialTime: _startTime ?? TimeOfDay.now(),
       builder: (context, child) {
-        return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: ColorScheme.dark(
-              primary: AppColors.accentLight,
-              surface: AppColors.card,
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: Theme(
+            data: ThemeData.dark().copyWith(
+              colorScheme: ColorScheme.dark(
+                primary: AppColors.accentLight,
+                surface: AppColors.card,
+              ),
             ),
+            child: child!,
           ),
-          child: child!,
         );
       },
     );
@@ -263,6 +267,19 @@ class _EditSayimPageState extends State<EditSayimPage> {
       for (var davet in widget.existingDavets) {
         final configIndex = _selectedUsers.indexWhere((c) => c.user.id == davet.userId);
         if (configIndex == -1) {
+          if (updatedSayim.effectiveStatus == SayimStatus.open && davet.isAccepted) {
+            try {
+              final user = _allUsers.firstWhere((u) => u.id == davet.userId);
+              if (user.email != null && user.email!.isNotEmpty) {
+                final NotificationService notificationService = NotificationService();
+                await notificationService.sendEmailNotification(
+                  targetUserId: davet.userId,
+                  subject: AppStrings.get('sayim_cancelled', widget.lang.currentLang) ?? 'Sayım İptali',
+                  textContent: 'Merhaba ${user.fullName},\n\nKabul ettiğiniz "${updatedSayim.note}" isimli sayımdan çıkarıldınız.\n\nBilginize.',
+                );
+              }
+            } catch (_) {}
+          }
           await _davetService.deleteDavet(davet.id, isSayimClosed: updatedSayim.effectiveStatus == SayimStatus.closed);
         } else {
           final config = _selectedUsers[configIndex];
@@ -288,7 +305,19 @@ class _EditSayimPageState extends State<EditSayimPage> {
             createdAt: DateTime.now(),
           );
           final createdId = await _davetService.createDavet(newDavet);
-          if (config.user.id == widget.currentUser.id) {
+          
+          if (updatedSayim.effectiveStatus == SayimStatus.open) {
+            final sayimTarihi = '${updatedSayim.date.day.toString().padLeft(2, '0')}.${updatedSayim.date.month.toString().padLeft(2, '0')}.${updatedSayim.date.year}';
+            final grupSaati = updatedSayim.gruplar.firstWhere((g) => g.grupId == config.grupId, orElse: () => const SayimGrup(grupId: 1, saat: '')).saat;
+            final NotificationService notificationService = NotificationService();
+            await notificationService.sendEmailNotification(
+              targetUserId: config.user.id,
+              subject: AppStrings.get('new_sayim_invitation', widget.lang.currentLang) ?? 'Yeni Sayım Daveti',
+              textContent: 'Merhaba ${config.user.fullName},\n\nYeni bir sayım için davet edildiniz!\n\nTarih: $sayimTarihi\nSaat: $grupSaati\nNot: ${updatedSayim.note}\n\nLütfen uygulamaya girerek daveti yanıtlayın.',
+            );
+          }
+
+          if (config.user.id == widget.currentUser.id && updatedSayim.effectiveStatus == SayimStatus.open) {
             await _davetService.acceptDavet(createdId);
           }
         }
