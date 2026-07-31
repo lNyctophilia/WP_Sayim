@@ -14,6 +14,7 @@ import '../services/notification_service.dart';
 import '../../features/auth/presentation/pages/install_prompt_page.dart';
 import '../utils/pwa_check.dart';
 import '../utils/bottom_toast.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 /// Ana yönlendirici widget — Auth durumuna göre Login veya Ana Ekranı gösterir
 ///
@@ -37,10 +38,70 @@ class AppRouter extends StatefulWidget {
   State<AppRouter> createState() => _AppRouterState();
 }
 
-class _AppRouterState extends State<AppRouter> {
+class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
   final AuthService _authService = AuthService();
   final NotificationService _notificationService = NotificationService();
   String? _initializedUid;
+  bool _isDialogShowing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (FirebaseAuth.instance.currentUser != null) {
+        _checkAndPromptNotificationPermission();
+      }
+    }
+  }
+
+  Future<void> _checkAndPromptNotificationPermission() async {
+    if (_isDialogShowing || kIsWeb) return;
+
+    final settings = await FirebaseMessaging.instance.getNotificationSettings();
+    if (settings.authorizationStatus == AuthorizationStatus.denied) {
+      if (mounted) {
+        setState(() {
+          _isDialogShowing = true;
+        });
+        await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(widget.lang.tr('notification_permission_title')),
+            content: Text(widget.lang.tr('notification_permission_desc')),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(widget.lang.tr('cancel')),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  openAppSettings();
+                },
+                child: Text(widget.lang.tr('go_to_settings')),
+              ),
+            ],
+          ),
+        );
+        if (mounted) {
+          setState(() {
+            _isDialogShowing = false;
+          });
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +190,9 @@ class _AppRouterState extends State<AppRouter> {
             // Bildirim servisini başlat (Sadece yeni bir kullanıcı geldiğinde)
             if (_initializedUid != appUser.id) {
               _initializedUid = appUser.id;
-              _notificationService.initialize();
+              _notificationService.initialize().then((_) {
+                _checkAndPromptNotificationPermission();
+              });
               
               // Uygulama açıkken (ön plandayken) gelen bildirimleri dinle
               FirebaseMessaging.onMessage.listen((RemoteMessage message) {

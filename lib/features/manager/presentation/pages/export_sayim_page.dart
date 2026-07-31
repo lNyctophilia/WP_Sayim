@@ -96,6 +96,14 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       sheet.getRangeByIndex(2, 1).cellStyle.fontSize = 12;
       sheet.getRangeByIndex(2, 1, 2, 2).merge();
 
+      // Start Time
+      if (_selectedSayim!.startTime != null && _selectedSayim!.startTime!.isNotEmpty) {
+        sheet.getRangeByIndex(3, 1).setText('Başlangıç Saati: ${_selectedSayim!.startTime}');
+        sheet.getRangeByIndex(3, 1).cellStyle.bold = true;
+        sheet.getRangeByIndex(3, 1).cellStyle.fontSize = 12;
+        sheet.getRangeByIndex(3, 1, 3, 2).merge();
+      }
+
       final managerDavetler = acceptedDavetler.where((d) => userMap[d.userId]?.isManager == true).toList();
       final personnelDavetler = acceptedDavetler.where((d) => userMap[d.userId]?.isManager != true).toList();
 
@@ -290,6 +298,10 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                     _buildSummaryRow(Icons.location_on_rounded, _selectedSayim!.note),
                     const SizedBox(height: 8),
                     _buildSummaryRow(Icons.calendar_month_rounded, DateFormat('dd.MM.yyyy').format(_selectedSayim!.date)),
+                    if (_selectedSayim!.startTime != null && _selectedSayim!.startTime!.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      _buildSummaryRow(Icons.access_time_rounded, _selectedSayim!.startTime!),
+                    ],
                     const SizedBox(height: 8),
                     _buildSummaryRow(Icons.groups_rounded, '${_selectedSayim!.invitedUserIds.length} ${AppStrings.get('invited', isTr ? 'tr' : 'en')}'),
                   ],

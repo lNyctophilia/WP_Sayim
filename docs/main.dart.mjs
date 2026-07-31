@@ -981,6 +981,7 @@ class CompiledApp {
       _6844: x0 => x0.head,
       _8521: x0 => x0.value,
       _8523: x0 => x0.done,
+      _8946: () => globalThis.Notification.permission,
       _9223: x0 => x0.url,
       _9225: x0 => x0.status,
       _9227: x0 => x0.statusText,

@@ -296,6 +296,18 @@ class AppStrings {
     'username_required': {'tr': 'Kullanıcı adı gerekli', 'en': 'Username is required'},
     'notifications': {'tr': 'Bildirimler', 'en': 'Notifications'},
     'sayim_reminder': {'tr': 'Sayım Hatırlatıcı', 'en': 'Count Reminder'},
+    'notification_permission_title': {
+      'tr': 'Bildirim İzni Gerekli',
+      'en': 'Notification Permission Required'
+    },
+    'notification_permission_desc': {
+      'tr': 'Sayım davetleri ve önemli güncellemeler için bildirimlerin açık olması önemlidir. Lütfen cihaz ayarlarından bildirimlere izin verin.',
+      'en': 'It is important that notifications are enabled for count invitations and important updates. Please allow notifications from device settings.'
+    },
+    'go_to_settings': {
+      'tr': 'Ayarlara Git',
+      'en': 'Go to Settings'
+    },
     // Newly extracted
     'hello': {'tr': 'Merhaba,', 'en': 'Hello,'},
     'welcome_user': {'tr': 'Hoşgeldin {0}', 'en': 'Welcome {0}'},
@@ -307,10 +319,11 @@ class AppStrings {
     'an_error_occurred': {'tr': 'Hata oluştu', 'en': 'An error occurred'},
     'add_person': {'tr': 'Kişi Ekle', 'en': 'Add Person'},
     'basic_info': {'tr': 'Temel Bilgiler', 'en': 'Basic Info'},
+    'count_start_time': {'tr': 'Sayım Başlangıç Saati', 'en': 'Count Start Time'},
     'note_job_location': {'tr': 'Not / İş / Yer', 'en': 'Note / Job / Location'},
     'cannot_be_empty': {'tr': 'Boş bırakılamaz', 'en': 'Cannot be empty'},
-    'standard_personnel': {'tr': 'Standart Personel', 'en': 'Standard Personnel'},
-    'standard_manager': {'tr': 'Standart Yönetici', 'en': 'Standard Manager'},
+    'standard_personnel': {'tr': 'Personel Sayısı', 'en': 'Personnel Count'},
+    'standard_manager': {'tr': 'Yönetici Sayısı', 'en': 'Manager Count'},
     'city_type': {'tr': 'Şehir İçi/Dışı', 'en': 'City Type'},
     'in_city': {'tr': 'Şehir İçi', 'en': 'In-City'},
     'out_of_city': {'tr': 'Şehir Dışı', 'en': 'Out-of-City'},

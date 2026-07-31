@@ -45,6 +45,7 @@ class Sayim {
   final bool isPast;
   final bool isManualStatus;
   final DateTime createdAt;
+  final String? startTime;
 
   Sayim({
     required this.id,
@@ -61,6 +62,7 @@ class Sayim {
     this.isPast = false,
     this.isManualStatus = false,
     required this.createdAt,
+    this.startTime,
   });
 
   Sayim copyWith({
@@ -78,6 +80,7 @@ class Sayim {
     bool? isPast,
     bool? isManualStatus,
     DateTime? createdAt,
+    String? startTime,
   }) {
     return Sayim(
       id: id ?? this.id,
@@ -94,6 +97,7 @@ class Sayim {
       isPast: isPast ?? this.isPast,
       isManualStatus: isManualStatus ?? this.isManualStatus,
       createdAt: createdAt ?? this.createdAt,
+      startTime: startTime ?? this.startTime,
     );
   }
 
@@ -127,6 +131,7 @@ class Sayim {
       isPast: data['isPast'] as bool? ?? false,
       isManualStatus: data['isManualStatus'] as bool? ?? false,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      startTime: data['startTime'] as String?,
     );
   }
 
@@ -181,6 +186,7 @@ class Sayim {
       'isPast': isPast,
       'isManualStatus': isManualStatus,
       'createdAt': Timestamp.fromDate(createdAt),
+      'startTime': startTime,
     };
   }
 

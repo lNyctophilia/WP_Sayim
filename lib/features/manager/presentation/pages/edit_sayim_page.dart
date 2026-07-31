@@ -40,6 +40,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
   final _maxKisiController = TextEditingController(text: '20');
   final _maxYoneticiController = TextEditingController(text: '2');
   DateTime _selectedDate = DateTime.now();
+  TimeOfDay? _startTime;
   
   SehirTipi _sehirTipi = SehirTipi.ici;
   double _globalMultiplier = 1.0;
@@ -61,6 +62,12 @@ class _EditSayimPageState extends State<EditSayimPage> {
     _sehirTipi = widget.sayim.sehirTipi;
     _globalMultiplier = widget.sayim.globalMultiplier;
     _gruplar = List.from(widget.sayim.gruplar);
+    if (widget.sayim.startTime != null) {
+      final parts = widget.sayim.startTime!.split(':');
+      if (parts.length == 2) {
+        _startTime = TimeOfDay(hour: int.tryParse(parts[0]) ?? 0, minute: int.tryParse(parts[1]) ?? 0);
+      }
+    }
 
     _loadUsers();
   }
@@ -150,6 +157,29 @@ class _EditSayimPageState extends State<EditSayimPage> {
     }
   }
 
+  Future<void> _selectTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _startTime ?? TimeOfDay.now(),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: AppColors.accentLight,
+              surface: AppColors.card,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        _startTime = picked;
+      });
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     
@@ -218,6 +248,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
       final updatedSayim = widget.sayim.copyWith(
         note: _noteController.text.trim(),
         date: _selectedDate,
+        startTime: _startTime != null ? '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')}' : null,
         maxKisi: targetPersonel,
         maxYonetici: targetYonetici,
         gruplar: _gruplar,
@@ -335,26 +366,62 @@ class _EditSayimPageState extends State<EditSayimPage> {
                           : null,
                     ),
                     const SizedBox(height: 12),
-                    InkWell(
-                      onTap: _selectDate,
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.calendar_today_rounded, color: AppColors.textSecondary, size: 20),
-                            SizedBox(width: 8),
-                            Text(
-                              '${_selectedDate.day.toString().padLeft(2, '0')}.${_selectedDate.month.toString().padLeft(2, '0')}.${_selectedDate.year}',
-                              style: TextStyle(color: AppColors.textPrimary, fontSize: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: _selectDate,
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.calendar_today_rounded, color: AppColors.textSecondary, size: 20),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    '${_selectedDate.day.toString().padLeft(2, '0')}.${_selectedDate.month.toString().padLeft(2, '0')}.${_selectedDate.year}',
+                                    style: TextStyle(color: AppColors.textPrimary, fontSize: 16),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: InkWell(
+                            onTap: _selectTime,
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.access_time_rounded, color: AppColors.textSecondary, size: 20),
+                                  SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      _startTime != null ? _startTime!.format(context) : AppStrings.get('count_start_time', isTr ? 'tr' : 'en'),
+                                      style: TextStyle(
+                                        color: _startTime != null ? AppColors.textPrimary : AppColors.textHint,
+                                        fontSize: 16,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     Row(
