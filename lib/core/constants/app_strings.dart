@@ -304,9 +304,17 @@ class AppStrings {
       'tr': 'Sayım davetleri ve önemli güncellemeler için bildirimlerin açık olması önemlidir. Lütfen cihaz ayarlarından bildirimlere izin verin.',
       'en': 'It is important that notifications are enabled for count invitations and important updates. Please allow notifications from device settings.'
     },
+    'notification_permission_web_desc': {
+      'tr': 'Sayım davetleri ve önemli güncellemeler için bildirimlerin açık olması önemlidir. Lütfen tarayıcınızın site ayarlarından bildirimlere izin verin.',
+      'en': 'It is important that notifications are enabled for count invitations and important updates. Please allow notifications from your browser\'s site settings.'
+    },
     'go_to_settings': {
       'tr': 'Ayarlara Git',
       'en': 'Go to Settings'
+    },
+    'ok': {
+      'tr': 'Tamam',
+      'en': 'OK'
     },
     // Newly extracted
     'hello': {'tr': 'Merhaba,', 'en': 'Hello,'},

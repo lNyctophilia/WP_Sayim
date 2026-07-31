@@ -66,7 +66,7 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
   }
 
   Future<void> _checkAndPromptNotificationPermission() async {
-    if (_isDialogShowing || kIsWeb) return;
+    if (_isDialogShowing) return;
 
     final settings = await FirebaseMessaging.instance.getNotificationSettings();
     if (settings.authorizationStatus == AuthorizationStatus.denied) {
@@ -78,19 +78,29 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
           context: context,
           builder: (ctx) => AlertDialog(
             title: Text(widget.lang.tr('notification_permission_title')),
-            content: Text(widget.lang.tr('notification_permission_desc')),
+            content: Text(
+              kIsWeb
+                  ? widget.lang.tr('notification_permission_web_desc')
+                  : widget.lang.tr('notification_permission_desc'),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
                 child: Text(widget.lang.tr('cancel')),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  openAppSettings();
-                },
-                child: Text(widget.lang.tr('go_to_settings')),
-              ),
+              if (!kIsWeb)
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    openAppSettings();
+                  },
+                  child: Text(widget.lang.tr('go_to_settings')),
+                )
+              else
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text(widget.lang.tr('ok')),
+                ),
             ],
           ),
         );
