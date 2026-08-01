@@ -151,14 +151,14 @@ class InstallPromptPage extends StatelessWidget {
                     _buildPlatformSection(
                       icon: Icons.apple_rounded,
                       iconColor: AppColors.textPrimary,
-                      title: _tr('install_ios_title', defaultText: 'iPhone / iPad (Safari)'),
+                      title: _tr('install_ios_title', defaultText: 'IOS (Safari)'),
                       steps: [
                         _tr('install_ios_step1', defaultText: '1. Safari\'nin alt menüsündeki Paylaş (⬆) ikonuna dokunun'),
                         _tr('install_ios_step2', defaultText: '2. Biraz aşağı kaydırıp gri listeden "Ana Ekrana Ekle"ye dokunun. (Eğer görünmüyorsa "Daha Fazla" seçeneği içinden bulabilirsiniz)'),
                         _tr('install_ios_step3', defaultText: '3. Açılan pencerede onaylayarak işlemi tamamlayın'),
                         _tr('install_ios_step4', defaultText: '✅ Artık ana ekranınızda uygulama ikonu görünecek!'),
                       ],
-                      warning: _tr('install_ios_warning', defaultText: '⚠️ Bildirim almak için iOS 16.4 veya üzeri gereklidir.'),
+                      warning: _tr('install_ios_warning', defaultText: '⚠️ iOS 16.4 altı cihazlarda bildirim yerine e-posta gönderilir.'),
                     ),
                   ],
                 ),

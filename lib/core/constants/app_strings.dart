@@ -115,7 +115,7 @@ class AppStrings {
       'tr': '✅ Artık ana ekranınızda uygulama ikonu görünecek!',
       'en': '✅ The app icon will now appear on your home screen!'
     },
-    'install_ios_title': {'tr': 'iPhone / iPad (Safari)', 'en': 'iPhone / iPad (Safari)'},
+    'install_ios_title': {'tr': 'IOS (Safari)', 'en': 'IOS (Safari)'},
     'install_ios_step1': {
       'tr': '1. Safari\'nin alt menüsündeki Paylaş (⬆) ikonuna dokunun',
       'en': '1. Tap the Share (⬆) icon in Safari\'s bottom menu'
@@ -133,8 +133,8 @@ class AppStrings {
       'en': '✅ The app icon will now appear on your home screen!'
     },
     'install_ios_warning': {
-      'tr': '⚠️ Bildirim almak için iOS 16.4 veya üzeri gereklidir.',
-      'en': '⚠️ iOS 16.4 or later is required for notifications.'
+      'tr': '⚠️ iOS 16.4 altı cihazlarda bildirim yerine e-posta gönderilir.',
+      'en': '⚠️ Emails will be sent instead of notifications for iOS below 16.4.'
     },
 
     // Login

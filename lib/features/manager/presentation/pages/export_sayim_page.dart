@@ -83,69 +83,127 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       final xlsio.Worksheet sheet = workbook.worksheets[0];
       sheet.name = 'Sayım Raporu';
 
-      // Title
-      sheet.getRangeByIndex(1, 1).setText('Konum: ${_selectedSayim!.note}');
-      sheet.getRangeByIndex(1, 1).cellStyle.bold = true;
-      sheet.getRangeByIndex(1, 1).cellStyle.fontSize = 12;
-      sheet.getRangeByIndex(1, 1, 1, 2).merge();
+      // Stil Tanımlamaları
+      final xlsio.Style headerStyle = workbook.styles.add('HeaderStyle');
+      headerStyle.backColor = '#003366'; // Koyu mavi
+      headerStyle.fontColor = '#FFFFFF';
+      headerStyle.bold = true;
+      headerStyle.hAlign = xlsio.HAlignType.center;
+      headerStyle.vAlign = xlsio.VAlignType.center;
 
-      // Date
-      final dateStrFormatted = DateFormat('dd.MM.yyyy').format(_selectedSayim!.date);
-      sheet.getRangeByIndex(2, 1).setText('Tarih: $dateStrFormatted');
-      sheet.getRangeByIndex(2, 1).cellStyle.bold = true;
-      sheet.getRangeByIndex(2, 1).cellStyle.fontSize = 12;
-      sheet.getRangeByIndex(2, 1, 2, 2).merge();
-
-      // Start Time
-      if (_selectedSayim!.startTime != null && _selectedSayim!.startTime!.isNotEmpty) {
-        sheet.getRangeByIndex(3, 1).setText('Başlangıç Saati: ${_selectedSayim!.startTime}');
-        sheet.getRangeByIndex(3, 1).cellStyle.bold = true;
-        sheet.getRangeByIndex(3, 1).cellStyle.fontSize = 12;
-        sheet.getRangeByIndex(3, 1, 3, 2).merge();
-      }
+      final xlsio.Style centerStyle = workbook.styles.add('CenterStyle');
+      centerStyle.hAlign = xlsio.HAlignType.center;
+      centerStyle.vAlign = xlsio.VAlignType.center;
 
       final managerDavetler = acceptedDavetler.where((d) => userMap[d.userId]?.isManager == true).toList();
       final personnelDavetler = acceptedDavetler.where((d) => userMap[d.userId]?.isManager != true).toList();
 
-      int currentRow = 4;
-
-      void addSection(String sectionTitle, List<Davet> davetList) {
-        // Section Title
-        sheet.getRangeByIndex(currentRow, 1).setText(sectionTitle);
-        sheet.getRangeByIndex(currentRow, 1).cellStyle.bold = true;
-        sheet.getRangeByIndex(currentRow, 1).cellStyle.fontSize = 12;
-        sheet.getRangeByIndex(currentRow, 1, currentRow, 2).merge();
-        currentRow++;
-
-        // Table Header
-        sheet.getRangeByIndex(currentRow, 1).setText('İsim Soyisim');
-        sheet.getRangeByIndex(currentRow, 1).cellStyle.bold = true;
-        sheet.getRangeByIndex(currentRow, 1).cellStyle.hAlign = xlsio.HAlignType.center;
-        currentRow++;
-
-        // Table Data
-        if (davetList.isEmpty) {
-          sheet.getRangeByIndex(currentRow, 1).setText('Kayıt bulunamadı.');
-          sheet.getRangeByIndex(currentRow, 1, currentRow, 2).merge();
-          currentRow++;
-        } else {
-          for (var davet in davetList) {
-            final user = userMap[davet.userId];
-            final fullName = user?.fullName ?? 'Bilinmeyen Kullanıcı';
-
-            sheet.getRangeByIndex(currentRow, 1).setText(fullName);
-            sheet.getRangeByIndex(currentRow, 1).cellStyle.hAlign = xlsio.HAlignType.left;
-            currentRow++;
-          }
-        }
-        
-        currentRow++;
+      // Firma ve Mağaza Adı Çıkarımı
+      String not = _selectedSayim!.note;
+      List<String> words = not.split(' ').where((w) => w.trim().isNotEmpty).toList();
+      String firmaAdi = words.isNotEmpty ? words.last : not;
+      String magazaAdi = not;
+      
+      if (words.length >= 3) {
+        magazaAdi = "${words.last} - ${words[0]} - ${words.sublist(1, words.length - 1).join(' ')}";
+      } else if (words.length == 2) {
+        magazaAdi = "${words[1]} - ${words[0]}";
       }
 
-      addSection('Yöneticiler', managerDavetler);
-      addSection('Personeller', personnelDavetler);
+      // Satır 1: Title
+      sheet.getRangeByIndex(1, 1).setText('Working Partners Stok Sayım Hiz. A.Ş.');
+      sheet.getRangeByIndex(1, 1, 1, 3).merge();
+      sheet.getRangeByIndex(1, 1, 1, 3).cellStyle = headerStyle;
 
-      sheet.setColumnWidthInPixels(1, 250);
+      // Satır 2: Başlıklar
+      sheet.getRangeByIndex(2, 1).setText('Sayım Tarihi');
+      sheet.getRangeByIndex(2, 2).setText('Başlangıç Saati');
+      sheet.getRangeByIndex(2, 3).setText('Firma Adı');
+      sheet.getRangeByIndex(2, 1, 2, 3).cellStyle = headerStyle;
+
+      // Satır 3: Veriler
+      final dateStrFormatted = DateFormat('dd.MM.yyyy').format(_selectedSayim!.date);
+      sheet.getRangeByIndex(3, 1).setText(dateStrFormatted);
+      sheet.getRangeByIndex(3, 2).setText(_selectedSayim!.startTime ?? '');
+      sheet.getRangeByIndex(3, 3).setText(firmaAdi);
+      sheet.getRangeByIndex(3, 1, 3, 3).cellStyle = centerStyle;
+
+      // Satır 4: Başlıklar
+      sheet.getRangeByIndex(4, 1).setText('Mağaza Adı');
+      sheet.getRangeByIndex(4, 1, 4, 2).merge();
+      sheet.getRangeByIndex(4, 3).setText('Sayıma Katılacak Kişi Sayısı');
+      sheet.getRangeByIndex(4, 1, 4, 3).cellStyle = headerStyle;
+
+      // Satır 5: Veriler
+      sheet.getRangeByIndex(5, 1).setText(magazaAdi);
+      sheet.getRangeByIndex(5, 1, 5, 2).merge();
+      sheet.getRangeByIndex(5, 3).setText('${personnelDavetler.length}+${managerDavetler.length}');
+      sheet.getRangeByIndex(5, 1, 5, 3).cellStyle = centerStyle;
+
+      // Satır 6: Yetkililer Başlığı
+      sheet.getRangeByIndex(6, 1).setText('WP Sayım Firması Yetkilileri (Sayıma Olası Katılabilecekler)');
+      sheet.getRangeByIndex(6, 1, 6, 3).merge();
+      sheet.getRangeByIndex(6, 1, 6, 3).cellStyle = headerStyle;
+
+      // Satır 7-12: Yetkililer Statik Veri
+      int r = 7;
+      void addContact(String title, String name, String detail) {
+        sheet.getRangeByIndex(r, 1).setText(title);
+        sheet.getRangeByIndex(r, 2).setText(name);
+        sheet.getRangeByIndex(r, 3).setText(detail);
+        sheet.getRangeByIndex(r, 1, r, 3).cellStyle = centerStyle;
+        r++;
+      }
+      addContact('Bölge Müdürü', 'EMİN KÖRPE', '05498147929');
+      addContact('Bölge Müdürü Yrd.', '', '');
+      addContact('Operasyon Müdürü', 'KADİR ÖZER', '05059732202');
+      addContact('İç Denetim', 'Mustafa Koray GÖÇ', 'm.goc@workingpartners.com.tr');
+      addContact('İç Denetim', 'Erdem KÖHNELİ', 'e.kohneli@workingpartners.com.tr');
+      addContact('Bilgi İşlem', 'Doğan EROĞLU', 'd.eroglu@workingpartners.com.tr');
+
+      // Satır r: Yöneticiler Başlığı
+      sheet.getRangeByIndex(r, 1).setText('Sayım Yöneticileri');
+      sheet.getRangeByIndex(r, 1, r, 3).merge();
+      sheet.getRangeByIndex(r, 1, r, 3).cellStyle = headerStyle;
+      r++;
+
+      int counter = 1;
+      for (var davet in managerDavetler) {
+        final user = userMap[davet.userId];
+        sheet.getRangeByIndex(r, 1).setNumber(counter.toDouble());
+        sheet.getRangeByIndex(r, 2).setText(user?.fullName ?? 'Bilinmeyen Kullanıcı');
+        sheet.getRangeByIndex(r, 3).setText(user?.phone ?? '');
+        sheet.getRangeByIndex(r, 1, r, 3).cellStyle = centerStyle;
+        r++;
+        counter++;
+      }
+
+      // Satır r: Personeller Başlığı
+      sheet.getRangeByIndex(r, 1).setText('Sayım Personelleri');
+      sheet.getRangeByIndex(r, 1, r, 3).merge();
+      sheet.getRangeByIndex(r, 1, r, 3).cellStyle = headerStyle;
+      r++;
+
+      counter = 1;
+      for (var davet in personnelDavetler) {
+        final user = userMap[davet.userId];
+        String saatStr = "";
+        try {
+          final grp = _selectedSayim!.gruplar.firstWhere((g) => g.grupId == davet.grupId);
+          saatStr = grp.saat;
+        } catch (e) {}
+
+        sheet.getRangeByIndex(r, 1).setNumber(counter.toDouble());
+        sheet.getRangeByIndex(r, 2).setText(user?.fullName ?? 'Bilinmeyen Kullanıcı');
+        sheet.getRangeByIndex(r, 3).setText(saatStr);
+        sheet.getRangeByIndex(r, 1, r, 3).cellStyle = centerStyle;
+        r++;
+        counter++;
+      }
+
+      sheet.setColumnWidthInPixels(1, 180);
+      sheet.setColumnWidthInPixels(2, 280);
+      sheet.setColumnWidthInPixels(3, 220);
 
       // 6. Dosyayı Kaydet
       final dateStr = DateFormat('yyyy-MM-dd').format(_selectedSayim!.date);
