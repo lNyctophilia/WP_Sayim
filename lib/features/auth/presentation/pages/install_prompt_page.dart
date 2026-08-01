@@ -151,7 +151,7 @@ class InstallPromptPage extends StatelessWidget {
                     _buildPlatformSection(
                       icon: Icons.apple_rounded,
                       iconColor: AppColors.textPrimary,
-                      title: _tr('install_ios_title', defaultText: 'IOS (Safari)'),
+                      title: _tr('install_ios_title', defaultText: 'iOS (Safari)'),
                       steps: [
                         _tr('install_ios_step1', defaultText: '1. Safari\'nin alt menüsündeki Paylaş (⬆) ikonuna dokunun'),
                         _tr('install_ios_step2', defaultText: '2. Biraz aşağı kaydırıp gri listeden "Ana Ekrana Ekle"ye dokunun. (Eğer görünmüyorsa "Daha Fazla" seçeneği içinden bulabilirsiniz)'),

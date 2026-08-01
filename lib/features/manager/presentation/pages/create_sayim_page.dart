@@ -398,7 +398,7 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
                                   SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      _startTime != null ? _startTime!.format(context) : AppStrings.get('count_start_time', isTr ? 'tr' : 'en'),
+                                      _startTime != null ? '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')}' : AppStrings.get('count_start_time', isTr ? 'tr' : 'en'),
                                       style: TextStyle(
                                         color: _startTime != null ? AppColors.textPrimary : AppColors.textHint,
                                         fontSize: 16,

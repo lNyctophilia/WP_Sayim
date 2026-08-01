@@ -115,7 +115,7 @@ class AppStrings {
       'tr': '✅ Artık ana ekranınızda uygulama ikonu görünecek!',
       'en': '✅ The app icon will now appear on your home screen!'
     },
-    'install_ios_title': {'tr': 'IOS (Safari)', 'en': 'IOS (Safari)'},
+    'install_ios_title': {'tr': 'iOS (Safari)', 'en': 'iOS (Safari)'},
     'install_ios_step1': {
       'tr': '1. Safari\'nin alt menüsündeki Paylaş (⬆) ikonuna dokunun',
       'en': '1. Tap the Share (⬆) icon in Safari\'s bottom menu'
