@@ -206,8 +206,15 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       sheet.setColumnWidthInPixels(3, 220);
 
       // 6. Dosyayı Kaydet
-      final dateStr = DateFormat('yyyy-MM-dd').format(_selectedSayim!.date);
-      final String fileName = 'Sayim_Detay_$dateStr';
+      String extraName = "";
+      if (words.length >= 3) {
+        extraName = "_${words[1]}_${words[2]}";
+      } else if (words.length == 2) {
+        extraName = "_${words[1]}";
+      }
+
+      final dateStr = DateFormat('dd-MM-yyyy').format(_selectedSayim!.date);
+      final String fileName = 'Sayim_Detay${extraName}_$dateStr';
 
       final List<int> bytes = workbook.saveAsStream();
       workbook.dispose();
