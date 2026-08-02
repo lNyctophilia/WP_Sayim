@@ -254,8 +254,8 @@ class _SayimListTabState extends State<SayimListTab> {
               children: [
                 Expanded(
                   child: Text(
-                    sayim.note.isNotEmpty
-                        ? sayim.note
+                    (sayim.firmaAdi.isNotEmpty || sayim.note.isNotEmpty)
+                        ? '${sayim.firmaAdi} ${sayim.note}'.trim()
                         : widget.lang.tr('unnamed_count'),
                     style: TextStyle(
                       fontSize: 16,

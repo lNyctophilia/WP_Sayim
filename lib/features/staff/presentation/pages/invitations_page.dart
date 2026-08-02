@@ -273,7 +273,9 @@ class _InvitationsPageState extends State<InvitationsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          sayim.note,
+                          (sayim.firmaAdi.isNotEmpty || sayim.note.isNotEmpty)
+                              ? '${sayim.firmaAdi} ${sayim.note}'.trim()
+                              : AppStrings.get('unnamed_count', widget.lang.currentLang),
                           style: TextStyle(
                             color: AppColors.textPrimary,
                             fontSize: 16,
