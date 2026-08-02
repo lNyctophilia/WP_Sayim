@@ -7,14 +7,22 @@ class AppConfig {
   static String get version {
     if (_buildVersion.isNotEmpty) {
       String displayVersion = _buildVersion;
-      // Harfleri, Türkçe karakterleri ve alt tireleri temizle, sadece sayı, nokta, tire ve iki nokta kalsın
+      // Temizle: sayı, nokta, tire ve iki nokta kalacak. 
+      // Windows %time% boşluk içeriyorsa (_) temizlenecek.
       displayVersion = displayVersion.replaceAll(RegExp(r'[^\d\.\-:]'), '');
-      // Eğer başta veya sonda fazladan tire kaldıysa onları da temizle
       displayVersion = displayVersion.replaceAll(RegExp(r'^\-+|\-+$'), '');
       
-      var parts = displayVersion.split(':');
-      if (parts.length >= 2) {
-        displayVersion = '${parts[0]}:${parts[1]}';
+      var dateAndTime = displayVersion.split('-');
+      if (dateAndTime.length >= 2) {
+        var datePart = dateAndTime[0];
+        var timePart = dateAndTime.sublist(1).join('-'); // '-' icerebilecek olası diger kisimlar
+        
+        var timeParts = timePart.split(':');
+        if (timeParts.length >= 2) {
+          var hour = timeParts[0].padLeft(2, '0');
+          var minute = timeParts[1];
+          displayVersion = '$datePart-$hour.$minute';
+        }
       }
       return '($displayVersion)';
     }

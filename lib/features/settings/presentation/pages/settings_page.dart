@@ -475,12 +475,12 @@ class _SettingsPageState extends State<SettingsPage> {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFFFF0000).withValues(alpha: 0.15),
+            color: AppColors.accentLight.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.play_circle_fill_rounded,
-            color: Color(0xFFFF0000),
+            color: AppColors.accentLight,
             size: 22,
           ),
         ),
@@ -499,9 +499,9 @@ class _SettingsPageState extends State<SettingsPage> {
             color: AppColors.textSecondary,
           ),
         ),
-        trailing: const Icon(
+        trailing: Icon(
           Icons.open_in_new_rounded,
-          color: Color(0xFFFF0000),
+          color: AppColors.accentLight,
           size: 20,
         ),
         onTap: () async {

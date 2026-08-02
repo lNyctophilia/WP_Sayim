@@ -150,7 +150,7 @@ class InstallPromptPage extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.video_library_rounded, color: const Color(0xFFFF0000), size: 24),
+                              Icon(Icons.video_library_rounded, color: AppColors.accentLight, size: 24),
                               const SizedBox(width: 10),
                               Text(
                                 'Kurulum Videosu',
@@ -194,7 +194,7 @@ class InstallPromptPage extends StatelessWidget {
                               icon: const Icon(Icons.play_arrow_rounded, color: Colors.white),
                               label: const Text('YouTube\'da İzle', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFFF0000),
+                                backgroundColor: AppColors.accentLight,
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
