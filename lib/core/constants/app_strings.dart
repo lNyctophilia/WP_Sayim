@@ -433,6 +433,21 @@ class AppStrings {
     'city_outer_short': {'tr': 'Ş. Dışı', 'en': 'Out of City'},
     'assign_personnel': {'tr': 'Bu gruba atanacak kişileri seçin:', 'en': 'Select people to assign to this group:'},
     'no_personnel_selected': {'tr': 'Önce personellerden kişi seçin.', 'en': 'Select people from staff first.'},
+    
+    // Map & Routing
+    'select_location': {'tr': 'Konum Seç', 'en': 'Select Location'},
+    'search_location': {'tr': 'Adres Ara (Örn: Kadıköy)', 'en': 'Search Address'},
+    'selected_location': {'tr': 'Seçilen Konum', 'en': 'Selected Location'},
+    'confirm': {'tr': 'Onayla', 'en': 'Confirm'},
+    'select_from_map': {'tr': 'Haritadan Seç', 'en': 'Select from Map'},
+    'start_point': {'tr': 'Başlangıç Noktası', 'en': 'Start Point'},
+    'end_point': {'tr': 'Varış Noktası', 'en': 'Destination Point'},
+    'my_location': {'tr': 'Kendi Konumum', 'en': 'My Location'},
+    'calculate_route': {'tr': 'Rotayı Hesapla', 'en': 'Calculate Route'},
+    'calculating_route': {'tr': 'En kısa yol hesaplanıyor...', 'en': 'Calculating shortest route...'},
+    'route_calculated': {'tr': 'Rota başarıyla oluşturuldu!', 'en': 'Route created successfully!'},
+    'route_error': {'tr': 'Rota hesaplanırken bir hata oluştu.', 'en': 'An error occurred while calculating route.'},
+    'no_valid_location_for_routing': {'tr': 'Rota için geçerli başlangıç ve varış noktası seçilmeli.', 'en': 'Valid start and destination must be selected.'},
   };
 
   static const List<String> monthKeys = [

@@ -11,7 +11,8 @@ import '../widgets/manager_drawer.dart';
 import '../../../../features/home/presentation/widgets/custom_top_bar.dart';
 import 'manager_panel_page.dart';
 import '../../../../core/theme/theme_service.dart';
-
+import '../../../../core/widgets/map_location_picker.dart';
+import 'package:latlong2/latlong.dart';
 class EditProfilesPage extends StatefulWidget {
   final AppUser currentUser;
   final LanguageService lang;
@@ -49,6 +50,9 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
   UserRole _selectedRole = UserRole.staff;
+  
+  double? _selectedLat;
+  double? _selectedLng;
 
   @override
   void initState() {
@@ -106,6 +110,8 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
           role = UserRole.managerA1;
         }
         _selectedRole = role;
+        _selectedLat = user.latitude;
+        _selectedLng = user.longitude;
         _errorMessage = null;
       }
     });
@@ -141,6 +147,8 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
         roles: [_selectedRole],
         phone: _phoneController.text.trim().isNotEmpty ? _phoneController.text.trim() : null,
         address: _addressController.text.trim().isNotEmpty ? _addressController.text.trim() : null,
+        latitude: _selectedLat,
+        longitude: _selectedLng,
       );
 
       // Refresh user list
@@ -287,10 +295,49 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
 
                           _buildLabel(AppStrings.get('address', isTr ? 'tr' : 'en')),
                           const SizedBox(height: 6),
-                          _buildTextField(
-                            controller: _addressController,
-                            hintText: AppStrings.get('for_service_route', isTr ? 'tr' : 'en'),
-                            icon: Icons.location_on_outlined,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildTextField(
+                                  controller: _addressController,
+                                  hintText: AppStrings.get('for_service_route', isTr ? 'tr' : 'en'),
+                                  icon: Icons.location_on_outlined,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: AppColors.divider),
+                                ),
+                                child: IconButton(
+                                  icon: Icon(Icons.map_outlined, color: AppColors.accentLight),
+                                  onPressed: () async {
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => MapLocationPicker(
+                                          lang: widget.lang,
+                                          initialLocation: _selectedLat != null && _selectedLng != null 
+                                              ? LatLng(_selectedLat!, _selectedLng!) 
+                                              : null,
+                                        ),
+                                      ),
+                                    );
+                                    
+                                    if (result != null && mounted) {
+                                      setState(() {
+                                        _addressController.text = result['address'] ?? '';
+                                        _selectedLat = result['latitude'];
+                                        _selectedLng = result['longitude'];
+                                      });
+                                    }
+                                  },
+                                  tooltip: AppStrings.get('select_from_map', isTr ? 'tr' : 'en'),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 16),
 

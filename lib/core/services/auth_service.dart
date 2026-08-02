@@ -277,6 +277,8 @@ class AuthService {
     String? phone,
     String? address,
     bool? isApproved,
+    double? latitude,
+    double? longitude,
   }) async {
     final Map<String, dynamic> updates = {};
     if (fullName != null && fullName.isNotEmpty) updates['fullName'] = fullName;
@@ -286,6 +288,8 @@ class AuthService {
     if (phone != null) updates['phone'] = phone;
     if (address != null) updates['address'] = address;
     if (isApproved != null) updates['isApproved'] = isApproved;
+    if (latitude != null) updates['latitude'] = latitude;
+    if (longitude != null) updates['longitude'] = longitude;
 
     if (updates.isNotEmpty) {
       await _firestore.collection('users').doc(uid).update(updates);

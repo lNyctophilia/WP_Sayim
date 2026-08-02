@@ -1,8 +1,12 @@
 import 'package:daytrack/core/constants/app_strings.dart';
 import 'dart:math' as math;
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:latlong2/latlong.dart';
+import '../../../../core/widgets/map_location_picker.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
 import '../../../../core/services/language_service.dart';
@@ -105,27 +109,15 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
   }
 
   double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-    const p = 0.017453292519943295; // Math.PI / 180
+    const p = 0.017453292519943295;
     final a = 0.5 -
         math.cos((lat2 - lat1) * p) / 2 +
         math.cos(lat1 * p) * math.cos(lat2 * p) * (1 - math.cos((lon2 - lon1) * p)) / 2;
-    return 12742 * math.asin(math.sqrt(a)); // 2 * R; R = 6371 km
+    return 12742 * math.asin(math.sqrt(a));
   }
 
-  Future<void> _openGoogleMaps() async {
+  Future<void> _calculateOptimizedRoute() async {
     final isTr = widget.lang.currentLang == 'tr';
-
-    // 1. Yönetici (CurrentUser) lokasyonu kontrolü
-    final destLocation = _getLocationString(widget.currentUser);
-    if (destLocation.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppStrings.get('please_add_an_address_or_location_to_your_profile_the_destination_will_be_your_location', isTr ? 'tr' : 'en')),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
 
     if (_selectedStaff.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -137,58 +129,15 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
       return;
     }
 
-    // Seçilen personellerin lokasyonlarını grupla
-    List<AppUser> staffWithCoords = [];
-    List<AppUser> staffWithAddress = [];
+    List<AppUser> validStaff = [];
     List<String> missingLocationStaff = [];
 
     for (var staff in _selectedStaff) {
       if (staff.latitude != null && staff.longitude != null) {
-        staffWithCoords.add(staff);
-      } else if (staff.address != null && staff.address!.isNotEmpty) {
-        staffWithAddress.add(staff);
+        validStaff.add(staff);
       } else {
         missingLocationStaff.add(staff.fullName);
       }
-    }
-
-    List<String> waypoints = [];
-    
-    // Algoritma: Yöneticinin konumundan başlayarak en yakın personeli bul
-    double? currentLat = widget.currentUser.latitude;
-    double? currentLon = widget.currentUser.longitude;
-    List<AppUser> optimizedStaff = [];
-
-    if (currentLat != null && currentLon != null && staffWithCoords.isNotEmpty) {
-      List<AppUser> unvisited = List.from(staffWithCoords);
-      
-      while (unvisited.isNotEmpty) {
-        AppUser nearest = unvisited.first;
-        double minDistance = double.infinity;
-        
-        for (var staff in unvisited) {
-          double dist = _calculateDistance(currentLat!, currentLon!, staff.latitude!, staff.longitude!);
-          if (dist < minDistance) {
-            minDistance = dist;
-            nearest = staff;
-          }
-        }
-        
-        optimizedStaff.add(nearest);
-        currentLat = nearest.latitude;
-        currentLon = nearest.longitude;
-        unvisited.remove(nearest);
-      }
-    } else {
-      optimizedStaff = staffWithCoords; // Koordinat bazlı başlangıç noktası yoksa sırayla ekle
-    }
-
-    // Waypoint listesine ekle
-    for (var staff in optimizedStaff) {
-      waypoints.add(Uri.encodeComponent('${staff.latitude},${staff.longitude}'));
-    }
-    for (var staff in staffWithAddress) {
-      waypoints.add(Uri.encodeComponent(staff.address!));
     }
 
     if (missingLocationStaff.isNotEmpty) {
@@ -201,7 +150,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
       );
     }
 
-    if (waypoints.isEmpty) {
+    if (validStaff.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppStrings.get('no_selected_staff_with_valid_location', isTr ? 'tr' : 'en')),
@@ -211,26 +160,155 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
       return;
     }
 
-    // URL'yi oluştur
-    final destination = Uri.encodeComponent(destLocation);
-    final waypointsString = waypoints.join('%7C'); // %7C is '|'
+    // 1. Show Start/End Selection Dialog
+    final routePoints = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => RoutePlanningDialog(lang: widget.lang),
+    );
 
-    final urlString =
-        'https://www.google.com/maps/dir/?api=1&destination=$destination&waypoints=$waypointsString';
+    if (routePoints == null) return;
 
-    final uri = Uri.parse(urlString);
+    final startLoc = routePoints['start'];
+    final endLoc = routePoints['end'];
+
+    // 2. Loading state
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          backgroundColor: AppColors.card,
+          content: Row(
+            children: [
+              CircularProgressIndicator(color: AppColors.accentLight),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  AppStrings.get('calculating_route', isTr ? 'tr' : 'en'),
+                  style: TextStyle(color: AppColors.textPrimary),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     try {
+      // 3. Build coordinate list for OSRM: Start, ...staffs, End
+      List<Map<String, dynamic>> allPoints = [
+        {'lat': startLoc['latitude'], 'lon': startLoc['longitude'], 'name': 'Start'},
+        ...validStaff.map((s) => {'lat': s.latitude!, 'lon': s.longitude!, 'name': s.fullName, 'id': s.id}),
+        {'lat': endLoc['latitude'], 'lon': endLoc['longitude'], 'name': 'End'},
+      ];
+
+      // OSRM format: lon,lat;lon,lat...
+      String coords = allPoints.map((p) => '${p['lon']},${p['lat']}').join(';');
+      
+      // 4. Fetch Matrix
+      final url = Uri.parse('https://router.project-osrm.org/table/v1/driving/$coords?annotations=duration');
+      final response = await http.get(url, headers: {'User-Agent': 'DaytrackApp/1.0'});
+
+      if (response.statusCode != 200) {
+        throw Exception('OSRM matrix error: ${response.statusCode}');
+      }
+
+      final data = json.decode(response.body);
+      final List<dynamic> durations = data['durations'];
+
+      // durations[i][j] gives time from i to j in seconds.
+      // Index 0 is Start, Index N-1 is End. Indices 1 to N-2 are Staffs.
+      int numStaff = validStaff.length;
+      List<int> bestOrder = [];
+      double bestDuration = double.infinity;
+
+      // Generates permutations
+      void permute(List<int> arr, int k) {
+        if (k == arr.length) {
+          // Calculate total duration
+          double total = 0;
+          int prev = 0; // Start
+          for (int i = 0; i < arr.length; i++) {
+            int curr = arr[i] + 1; // map staff index to matrix index
+            var duration = durations[prev][curr];
+            if (duration == null) {
+              total = double.infinity;
+              break;
+            }
+            total += (duration as num).toDouble();
+            prev = curr;
+          }
+          // From last staff to End
+          var finalLeg = durations[prev][durations.length - 1];
+          if (finalLeg == null) {
+            total = double.infinity;
+          } else {
+            total += (finalLeg as num).toDouble();
+          }
+
+          if (total < bestDuration) {
+            bestDuration = total;
+            bestOrder = List.from(arr);
+          }
+          return;
+        }
+
+        for (int i = k; i < arr.length; i++) {
+          int temp = arr[i];
+          arr[i] = arr[k];
+          arr[k] = temp;
+          
+          permute(arr, k + 1);
+          
+          temp = arr[i];
+          arr[i] = arr[k];
+          arr[k] = temp;
+        }
+      }
+
+      List<int> staffIndices = List.generate(numStaff, (i) => i);
+      permute(staffIndices, 0);
+
+      if (bestDuration == double.infinity) {
+        throw Exception('Could not find a valid route between points.');
+      }
+
+      List<String> orderedWaypoints = [];
+      for (int i in bestOrder) {
+        final st = validStaff[i];
+        orderedWaypoints.add('${st.latitude},${st.longitude}');
+      }
+
+      final originStr = Uri.encodeComponent('${startLoc['latitude']},${startLoc['longitude']}');
+      final destStr = Uri.encodeComponent('${endLoc['latitude']},${endLoc['longitude']}');
+      final waypointsStr = orderedWaypoints.isNotEmpty 
+          ? Uri.encodeComponent(orderedWaypoints.join('|')) 
+          : '';
+
+      String mapUrl = 'https://www.google.com/maps/dir/?api=1&origin=$originStr&destination=$destStr';
+      if (waypointsStr.isNotEmpty) {
+        mapUrl += '&waypoints=$waypointsStr';
+      }
+      final uri = Uri.parse(mapUrl);
+
+      // Close loading dialog
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
-        throw 'Could not launch $urlString';
+        throw 'Could not launch Maps';
       }
+
     } catch (e) {
+      // Close loading dialog if open
       if (mounted) {
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppStrings.getFormat('could_not_open_map_e', isTr ? 'tr' : 'en', [e])),
+            content: Text(AppStrings.get('route_error', isTr ? 'tr' : 'en')),
             backgroundColor: Colors.red,
           ),
         );
@@ -376,7 +454,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: ElevatedButton.icon(
-            onPressed: _isLoading || _selectedStaff.isEmpty ? null : _openGoogleMaps,
+            onPressed: _isLoading || _selectedStaff.isEmpty ? null : _calculateOptimizedRoute,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.accentLight,
               foregroundColor: Colors.white,
@@ -422,6 +500,87 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
         );
       },
       child: scaffold,
+    );
+  }
+}
+
+class RoutePlanningDialog extends StatefulWidget {
+  final LanguageService lang;
+
+  const RoutePlanningDialog({super.key, required this.lang});
+
+  @override
+  State<RoutePlanningDialog> createState() => _RoutePlanningDialogState();
+}
+
+class _RoutePlanningDialogState extends State<RoutePlanningDialog> {
+  Map<String, dynamic>? _startLocation;
+  Map<String, dynamic>? _endLocation;
+
+  Future<void> _pickLocation(bool isStart) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MapLocationPicker(lang: widget.lang),
+      ),
+    );
+    if (result != null && mounted) {
+      setState(() {
+        if (isStart) {
+          _startLocation = result;
+        } else {
+          _endLocation = result;
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isTr = widget.lang.currentLang == 'tr';
+    return AlertDialog(
+      backgroundColor: AppColors.card,
+      title: Text(AppStrings.get('calculate_route', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textPrimary)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Start location button
+          ListTile(
+            tileColor: AppColors.surface,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            leading: Icon(Icons.my_location, color: AppColors.accentLight),
+            title: Text(_startLocation?['address'] ?? AppStrings.get('start_point', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textPrimary)),
+            onTap: () => _pickLocation(true),
+          ),
+          const SizedBox(height: 12),
+          // End location button
+          ListTile(
+            tileColor: AppColors.surface,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            leading: const Icon(Icons.location_on, color: Colors.red),
+            title: Text(_endLocation?['address'] ?? AppStrings.get('end_point', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textPrimary)),
+            onTap: () => _pickLocation(false),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(AppStrings.get('cancel', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textSecondary)),
+        ),
+        ElevatedButton(
+          onPressed: _startLocation != null && _endLocation != null
+              ? () {
+                  Navigator.pop(context, {
+                    'start': _startLocation,
+                    'end': _endLocation,
+                  });
+                }
+              : null,
+          style: ElevatedButton.styleFrom(backgroundColor: AppColors.accentLight),
+          child: Text(AppStrings.get('confirm', isTr ? 'tr' : 'en'), style: const TextStyle(color: Colors.white)),
+        ),
+      ],
     );
   }
 }
