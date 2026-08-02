@@ -64,8 +64,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.initState();
     // HomePage'e sadece giriş yapmış kullanıcılar erişebildiği için currentUser! güvenlidir.
     _repository = WorkDayRepository(userId: widget.currentUser!.id);
-    _currentYear = widget.storage.getLastViewedYear();
-    _currentMonth = widget.storage.getLastViewedMonth();
+    _currentYear = DateTime.now().year;
+    _currentMonth = DateTime.now().month;
     _monthlyData = MonthlyData.empty(_currentYear, _currentMonth);
     
     // Panel state'ini kaydet
@@ -114,8 +114,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       }
     });
 
-    // Son görüntülenen ayı kaydet
-    widget.storage.setLastViewed(_currentYear, _currentMonth);
+
 
     return completer.future;
   }
