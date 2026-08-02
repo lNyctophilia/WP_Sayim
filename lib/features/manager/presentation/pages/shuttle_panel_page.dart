@@ -1,4 +1,5 @@
 import 'package:daytrack/core/constants/app_strings.dart';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -103,6 +104,14 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
     return '';
   }
 
+  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    const p = 0.017453292519943295; // Math.PI / 180
+    final a = 0.5 -
+        math.cos((lat2 - lat1) * p) / 2 +
+        math.cos(lat1 * p) * math.cos(lat2 * p) * (1 - math.cos((lon2 - lon1) * p)) / 2;
+    return 12742 * math.asin(math.sqrt(a)); // 2 * R; R = 6371 km
+  }
+
   Future<void> _openGoogleMaps() async {
     final isTr = widget.lang.currentLang == 'tr';
 
@@ -128,17 +137,58 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
       return;
     }
 
-    // Seçilen personellerin lokasyonlarını al
-    List<String> waypoints = [];
+    // Seçilen personellerin lokasyonlarını grupla
+    List<AppUser> staffWithCoords = [];
+    List<AppUser> staffWithAddress = [];
     List<String> missingLocationStaff = [];
 
     for (var staff in _selectedStaff) {
-      String loc = _getLocationString(staff);
-      if (loc.isEmpty) {
-        missingLocationStaff.add(staff.fullName);
+      if (staff.latitude != null && staff.longitude != null) {
+        staffWithCoords.add(staff);
+      } else if (staff.address != null && staff.address!.isNotEmpty) {
+        staffWithAddress.add(staff);
       } else {
-        waypoints.add(Uri.encodeComponent(loc));
+        missingLocationStaff.add(staff.fullName);
       }
+    }
+
+    List<String> waypoints = [];
+    
+    // Algoritma: Yöneticinin konumundan başlayarak en yakın personeli bul
+    double? currentLat = widget.currentUser.latitude;
+    double? currentLon = widget.currentUser.longitude;
+    List<AppUser> optimizedStaff = [];
+
+    if (currentLat != null && currentLon != null && staffWithCoords.isNotEmpty) {
+      List<AppUser> unvisited = List.from(staffWithCoords);
+      
+      while (unvisited.isNotEmpty) {
+        AppUser nearest = unvisited.first;
+        double minDistance = double.infinity;
+        
+        for (var staff in unvisited) {
+          double dist = _calculateDistance(currentLat!, currentLon!, staff.latitude!, staff.longitude!);
+          if (dist < minDistance) {
+            minDistance = dist;
+            nearest = staff;
+          }
+        }
+        
+        optimizedStaff.add(nearest);
+        currentLat = nearest.latitude;
+        currentLon = nearest.longitude;
+        unvisited.remove(nearest);
+      }
+    } else {
+      optimizedStaff = staffWithCoords; // Koordinat bazlı başlangıç noktası yoksa sırayla ekle
+    }
+
+    // Waypoint listesine ekle
+    for (var staff in optimizedStaff) {
+      waypoints.add(Uri.encodeComponent('${staff.latitude},${staff.longitude}'));
+    }
+    for (var staff in staffWithAddress) {
+      waypoints.add(Uri.encodeComponent(staff.address!));
     }
 
     if (missingLocationStaff.isNotEmpty) {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_config.dart';
 import '../../../../core/services/language_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class InstallPromptPage extends StatelessWidget {
   final LanguageService? lang;
@@ -136,6 +138,74 @@ class InstallPromptPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.divider, width: 1),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.video_library_rounded, color: const Color(0xFFFF0000), size: 24),
+                              const SizedBox(width: 10),
+                              Text(
+                                'Kurulum Videosu',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            'Uygulamayı telefonunuza nasıl kuracağınızı videolu olarak izleyebilirsiniz.',
+                            style: TextStyle(
+                              fontSize: 14,
+                              height: 1.5,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                final url = AppConfig.installVideoUrl;
+                                if (url.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: const Text('Video linki henüz eklenmedi.'),
+                                      backgroundColor: AppColors.danger,
+                                    ),
+                                  );
+                                  return;
+                                }
+                                final uri = Uri.parse(url);
+                                if (await canLaunchUrl(uri)) {
+                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                }
+                              },
+                              icon: const Icon(Icons.play_arrow_rounded, color: Colors.white),
+                              label: const Text('YouTube\'da İzle', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFF0000),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     _buildPlatformSection(
                       icon: Icons.android_rounded,
                       iconColor: const Color(0xFF3DDC84),

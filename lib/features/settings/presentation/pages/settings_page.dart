@@ -10,6 +10,7 @@ import '../../../../core/models/app_user.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/theme_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Ayarlar Sayfası
 class SettingsPage extends StatefulWidget {
@@ -50,6 +51,7 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildSectionHeader(widget.lang.tr('general')),
           _buildLanguageTile(),
           _buildReminderToggle(),
+          _buildNotificationHelpTile(),
 
           const SizedBox(height: 24),
 
@@ -459,6 +461,71 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildNotificationHelpTile() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFF0000).withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(
+            Icons.play_circle_fill_rounded,
+            color: Color(0xFFFF0000),
+            size: 22,
+          ),
+        ),
+        title: Text(
+          'Bildirim gelmiyor mu?',
+          style: TextStyle(
+            fontSize: 15,
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        subtitle: Text(
+          'Çözüm için videoyu izle',
+          style: TextStyle(
+            fontSize: 12,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        trailing: const Icon(
+          Icons.open_in_new_rounded,
+          color: Color(0xFFFF0000),
+          size: 20,
+        ),
+        onTap: () async {
+          final url = AppConfig.settingsVideoUrl;
+          if (url.isEmpty) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Video linki henüz eklenmedi.'),
+                  backgroundColor: AppColors.danger,
+                ),
+              );
+            }
+            return;
+          }
+          final uri = Uri.parse(url);
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          }
+        },
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+      ),
     );
   }
 

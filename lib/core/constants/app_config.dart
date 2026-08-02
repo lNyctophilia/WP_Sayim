@@ -22,4 +22,8 @@ class AppConfig {
   }
 
   static const String developerName = 'lNyctophilia';
+  
+  // YouTube video links
+  static const String settingsVideoUrl = '';
+  static const String installVideoUrl = '';
 }
