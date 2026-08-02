@@ -359,6 +359,8 @@ class AppStrings {
     'owner': {'tr': 'Sahip (Owner)', 'en': 'Owner'},
     'edit_count': {'tr': 'Sayımı Düzenle', 'en': 'Edit Count'},
     'please_select_a_count_to_export_to_excel': {'tr': 'Lütfen Excel çıktısı almak istediğiniz sayımı seçin.', 'en': 'Please select a count to export to Excel.'},
+    'select_month': {'tr': 'Ay Seçin', 'en': 'Select Month'},
+    'select_month_first': {'tr': 'Önce Ay Seçiniz', 'en': 'Select Month First'},
     'select_count': {'tr': 'Sayım Seçin', 'en': 'Select Count'},
     'count_summary': {'tr': 'Sayım Özeti', 'en': 'Count Summary'},
     'invited': {'tr': 'Kişi Davet Edildi', 'en': 'Invited'},

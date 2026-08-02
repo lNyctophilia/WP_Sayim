@@ -44,6 +44,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
   final AuthService _authService = AuthService();
 
   Sayim? _selectedSayim;
+  String? _selectedMonthKey;
   bool _isLoading = false;
 
   @override
@@ -301,37 +302,119 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
 
                 final sayimlar = snapshot.data!;
 
-                return DropdownButtonFormField<Sayim>(
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: AppColors.card,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  ),
-                  dropdownColor: AppColors.card,
-                  initialValue: _selectedSayim,
-                  hint: Text(
-                    AppStrings.get('select_count', isTr ? 'tr' : 'en'),
-                    style: TextStyle(color: AppColors.textHint),
-                  ),
-                  items: sayimlar.map((sayim) {
-                    final dateStr = DateFormat('dd.MM.yyyy').format(sayim.date);
-                    return DropdownMenuItem<Sayim>(
-                      value: sayim,
-                      child: Text(
-                        '${sayim.note} ($dateStr)',
-                        style: TextStyle(color: AppColors.textPrimary),
+                // Ay listesini oluştur (YYYY-MM formatında benzersiz)
+                final Set<String> monthsSet = {};
+                for (var s in sayimlar) {
+                  final key = "${s.date.year}-${s.date.month.toString().padLeft(2, '0')}";
+                  monthsSet.add(key);
+                }
+                
+                final List<String> availableMonths = monthsSet.toList()..sort((a, b) => b.compareTo(a));
+
+                // Seçilen aya göre sayımları filtrele
+                final filteredSayimlar = _selectedMonthKey == null 
+                  ? <Sayim>[] 
+                  : sayimlar.where((s) {
+                      final key = "${s.date.year}-${s.date.month.toString().padLeft(2, '0')}";
+                      return key == _selectedMonthKey;
+                    }).toList();
+
+                // Stream'den yeni nesneler gelirse referans hatası almamak için eşleşeni bul
+                Sayim? currentSelectedSayim;
+                if (_selectedSayim != null) {
+                  try {
+                    currentSelectedSayim = filteredSayimlar.firstWhere((s) => s.id == _selectedSayim!.id);
+                  } catch (_) {
+                    currentSelectedSayim = null;
+                  }
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Ay Seçimi
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: AppColors.card,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       ),
-                    );
-                  }).toList(),
-                  onChanged: (val) {
-                    setState(() {
-                      _selectedSayim = val;
-                    });
-                  },
+                      dropdownColor: AppColors.card,
+                      value: availableMonths.contains(_selectedMonthKey) ? _selectedMonthKey : null,
+                      hint: Text(
+                        AppStrings.get('select_month', isTr ? 'tr' : 'en'),
+                        style: TextStyle(color: AppColors.textHint),
+                      ),
+                      items: availableMonths.map((mKey) {
+                        final parts = mKey.split('-');
+                        final year = parts[0];
+                        final month = int.parse(parts[1]);
+                        final monthName = AppStrings.getMonth(month, isTr ? 'tr' : 'en');
+                        
+                        return DropdownMenuItem<String>(
+                          value: mKey,
+                          child: Text(
+                            '$monthName $year',
+                            style: TextStyle(color: AppColors.textPrimary),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedMonthKey = val;
+                          _selectedSayim = null; // Ay değiştiğinde sayım seçimini sıfırla
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    // Sayım Seçimi
+                    DropdownButtonFormField<Sayim>(
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: _selectedMonthKey == null ? AppColors.card.withOpacity(0.5) : AppColors.card,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      dropdownColor: AppColors.card,
+                      value: currentSelectedSayim,
+                      hint: Text(
+                        _selectedMonthKey == null 
+                          ? AppStrings.get('select_month_first', isTr ? 'tr' : 'en')
+                          : AppStrings.get('select_count', isTr ? 'tr' : 'en'),
+                        style: TextStyle(
+                          color: _selectedMonthKey == null ? AppColors.textHint.withOpacity(0.5) : AppColors.textHint
+                        ),
+                      ),
+                      items: filteredSayimlar.map((sayim) {
+                        final dateStr = DateFormat('dd.MM.yyyy').format(sayim.date);
+                        return DropdownMenuItem<Sayim>(
+                          value: sayim,
+                          child: Text(
+                            '${sayim.firmaAdi} ${sayim.note} ($dateStr)',
+                            style: TextStyle(color: AppColors.textPrimary),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: _selectedMonthKey == null 
+                        ? null 
+                        : (val) {
+                            setState(() {
+                              _selectedSayim = val;
+                            });
+                          },
+                      disabledHint: Text(
+                        AppStrings.get('select_month_first', isTr ? 'tr' : 'en'),
+                        style: TextStyle(color: AppColors.textHint.withOpacity(0.5)),
+                      ),
+                    ),
+                  ],
                 );
               },
             ),
