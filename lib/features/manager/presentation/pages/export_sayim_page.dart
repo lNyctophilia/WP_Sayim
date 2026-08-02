@@ -99,15 +99,13 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       final personnelDavetler = acceptedDavetler.where((d) => userMap[d.userId]?.isManager != true).toList();
 
       // Firma ve Mağaza Adı Çıkarımı
+      String firmaAdi = _selectedSayim!.firmaAdi.isNotEmpty ? _selectedSayim!.firmaAdi : 'Bilinmeyen Firma';
       String not = _selectedSayim!.note;
       List<String> words = not.split(' ').where((w) => w.trim().isNotEmpty).toList();
-      String firmaAdi = words.isNotEmpty ? words.last : not;
-      String magazaAdi = not;
+      String magazaAdi = firmaAdi;
       
-      if (words.length >= 3) {
-        magazaAdi = "${words.last} - ${words[0]} - ${words.sublist(1, words.length - 1).join(' ')}";
-      } else if (words.length == 2) {
-        magazaAdi = "${words[1]} - ${words[0]}";
+      if (words.isNotEmpty) {
+        magazaAdi = "$firmaAdi-${words.join('-')}";
       }
 
       // Satır 1: Title
@@ -207,14 +205,12 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
 
       // 6. Dosyayı Kaydet
       String extraName = "";
-      if (words.length >= 3) {
-        extraName = "_${words[1]}_${words[2]}";
-      } else if (words.length == 2) {
-        extraName = "_${words[1]}";
+      if (words.isNotEmpty) {
+        extraName = "_${words.join('_')}";
       }
 
       final dateStr = DateFormat('dd-MM-yyyy').format(_selectedSayim!.date);
-      final String fileName = 'Sayim_Detay${extraName}_$dateStr';
+      final String fileName = 'Sayim_Detay_${firmaAdi}${extraName}_$dateStr';
 
       final List<int> bytes = workbook.saveAsStream();
       workbook.dispose();

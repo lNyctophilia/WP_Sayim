@@ -33,6 +33,7 @@ class SayimGrup {
 class Sayim {
   final String id;
   final String note;
+  final String firmaAdi;
   final DateTime date;
   final int maxKisi;
   final int maxYonetici;
@@ -50,6 +51,7 @@ class Sayim {
   Sayim({
     required this.id,
     required this.note,
+    this.firmaAdi = '',
     required this.date,
     this.maxKisi = 20,
     this.maxYonetici = 2,
@@ -68,6 +70,7 @@ class Sayim {
   Sayim copyWith({
     String? id,
     String? note,
+    String? firmaAdi,
     DateTime? date,
     int? maxKisi,
     int? maxYonetici,
@@ -85,6 +88,7 @@ class Sayim {
     return Sayim(
       id: id ?? this.id,
       note: note ?? this.note,
+      firmaAdi: firmaAdi ?? this.firmaAdi,
       date: date ?? this.date,
       maxKisi: maxKisi ?? this.maxKisi,
       maxYonetici: maxYonetici ?? this.maxYonetici,
@@ -107,6 +111,7 @@ class Sayim {
     return Sayim(
       id: doc.id,
       note: data['note'] as String? ?? '',
+      firmaAdi: data['firmaAdi'] as String? ?? '',
       date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       maxKisi: data['maxKisi'] as int? ?? 20,
       maxYonetici: data['maxYonetici'] as int? ?? 2,
@@ -174,6 +179,7 @@ class Sayim {
   Map<String, dynamic> toFirestore() {
     return {
       'note': note,
+      'firmaAdi': firmaAdi,
       'date': Timestamp.fromDate(date),
       'maxKisi': maxKisi,
       'maxYonetici': maxYonetici,

@@ -170,6 +170,7 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
     ];
 
     return TabBarView(
+      physics: const NeverScrollableScrollPhysics(),
       controller: _tabController,
       children: views,
     );

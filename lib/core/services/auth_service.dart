@@ -63,11 +63,20 @@ class AuthService {
         'sessionId': sessionId,
       });
 
+      // Firestore stream'inin güncel sessionId'yi alabilmesi için 
+      // isLoggingIn bayrağını biraz gecikmeli kapatıyoruz.
+      // Aksi takdirde AppRouter eski sessionId'yi görüp kullanıcıyı dışarı atabiliyor.
+      Future.delayed(const Duration(seconds: 2), () {
+        isLoggingIn = false;
+      });
+
       return appUser;
     } on FirebaseAuthException {
-      rethrow;
-    } finally {
       isLoggingIn = false;
+      rethrow;
+    } catch (e) {
+      isLoggingIn = false;
+      rethrow;
     }
   }
 
