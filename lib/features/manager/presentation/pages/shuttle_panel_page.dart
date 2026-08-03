@@ -40,7 +40,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
   bool _isLoading = true;
   List<AppUser> _allStaff = [];
   final List<AppUser> _selectedStaff = [];
-  final int _maxSelection = 25; // Google Maps max waypoint sınırı genelde 25'tir
+  final int _maxSelection = 9; // Google Maps max waypoint sınırı 9'dur (başlangıç ve bitiş hariç)
 
   @override
   void initState() {
@@ -337,52 +337,12 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
       // Close loading dialog
       if (mounted) {
         Navigator.pop(context);
-        
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: AppColors.card,
-            title: Text(
-              isTr ? 'Rota Hazır' : 'Route Ready',
-              style: TextStyle(color: AppColors.textPrimary),
-            ),
-            content: Text(
-              isTr 
-                  ? 'Rotanız başarıyla oluşturuldu. Google Haritalar\'da açmak için aşağıdaki butona tıklayın.'
-                  : 'Your route has been successfully created. Click the button below to open it in Google Maps.',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  AppStrings.get('cancel', isTr ? 'tr' : 'en'),
-                  style: TextStyle(color: AppColors.textSecondary),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  if (await canLaunchUrl(uri)) {
-                    await launchUrl(uri, mode: LaunchMode.externalApplication);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(isTr ? 'Harita açılamadı.' : 'Could not launch Maps.'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.accentLight),
-                child: Text(
-                  isTr ? 'Haritayı Aç' : 'Open Map',
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
-          ),
-        );
+      }
+
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch Maps';
       }
 
     } catch (e) {
