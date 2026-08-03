@@ -494,16 +494,16 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
         subtitle: Text(
-          'Çözüm için videoyu izle',
+          'Çözüm için tıkla',
           style: TextStyle(
             fontSize: 12,
             color: AppColors.textSecondary,
           ),
         ),
         trailing: Icon(
-          Icons.open_in_new_rounded,
+          Icons.keyboard_arrow_down_rounded,
           color: AppColors.accentLight,
-          size: 20,
+          size: 24,
         ),
         onTap: () {
           showModalBottomSheet(

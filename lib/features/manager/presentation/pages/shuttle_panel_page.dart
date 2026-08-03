@@ -163,7 +163,10 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
     // 1. Show Start/End Selection Dialog
     final routePoints = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (context) => RoutePlanningDialog(lang: widget.lang),
+      builder: (context) => RoutePlanningDialog(
+        lang: widget.lang,
+        allStaff: [widget.currentUser, ..._allStaff],
+      ),
     );
 
     if (routePoints == null) return;
@@ -297,7 +300,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
       }
 
       if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
       } else {
         throw 'Could not launch Maps';
       }
@@ -506,8 +509,9 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
 
 class RoutePlanningDialog extends StatefulWidget {
   final LanguageService lang;
+  final List<AppUser> allStaff;
 
-  const RoutePlanningDialog({super.key, required this.lang});
+  const RoutePlanningDialog({super.key, required this.lang, required this.allStaff});
 
   @override
   State<RoutePlanningDialog> createState() => _RoutePlanningDialogState();
@@ -518,12 +522,58 @@ class _RoutePlanningDialogState extends State<RoutePlanningDialog> {
   Map<String, dynamic>? _endLocation;
 
   Future<void> _pickLocation(bool isStart) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => MapLocationPicker(lang: widget.lang),
+    final isTr = widget.lang.currentLang == 'tr';
+    
+    final selection = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: AppColors.card,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 16, bottom: 8),
+            child: Text(
+              isTr ? 'Konum Seçim Yöntemi' : 'Location Selection Method',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Divider(color: AppColors.divider),
+          ListTile(
+            leading: Icon(Icons.map, color: AppColors.accentLight),
+            title: Text(isTr ? 'Haritadan Seç' : 'Select from Map', style: TextStyle(color: AppColors.textPrimary)),
+            onTap: () => Navigator.pop(context, 'map'),
+          ),
+          ListTile(
+            leading: Icon(Icons.list, color: AppColors.accentLight),
+            title: Text(isTr ? 'Listeden Seç' : 'Select from List', style: TextStyle(color: AppColors.textPrimary)),
+            subtitle: Text(isTr ? 'Kayıtlı kişi adreslerinden' : 'From saved staff addresses', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+            onTap: () => Navigator.pop(context, 'list'),
+          ),
+          const SizedBox(height: 16),
+        ],
       ),
     );
+
+    if (selection == null) return;
+
+    Map<String, dynamic>? result;
+
+    if (selection == 'map') {
+      result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MapLocationPicker(lang: widget.lang),
+        ),
+      );
+    } else if (selection == 'list') {
+      result = await _pickFromList(isTr);
+    }
+
     if (result != null && mounted) {
       setState(() {
         if (isStart) {
@@ -533,6 +583,75 @@ class _RoutePlanningDialogState extends State<RoutePlanningDialog> {
         }
       });
     }
+  }
+
+  Future<Map<String, dynamic>?> _pickFromList(bool isTr) async {
+    final staffWithLocation = widget.allStaff.where((s) => s.latitude != null && s.longitude != null).toList();
+
+    return await showModalBottomSheet<Map<String, dynamic>?>(
+      context: context,
+      backgroundColor: AppColors.card,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (context, scrollController) => Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                isTr ? 'Kayıtlı Adresler' : 'Saved Addresses',
+                style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Divider(color: AppColors.divider),
+            Expanded(
+              child: staffWithLocation.isEmpty 
+                ? Center(
+                    child: Text(
+                      isTr ? 'Konumu kayıtlı kişi bulunamadı.' : 'No one with saved locations.',
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
+                  )
+                : ListView.builder(
+                  controller: scrollController,
+                  itemCount: staffWithLocation.length,
+                  itemBuilder: (context, index) {
+                    final staff = staffWithLocation[index];
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: AppColors.accentLight,
+                        child: Text(staff.fullName.isNotEmpty ? staff.fullName[0].toUpperCase() : '?', style: const TextStyle(color: Colors.white)),
+                      ),
+                      title: Text(staff.fullName, style: TextStyle(color: AppColors.textPrimary)),
+                      subtitle: Text(
+                        staff.address != null && staff.address!.isNotEmpty 
+                            ? staff.address! 
+                            : (isTr ? 'Konum kayıtlı' : 'Location saved'),
+                        style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      onTap: () {
+                        Navigator.pop(context, {
+                          'latitude': staff.latitude,
+                          'longitude': staff.longitude,
+                          'address': staff.address != null && staff.address!.isNotEmpty 
+                              ? staff.address 
+                              : staff.fullName,
+                        });
+                      },
+                    );
+                  },
+                ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
