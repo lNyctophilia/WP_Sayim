@@ -614,7 +614,24 @@ class _NotificationHelpSheetState extends State<_NotificationHelpSheet> {
       _countdown = 10;
     });
 
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+    // Send notification trigger immediately
+    final uid = AuthService().currentFirebaseUser?.uid;
+    if (uid != null) {
+      try {
+        await FirebaseFirestore.instance.collection('test_notifications').add({
+          'userId': uid,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      } catch (e) {
+        debugPrint('Error triggering test notification: $e');
+      }
+    }
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
       if (_countdown > 1) {
         setState(() {
           _countdown--;
@@ -624,19 +641,6 @@ class _NotificationHelpSheetState extends State<_NotificationHelpSheet> {
         setState(() {
           _countdown = 0;
         });
-        
-        // Send notification trigger
-        final uid = AuthService().currentFirebaseUser?.uid;
-        if (uid != null) {
-          try {
-            await FirebaseFirestore.instance.collection('test_notifications').add({
-              'userId': uid,
-              'createdAt': FieldValue.serverTimestamp(),
-            });
-          } catch (e) {
-            debugPrint('Error triggering test notification: $e');
-          }
-        }
       }
     });
   }
@@ -730,8 +734,12 @@ class _NotificationHelpSheetState extends State<_NotificationHelpSheet> {
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: const Text('Video linki henüz eklenmedi.'),
-                                backgroundColor: AppColors.danger,
+                                content: Text(
+                                  widget.lang.currentLang == 'tr' 
+                                      ? 'Şu anlık link yoktur, eklendiğinde buradan yönlendirileceksiniz.' 
+                                      : 'No link available currently. You will be redirected once added.'
+                                ),
+                                backgroundColor: AppColors.textSecondary,
                               ),
                             );
                           }

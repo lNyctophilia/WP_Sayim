@@ -549,10 +549,13 @@ exports.sendTestNotification = onDocumentCreated("test_notifications/{docId}", a
   const data = event.data.data();
   if (!data || !data.userId) return;
 
+  // Wait 10 seconds so the user can put the app in the background to test push notifications
+  await new Promise(resolve => setTimeout(resolve, 10000));
+
   await sendNotificationAndLog({
     userId: data.userId,
-    title: "Test",
-    body: "Bu bir test bildirimidir. Bildirimleriniz sorunsuz çalışıyor.",
+    title: "Test Bildirimi",
+    body: "Uygulama kapalıyken (veya arka plandayken) de bildirim alabiliyorsunuz. Harika!",
     type: "test",
     relatedId: event.params.docId,
     dataPayload: {
