@@ -40,7 +40,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
   bool _isLoading = true;
   List<AppUser> _allStaff = [];
   final List<AppUser> _selectedStaff = [];
-  final int _maxSelection = 9;
+  final int _maxSelection = 25; // Google Maps max waypoint sınırı genelde 25'tir
 
   @override
   void initState() {
@@ -225,52 +225,92 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
       List<int> bestOrder = [];
       double bestDuration = double.infinity;
 
-      // Generates permutations
-      void permute(List<int> arr, int k) {
-        if (k == arr.length) {
-          // Calculate total duration
-          double total = 0;
-          int prev = 0; // Start
-          for (int i = 0; i < arr.length; i++) {
-            int curr = arr[i] + 1; // map staff index to matrix index
-            var duration = durations[prev][curr];
-            if (duration == null) {
-              total = double.infinity;
-              break;
+      if (numStaff <= 12) {
+        // Generates permutations for small sets (brute-force)
+        void permute(List<int> arr, int k) {
+          if (k == arr.length) {
+            // Calculate total duration
+            double total = 0;
+            int prev = 0; // Start
+            for (int i = 0; i < arr.length; i++) {
+              int curr = arr[i] + 1; // map staff index to matrix index
+              var duration = durations[prev][curr];
+              if (duration == null) {
+                total = double.infinity;
+                break;
+              }
+              total += (duration as num).toDouble();
+              prev = curr;
             }
-            total += (duration as num).toDouble();
-            prev = curr;
-          }
-          // From last staff to End
-          var finalLeg = durations[prev][durations.length - 1];
-          if (finalLeg == null) {
-            total = double.infinity;
-          } else {
-            total += (finalLeg as num).toDouble();
+            // From last staff to End
+            var finalLeg = durations[prev][durations.length - 1];
+            if (finalLeg == null) {
+              total = double.infinity;
+            } else {
+              total += (finalLeg as num).toDouble();
+            }
+
+            if (total < bestDuration) {
+              bestDuration = total;
+              bestOrder = List.from(arr);
+            }
+            return;
           }
 
-          if (total < bestDuration) {
-            bestDuration = total;
-            bestOrder = List.from(arr);
+          for (int i = k; i < arr.length; i++) {
+            int temp = arr[i];
+            arr[i] = arr[k];
+            arr[k] = temp;
+            
+            permute(arr, k + 1);
+            
+            temp = arr[i];
+            arr[i] = arr[k];
+            arr[k] = temp;
           }
-          return;
         }
 
-        for (int i = k; i < arr.length; i++) {
-          int temp = arr[i];
-          arr[i] = arr[k];
-          arr[k] = temp;
-          
-          permute(arr, k + 1);
-          
-          temp = arr[i];
-          arr[i] = arr[k];
-          arr[k] = temp;
+        List<int> staffIndices = List.generate(numStaff, (i) => i);
+        permute(staffIndices, 0);
+      } else {
+        // Nearest neighbor fallback for large sets to prevent app freeze
+        List<int> unvisited = List.generate(numStaff, (i) => i);
+        int current = 0; // Start point in matrix is index 0
+        double totalDuration = 0;
+        
+        while (unvisited.isNotEmpty) {
+           int next = -1;
+           double minToNext = double.infinity;
+           
+           for (int candidate in unvisited) {
+              var dur = durations[current][candidate + 1];
+              if (dur != null) {
+                 double d = (dur as num).toDouble();
+                 if (d < minToNext) {
+                    minToNext = d;
+                    next = candidate;
+                 }
+              }
+           }
+           
+           if (next == -1) break; // unreachable point
+           
+           bestOrder.add(next);
+           totalDuration += minToNext;
+           unvisited.remove(next);
+           current = next + 1; // update current index in matrix
         }
+        
+        // Final leg from last staff to End
+        var finalLeg = durations[current][durations.length - 1];
+        if (finalLeg != null) {
+          totalDuration += (finalLeg as num).toDouble();
+        } else {
+          totalDuration = double.infinity;
+        }
+        
+        bestDuration = totalDuration;
       }
-
-      List<int> staffIndices = List.generate(numStaff, (i) => i);
-      permute(staffIndices, 0);
 
       if (bestDuration == double.infinity) {
         throw Exception('Could not find a valid route between points.');
