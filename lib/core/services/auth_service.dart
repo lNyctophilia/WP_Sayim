@@ -346,4 +346,14 @@ class AuthService {
         .get();
     return snapshot.docs.map((doc) => AppUser.fromFirestore(doc)).toList();
   }
+
+  /// Bekleyen kullanıcı (onaylanmamış) sayısını gerçek zamanlı dinle
+  Stream<int> getPendingUsersCountStream() {
+    return _firestore
+        .collection('users')
+        .where('isApproved', isEqualTo: false)
+        .where('isDeleted', isEqualTo: false)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
+  }
 }

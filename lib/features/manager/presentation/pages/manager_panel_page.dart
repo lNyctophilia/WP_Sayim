@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
+import '../../../../core/services/auth_service.dart';
 import '../widgets/user_list_tab.dart';
 import '../widgets/sayim_list_tab.dart';
 import '../../../../features/home/presentation/widgets/custom_top_bar.dart';
@@ -39,6 +40,7 @@ class ManagerPanelPage extends StatefulWidget {
 class _ManagerPanelPageState extends State<ManagerPanelPage>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -107,47 +109,76 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
   Widget _buildTabBar() {
     final isTr = widget.lang.currentLang == 'tr';
 
-    final tabs = <Widget>[
-      Tab(
-        icon: const Icon(Icons.inventory_2_rounded, size: 20),
-        text: AppStrings.get('counts', isTr ? 'tr' : 'en'),
-      ),
-      Tab(
-        icon: const Icon(Icons.supervisor_account_rounded, size: 20),
-        text: AppStrings.get('managers', isTr ? 'tr' : 'en'),
-      ),
-      Tab(
-        icon: const Icon(Icons.people_rounded, size: 20),
-        text: AppStrings.get('staff', isTr ? 'tr' : 'en'),
-      ),
-    ];
+    return StreamBuilder<int>(
+      stream: _authService.getPendingUsersCountStream(),
+      builder: (context, snapshot) {
+        final hasPending = (snapshot.data ?? 0) > 0;
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: TabBar(
-        controller: _tabController,
-        indicator: BoxDecoration(
-          color: AppColors.accentLight.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        indicatorSize: TabBarIndicatorSize.tab,
-        labelColor: AppColors.accentLight,
-        unselectedLabelColor: AppColors.textSecondary,
-        labelStyle: GoogleFonts.inter(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-        unselectedLabelStyle: GoogleFonts.inter(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-        dividerColor: Colors.transparent,
-        tabs: tabs,
-      ),
+        final tabs = <Widget>[
+          Tab(
+            icon: const Icon(Icons.inventory_2_rounded, size: 20),
+            text: AppStrings.get('counts', isTr ? 'tr' : 'en'),
+          ),
+          Tab(
+            icon: const Icon(Icons.supervisor_account_rounded, size: 20),
+            text: AppStrings.get('managers', isTr ? 'tr' : 'en'),
+          ),
+          Tab(
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(Icons.people_rounded, size: 20),
+                if (hasPending)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: AppColors.accentLight,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.card,
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            text: AppStrings.get('staff', isTr ? 'tr' : 'en'),
+          ),
+        ];
+
+        return Container(
+          margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          decoration: BoxDecoration(
+            color: AppColors.card,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: TabBar(
+            controller: _tabController,
+            indicator: BoxDecoration(
+              color: AppColors.accentLight.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            indicatorSize: TabBarIndicatorSize.tab,
+            labelColor: AppColors.accentLight,
+            unselectedLabelColor: AppColors.textSecondary,
+            labelStyle: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+            unselectedLabelStyle: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+            dividerColor: Colors.transparent,
+            tabs: tabs,
+          ),
+        );
+      },
     );
   }
 

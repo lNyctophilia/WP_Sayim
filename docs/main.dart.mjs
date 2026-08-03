@@ -474,6 +474,7 @@ class CompiledApp {
       _1400: (x0,x1) => x0.data(x1),
       _1404: x0 => x0.docChanges(),
       _1412: () => globalThis.firebase_firestore.deleteField(),
+      _1413: () => globalThis.firebase_firestore.serverTimestamp(),
       _1421: (x0,x1) => globalThis.firebase_firestore.getFirestore(x0,x1),
       _1423: x0 => globalThis.firebase_firestore.Timestamp.fromMillis(x0),
       _1424: (module,f) => finalizeWrapper(f, function() { return module.exports._1424(f,arguments.length) }),

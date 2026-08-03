@@ -11,6 +11,7 @@ import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/theme_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:async';
 
 /// Ayarlar Sayfası
 class SettingsPage extends StatefulWidget {
@@ -504,23 +505,17 @@ class _SettingsPageState extends State<SettingsPage> {
           color: AppColors.accentLight,
           size: 20,
         ),
-        onTap: () async {
-          final url = AppConfig.settingsVideoUrl;
-          if (url.isEmpty) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Video linki henüz eklenmedi.'),
-                  backgroundColor: AppColors.danger,
-                ),
+        onTap: () {
+          showModalBottomSheet(
+            context: context,
+            backgroundColor: Colors.transparent,
+            isScrollControlled: true,
+            builder: (context) {
+              return _NotificationHelpSheet(
+                lang: widget.lang,
               );
-            }
-            return;
-          }
-          final uri = Uri.parse(url);
-          if (await canLaunchUrl(uri)) {
-            await launchUrl(uri, mode: LaunchMode.externalApplication);
-          }
+            },
+          );
         },
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
@@ -588,6 +583,257 @@ class _SettingsPageState extends State<SettingsPage> {
               fontSize: 12,
               color: AppColors.textHint,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NotificationHelpSheet extends StatefulWidget {
+  final LanguageService lang;
+
+  const _NotificationHelpSheet({required this.lang});
+
+  @override
+  State<_NotificationHelpSheet> createState() => _NotificationHelpSheetState();
+}
+
+class _NotificationHelpSheetState extends State<_NotificationHelpSheet> {
+  int _countdown = 0;
+  Timer? _timer;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startTest() async {
+    setState(() {
+      _countdown = 10;
+    });
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+      if (_countdown > 1) {
+        setState(() {
+          _countdown--;
+        });
+      } else {
+        timer.cancel();
+        setState(() {
+          _countdown = 0;
+        });
+        
+        // Send notification trigger
+        final uid = AuthService().currentFirebaseUser?.uid;
+        if (uid != null) {
+          try {
+            await FirebaseFirestore.instance.collection('test_notifications').add({
+              'userId': uid,
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+          } catch (e) {
+            debugPrint('Error triggering test notification: $e');
+          }
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).padding.bottom + 20,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Drag Handle
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: AppColors.divider,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          
+          Text(
+            widget.lang.currentLang == 'tr' ? 'Bildirim Sorunu Çözümü' : 'Notification Issue Fix',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 24),
+          
+          // Adım 1
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.accentLight.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  '1',
+                  style: TextStyle(
+                    color: AppColors.accentLight,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.lang.currentLang == 'tr' ? 'Videoyu İzle' : 'Watch the Video',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.lang.currentLang == 'tr' 
+                          ? 'İlk olarak videoyu izle ve uygun adımları yap.' 
+                          : 'First watch the video and follow the appropriate steps.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        final url = AppConfig.settingsVideoUrl;
+                        if (url.isEmpty) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text('Video linki henüz eklenmedi.'),
+                                backgroundColor: AppColors.danger,
+                              ),
+                            );
+                          }
+                          return;
+                        }
+                        final uri = Uri.parse(url);
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        }
+                      },
+                      icon: const Icon(Icons.play_circle_fill_rounded, size: 20),
+                      label: Text(widget.lang.currentLang == 'tr' ? 'Videoyu İzle' : 'Watch the Video'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accentLight,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 24),
+          Divider(color: AppColors.divider),
+          const SizedBox(height: 24),
+          
+          // Adım 2
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.accentLight.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  '2',
+                  style: TextStyle(
+                    color: AppColors.accentLight,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.lang.currentLang == 'tr' ? 'Test Et' : 'Test',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.lang.currentLang == 'tr'
+                          ? 'Alttaki butona bastıktan 10 saniye sonra bildirim atıcak. Bu süre içinde uygulamadan tamamen çıkıp bildirimleri test edebilirsiniz.'
+                          : 'A notification will be sent 10 seconds after pressing the button below. You can completely exit the app during this time to test notifications.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _countdown > 0 ? null : _startTest,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.accentLight,
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: AppColors.divider,
+                          disabledForegroundColor: AppColors.textHint,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(
+                          _countdown > 0 
+                              ? '$_countdown ${widget.lang.currentLang == 'tr' ? 'saniye...' : 'seconds...'}' 
+                              : (widget.lang.currentLang == 'tr' ? 'Test Et' : 'Test'),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

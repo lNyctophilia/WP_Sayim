@@ -543,3 +543,21 @@ exports.cleanupOldNotifications = onSchedule({ schedule: "0 4 1,15 * *", timeZon
   }
   console.log(`cleanupOldNotifications finished. Deleted ${totalDeleted} notifications older than 30 days.`);
 });
+
+// 11. Test Bildirimi Gönder (Kullanıcı ayarlardan test ettiğinde)
+exports.sendTestNotification = onDocumentCreated("test_notifications/{docId}", async (event) => {
+  const data = event.data.data();
+  if (!data || !data.userId) return;
+
+  await sendNotificationAndLog({
+    userId: data.userId,
+    title: "Test",
+    body: "Bu bir test bildirimidir. Bildirimleriniz sorunsuz çalışıyor.",
+    type: "test",
+    relatedId: event.params.docId,
+    dataPayload: {
+      type: "test"
+    },
+    tag: `test_${event.params.docId}`
+  });
+});
