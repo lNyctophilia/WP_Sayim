@@ -346,6 +346,11 @@ class _CreatePastSayimPageState extends State<CreatePastSayimPage> {
                     TextFormField(
                       controller: _noteController,
                       style: TextStyle(color: AppColors.textPrimary),
+                      onChanged: (val) {
+                        if (_sehirTipi == SehirTipi.ici) {
+                          _toplanmaYeriController.text = val;
+                        }
+                      },
                       decoration: InputDecoration(
                         labelText: AppStrings.get('note_city_location', isTr ? 'tr' : 'en'),
                         labelStyle: TextStyle(color: AppColors.textHint),
@@ -514,7 +519,16 @@ class _CreatePastSayimPageState extends State<CreatePastSayimPage> {
                               DropdownMenuItem(value: SehirTipi.disi, child: Text(AppStrings.get('out_of_city', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textPrimary))),
                             ],
                             onChanged: (val) {
-                              if (val != null) setState(() => _sehirTipi = val);
+                              if (val != null) {
+                                setState(() {
+                                  _sehirTipi = val;
+                                  if (val == SehirTipi.disi) {
+                                    _toplanmaYeriController.text = 'Otogar';
+                                  } else {
+                                    _toplanmaYeriController.text = _noteController.text;
+                                  }
+                                });
+                              }
                             },
                           ),
                         ),
