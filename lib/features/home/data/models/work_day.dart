@@ -75,7 +75,6 @@ class WorkDay {
   }
 
   String get displayNote {
-    if (toplanmaYeri.trim().isEmpty) return note;
     if (grupSaati == null || grupSaati!.isEmpty) return note;
 
     try {
@@ -84,10 +83,13 @@ class WorkDay {
       final minute = int.parse(parts[1]);
       final startTime = DateTime(date.year, date.month, date.day, hour, minute);
       
-      if (DateTime.now().isAfter(startTime)) {
+      final now = DateTime.now();
+      if (now.compareTo(startTime) >= 0) {
         return note;
       } else {
-        return toplanmaYeri;
+        return toplanmaYeri.trim().isNotEmpty 
+            ? toplanmaYeri 
+            : 'Toplanma Yeri Belirtilmedi';
       }
     } catch (e) {
       return note;

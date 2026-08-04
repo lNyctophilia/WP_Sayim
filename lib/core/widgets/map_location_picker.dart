@@ -320,78 +320,80 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
             ),
           ),
 
-          // Go To Current Location FAB
-          Positioned(
-            bottom: 150,
-            right: 16,
-            child: FloatingActionButton(
-              heroTag: 'currentLocationBtn',
-              backgroundColor: AppColors.card,
-              onPressed: _goToCurrentLocation,
-              child: _isGettingLocation
-                  ? SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.accentLight,
-                      ),
-                    )
-                  : Icon(Icons.my_location, color: AppColors.accentLight),
-            ),
-          ),
-
-          // Selected Address Display
+          // Bottom Controls (FAB + Selected Address Display)
           Positioned(
             bottom: 24,
             left: 16,
             right: 16,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.card,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                FloatingActionButton(
+                  heroTag: 'currentLocationBtn',
+                  backgroundColor: AppColors.card,
+                  onPressed: _goToCurrentLocation,
+                  child: _isGettingLocation
+                      ? SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.accentLight,
+                          ),
+                        )
+                      : Icon(Icons.my_location, color: AppColors.accentLight),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.card,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    AppStrings.get('selected_location', isTr ? 'tr' : 'en'),
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _selectedAddress.isNotEmpty ? _selectedAddress : '${_currentLocation.latitude.toStringAsFixed(6)}, ${_currentLocation.longitude.toStringAsFixed(6)}',
-                    style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _confirmSelection,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accentLight,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        AppStrings.get('selected_location', isTr ? 'tr' : 'en'),
+                        style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _selectedAddress.isNotEmpty ? _selectedAddress : '${_currentLocation.latitude.toStringAsFixed(6)}, ${_currentLocation.longitude.toStringAsFixed(6)}',
+                        style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _confirmSelection,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.accentLight,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            AppStrings.get('confirm', isTr ? 'tr' : 'en'),
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ),
-                      child: Text(
-                        AppStrings.get('confirm', isTr ? 'tr' : 'en'),
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
 

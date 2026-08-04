@@ -39,6 +39,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
 
   final _noteController = TextEditingController();
   final _firmaAdiController = TextEditingController();
+  final _toplanmaYeriController = TextEditingController();
   final _maxKisiController = TextEditingController(text: '20');
   final _maxYoneticiController = TextEditingController(text: '2');
   DateTime _selectedDate = DateTime.now();
@@ -59,6 +60,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
     super.initState();
     _noteController.text = widget.sayim.note;
     _firmaAdiController.text = widget.sayim.firmaAdi;
+    _toplanmaYeriController.text = widget.sayim.toplanmaYeri;
     _maxKisiController.text = widget.sayim.maxKisi.toString();
     _maxYoneticiController.text = widget.sayim.maxYonetici.toString();
     _selectedDate = widget.sayim.date;
@@ -79,6 +81,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
   void dispose() {
     _noteController.dispose();
     _firmaAdiController.dispose();
+    _toplanmaYeriController.dispose();
     _maxKisiController.dispose();
     _maxYoneticiController.dispose();
     super.dispose();
@@ -255,6 +258,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
       final updatedSayim = widget.sayim.copyWith(
         note: _noteController.text.trim(),
         firmaAdi: _firmaAdiController.text.trim(),
+        toplanmaYeri: _toplanmaYeriController.text.trim(),
         date: _selectedDate,
         startTime: _startTime != null ? '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')}' : null,
         maxKisi: targetPersonel,
@@ -412,6 +416,22 @@ class _EditSayimPageState extends State<EditSayimPage> {
                           borderSide: BorderSide.none,
                         ),
                         prefixIcon: Icon(Icons.business_rounded, color: AppColors.textSecondary),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _toplanmaYeriController,
+                      style: TextStyle(color: AppColors.textPrimary),
+                      decoration: InputDecoration(
+                        labelText: AppStrings.get('meeting_place', isTr ? 'tr' : 'en') ?? 'Toplanma Yeri',
+                        labelStyle: TextStyle(color: AppColors.textHint),
+                        filled: true,
+                        fillColor: AppColors.surface,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        prefixIcon: Icon(Icons.meeting_room_rounded, color: AppColors.textSecondary),
                       ),
                     ),
                     const SizedBox(height: 12),
