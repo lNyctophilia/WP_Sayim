@@ -97,9 +97,14 @@ class WorkDay {
       if (now.compareTo(targetTime) >= 0) {
         return note;
       } else {
-        return toplanmaYeri.trim().isNotEmpty 
+        final toplanmaText = toplanmaYeri.trim().isNotEmpty 
             ? toplanmaYeri 
             : 'Toplanma Yeri Belirtilmedi';
+            
+        if (grupSaati != null && grupSaati!.trim().isNotEmpty) {
+          return '$toplanmaText ${grupSaati!}';
+        }
+        return toplanmaText;
       }
     } catch (e) {
       return note;

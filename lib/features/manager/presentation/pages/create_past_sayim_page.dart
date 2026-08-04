@@ -12,6 +12,7 @@ import '../../../../core/services/storage_service.dart';
 import '../widgets/grup_selector.dart';
 import '../widgets/staff_picker.dart';
 import '../widgets/manager_drawer.dart';
+import '../../../../core/utils/string_utils.dart';
 import '../../../../features/home/presentation/widgets/custom_top_bar.dart';
 import 'manager_panel_page.dart';
 import '../../../../core/theme/theme_service.dart';
@@ -240,9 +241,9 @@ class _CreatePastSayimPageState extends State<CreatePastSayimPage> {
       // 1. Sayım oluştur
       final sayim = Sayim(
         id: '', // Firestore auto-id
-        note: _noteController.text.trim(),
-        firmaAdi: _firmaAdiController.text.trim(),
-        toplanmaYeri: _toplanmaYeriController.text.trim(),
+        note: StringUtils.formatTitleCase(_noteController.text),
+        firmaAdi: StringUtils.formatCompanyName(_firmaAdiController.text),
+        toplanmaYeri: StringUtils.formatTitleCase(_toplanmaYeriController.text),
         date: _selectedDate,
         startTime: _startTime != null ? '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')}' : null,
         maxKisi: targetPersonel,

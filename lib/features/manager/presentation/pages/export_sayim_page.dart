@@ -153,12 +153,12 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
         sheet.getRangeByIndex(r, 1, r, 3).cellStyle = centerStyle;
         r++;
       }
-      addContact('Bölge Müdürü', 'EMİN KÖRPE', '05498147929');
+      addContact('Bölge Müdürü', 'Emin Körpe', '05498147929');
       addContact('Bölge Müdürü Yrd.', '', '');
-      addContact('Operasyon Müdürü', 'KADİR ÖZER', '05059732202');
-      addContact('İç Denetim', 'Mustafa Koray GÖÇ', 'm.goc@workingpartners.com.tr');
-      addContact('İç Denetim', 'Erdem KÖHNELİ', 'e.kohneli@workingpartners.com.tr');
-      addContact('Bilgi İşlem', 'Doğan EROĞLU', 'd.eroglu@workingpartners.com.tr');
+      addContact('Operasyon Müdürü', 'Kadir Özer', '05059732202');
+      addContact('İç Denetim', 'Mustafa Koray Göç', 'm.goc@workingpartners.com.tr');
+      addContact('İç Denetim', 'Erdem Köhneli', 'e.kohneli@workingpartners.com.tr');
+      addContact('Bilgi İşlem', 'Doğan Eroğlu', 'd.eroglu@workingpartners.com.tr');
 
       // Satır r: Yöneticiler Başlığı
       sheet.getRangeByIndex(r, 1).setText('Sayım Yöneticileri');

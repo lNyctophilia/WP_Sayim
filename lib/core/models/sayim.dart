@@ -148,6 +148,18 @@ class Sayim {
   late final DateTime _endDateTime = _calculateEndDateTime();
 
   DateTime _calculateEndDateTime() {
+    if (startTime != null && startTime!.isNotEmpty) {
+      try {
+        final parts = startTime!.split(':');
+        final hour = int.parse(parts[0]);
+        final minute = int.parse(parts[1]);
+        
+        return DateTime(date.year, date.month, date.day, hour, minute);
+      } catch (e) {
+        // Fallback to groups if parse fails
+      }
+    }
+
     if (gruplar.isEmpty) {
       return DateTime(date.year, date.month, date.day, 23, 59, 59);
     }

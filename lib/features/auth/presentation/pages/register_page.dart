@@ -68,6 +68,25 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     super.dispose();
   }
 
+  String _toTitleCase(String text) {
+    if (text.trim().isEmpty) return '';
+    
+    String toTurkishUpperCase(String char) {
+      if (char == 'i') return 'İ';
+      if (char == 'ı') return 'I';
+      return char.toUpperCase();
+    }
+    
+    String toTurkishLowerCase(String word) {
+      return word.replaceAll('I', 'ı').replaceAll('İ', 'i').toLowerCase();
+    }
+
+    return text.trim().split(RegExp(r'\s+')).map((word) {
+      if (word.isEmpty) return word;
+      return toTurkishUpperCase(word[0]) + toTurkishLowerCase(word.substring(1));
+    }).join(' ');
+  }
+
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -91,8 +110,8 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
       await _authService.register(
         phone: phone,
         password: _passwordController.text,
-        fullName: _fullNameController.text.trim(),
-        address: _addressController.text.trim(),
+        fullName: _toTitleCase(_fullNameController.text),
+        address: _toTitleCase(_addressController.text),
         latitude: _selectedLat,
         longitude: _selectedLng,
         fcmToken: token,
