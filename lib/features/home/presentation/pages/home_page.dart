@@ -210,7 +210,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     HapticFeedback.mediumImpact();
 
     final hasEntry = existing != null;
-    final hasNote = hasEntry && existing.note.trim().isNotEmpty;
+    final hasNote = hasEntry && existing.displayNote.trim().isNotEmpty;
 
     // Tarih formatla
     final dayNames = widget.lang.currentLang == 'tr'
@@ -347,7 +347,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              existing.note.trim(),
+                              existing.displayNote.trim(),
                               textAlign: TextAlign.left,
                               style: TextStyle(
                                 fontSize: 15,
@@ -645,7 +645,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildRecentNotes(MonthlyData data) {
-    final daysWithNotes = data.workDays.where((d) => d.note.trim().isNotEmpty).toList();
+    final daysWithNotes = data.workDays.where((d) => d.displayNote.trim().isNotEmpty).toList();
     daysWithNotes.sort((a, b) => b.date.compareTo(a.date));
 
     final isTr = widget.lang.currentLang == 'tr';
@@ -718,7 +718,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       const SizedBox(height: 8),
                       Expanded(
                         child: Text(
-                          day.note.trim(),
+                          day.displayNote.trim(),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(

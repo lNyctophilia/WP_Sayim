@@ -6,6 +6,8 @@ import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/utils/pwa_check.dart';
+import '../../../../core/widgets/map_location_picker.dart';
+import 'package:latlong2/latlong.dart';
 
 class RegisterPage extends StatefulWidget {
   final LanguageService lang;
@@ -33,6 +35,8 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   bool _obscurePassword = true;
   bool _requiresEmail = false;
   String? _errorMessage;
+  double? _selectedLat;
+  double? _selectedLng;
 
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
@@ -89,6 +93,8 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
         password: _passwordController.text,
         fullName: _fullNameController.text.trim(),
         address: _addressController.text.trim(),
+        latitude: _selectedLat,
+        longitude: _selectedLng,
         fcmToken: token,
         email: _requiresEmail ? _emailController.text.trim() : null,
       );
@@ -235,11 +241,49 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           ),
           const SizedBox(height: 14),
 
-          _buildTextField(
-            controller: _addressController,
-            hintText: widget.lang.tr('address_hint'),
-            icon: Icons.location_on_outlined,
-            validator: (value) => (value == null || value.trim().isEmpty) ? widget.lang.tr('address_required') : null,
+          Row(
+            children: [
+              Expanded(
+                child: _buildTextField(
+                  controller: _addressController,
+                  hintText: widget.lang.tr('address_hint'),
+                  icon: Icons.location_on_outlined,
+                  validator: (value) => (value == null || value.trim().isEmpty) ? widget.lang.tr('address_required') : null,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.map_outlined, color: AppColors.accentLight),
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MapLocationPicker(
+                          lang: widget.lang,
+                          initialLocation: _selectedLat != null && _selectedLng != null 
+                              ? LatLng(_selectedLat!, _selectedLng!) 
+                              : null,
+                        ),
+                      ),
+                    );
+                    
+                    if (result != null && mounted) {
+                      setState(() {
+                        _addressController.text = result['address'] ?? '';
+                        _selectedLat = result['latitude'];
+                        _selectedLng = result['longitude'];
+                      });
+                    }
+                  },
+                  tooltip: widget.lang.tr('select_from_map'),
+                ),
+              ),
+            ],
           ),
           Padding(
             padding: const EdgeInsets.only(left: 12, top: 4),

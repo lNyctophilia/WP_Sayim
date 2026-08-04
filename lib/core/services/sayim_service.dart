@@ -66,7 +66,7 @@ class SayimService {
         (g) => g.grupId == newDavet.grupId,
         orElse: () => const SayimGrup(grupId: 1, saat: ''),
       );
-      final combinedNote = '${newSayim.note} ${grup.saat}'.trim();
+      final combinedNote = '${newSayim.firmaAdi} ${newSayim.note} ${grup.saat}'.trim();
       
       final dateString = "${newSayim.date.year}-${newSayim.date.month.toString().padLeft(2, '0')}-${newSayim.date.day.toString().padLeft(2, '0')}";
       final workDayRef = _firestore
@@ -80,6 +80,8 @@ class SayimService {
         'isCityCenter': newSayim.sehirTipi == SehirTipi.ici,
         'payment': newDavet.ucret,
         'note': combinedNote,
+        'toplanmaYeri': newSayim.toplanmaYeri,
+        'grupSaati': grup.saat,
         'sayimId': newSayim.id,
       };
 
@@ -124,7 +126,7 @@ class SayimService {
           (g) => g.grupId == grupId,
           orElse: () => const SayimGrup(grupId: 1, saat: ''),
         );
-        final combinedNote = '${sayim.note} ${grup.saat}'.trim();
+        final combinedNote = '${sayim.firmaAdi} ${sayim.note} ${grup.saat}'.trim();
 
         final oldDateString = "${oldSayim.date.year}-${oldSayim.date.month.toString().padLeft(2, '0')}-${oldSayim.date.day.toString().padLeft(2, '0')}";
         final newDateString = "${sayim.date.year}-${sayim.date.month.toString().padLeft(2, '0')}-${sayim.date.day.toString().padLeft(2, '0')}";
@@ -150,6 +152,8 @@ class SayimService {
           'isCityCenter': sayim.sehirTipi == SehirTipi.ici,
           'payment': ucret,
           'note': combinedNote,
+          'toplanmaYeri': sayim.toplanmaYeri,
+          'grupSaati': grup.saat,
           'sayimId': sayim.id,
         };
 

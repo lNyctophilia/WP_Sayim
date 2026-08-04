@@ -76,7 +76,7 @@ class DavetService {
       (g) => g.grupId == davet.grupId,
       orElse: () => const SayimGrup(grupId: 1, saat: ''),
     );
-    final combinedNote = '${sayim.note} ${grup.saat}'.trim();
+    final combinedNote = '${sayim.firmaAdi} ${sayim.note} ${grup.saat}'.trim();
 
     // 3. WorkDay oluştur
     final workDay = WorkDay(
@@ -84,6 +84,8 @@ class DavetService {
       isCityCenter: davet.sehirIciDisi == SehirTipi.ici,
       payment: davet.ucret,
       note: combinedNote,
+      toplanmaYeri: sayim.toplanmaYeri,
+      grupSaati: grup.saat,
       sayimId: sayim.id,
     );
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
+import 'package:geolocator/geolocator.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_strings.dart';
 import '../services/language_service.dart';
@@ -29,6 +30,7 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
   late LatLng _currentLocation;
   List<dynamic> _searchResults = [];
   bool _isSearching = false;
+  bool _isGettingLocation = false;
   String _selectedAddress = '';
 
   @override
@@ -76,6 +78,8 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
     }
   }
 
+
+
   void _moveToLocation(double lat, double lon, String addressName) {
     final newLoc = LatLng(lat, lon);
     setState(() {
@@ -105,6 +109,55 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
       }
     } catch (e) {
       debugPrint('Nominatim reverse geocoding error: $e');
+    }
+  }
+
+  Future<void> _goToCurrentLocation() async {
+    setState(() {
+      _isGettingLocation = true;
+    });
+
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          setState(() {
+            _isGettingLocation = false;
+          });
+          return;
+        }
+      }
+      
+      if (permission == LocationPermission.deniedForever) {
+        setState(() {
+          _isGettingLocation = false;
+        });
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      
+      final newLoc = LatLng(position.latitude, position.longitude);
+      _mapController.move(newLoc, 15.0);
+      
+      setState(() {
+        _currentLocation = newLoc;
+        _selectedAddress = '';
+        _searchResults = [];
+      });
+      
+      await _getAddressFromCoordinates(newLoc);
+    } catch (e) {
+      debugPrint('Error getting location: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGettingLocation = false;
+        });
+      }
     }
   }
 
@@ -267,6 +320,27 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
             ),
           ),
 
+          // Go To Current Location FAB
+          Positioned(
+            bottom: 150,
+            right: 16,
+            child: FloatingActionButton(
+              heroTag: 'currentLocationBtn',
+              backgroundColor: AppColors.card,
+              onPressed: _goToCurrentLocation,
+              child: _isGettingLocation
+                  ? SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.accentLight,
+                      ),
+                    )
+                  : Icon(Icons.my_location, color: AppColors.accentLight),
+            ),
+          ),
+
           // Selected Address Display
           Positioned(
             bottom: 24,
@@ -320,6 +394,7 @@ class _MapLocationPickerState extends State<MapLocationPicker> {
               ),
             ),
           ),
+
         ],
       ),
     );

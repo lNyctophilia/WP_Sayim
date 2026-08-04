@@ -6,6 +6,8 @@ class WorkDay {
   final bool isCityCenter; // true = şehir içi, false = şehir dışı
   final double payment;
   final String note;
+  final String toplanmaYeri;
+  final String? grupSaati;
   final String? sayimId;
 
   const WorkDay({
@@ -13,6 +15,8 @@ class WorkDay {
     required this.isCityCenter,
     required this.payment,
     this.note = '',
+    this.toplanmaYeri = '',
+    this.grupSaati,
     this.sayimId,
   });
 
@@ -21,6 +25,8 @@ class WorkDay {
     bool? isCityCenter,
     double? payment,
     String? note,
+    String? toplanmaYeri,
+    String? grupSaati,
     String? sayimId,
   }) {
     return WorkDay(
@@ -28,6 +34,8 @@ class WorkDay {
       isCityCenter: isCityCenter ?? this.isCityCenter,
       payment: payment ?? this.payment,
       note: note ?? this.note,
+      toplanmaYeri: toplanmaYeri ?? this.toplanmaYeri,
+      grupSaati: grupSaati ?? this.grupSaati,
       sayimId: sayimId ?? this.sayimId,
     );
   }
@@ -38,6 +46,8 @@ class WorkDay {
       'isCityCenter': isCityCenter,
       'payment': payment,
       'note': note,
+      'toplanmaYeri': toplanmaYeri,
+      if (grupSaati != null) 'grupSaati': grupSaati,
       if (sayimId != null) 'sayimId': sayimId,
     };
   }
@@ -58,7 +68,29 @@ class WorkDay {
       isCityCenter: json['isCityCenter'] as bool? ?? true,
       payment: (json['payment'] as num?)?.toDouble() ?? 0.0,
       note: json['note'] as String? ?? '',
+      toplanmaYeri: json['toplanmaYeri'] as String? ?? '',
+      grupSaati: json['grupSaati'] as String?,
       sayimId: json['sayimId'] as String?,
     );
+  }
+
+  String get displayNote {
+    if (toplanmaYeri.trim().isEmpty) return note;
+    if (grupSaati == null || grupSaati!.isEmpty) return note;
+
+    try {
+      final parts = grupSaati!.split(':');
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+      final startTime = DateTime(date.year, date.month, date.day, hour, minute);
+      
+      if (DateTime.now().isAfter(startTime)) {
+        return note;
+      } else {
+        return toplanmaYeri;
+      }
+    } catch (e) {
+      return note;
+    }
   }
 }

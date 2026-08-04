@@ -40,6 +40,13 @@ async function sendNotificationAndLog({ userId, title, body, type, relatedId, da
           headers: { 
             "apns-collapse-id": tag,
             "apns-priority": "10"
+          },
+          payload: {
+            aps: {
+              sound: "default",
+              badge: 1,
+              "content-available": 1
+            }
           }
         },
         data: dataPayload
@@ -96,7 +103,7 @@ exports.sendDavetNotification = onDocumentCreated("davetler/{davetId}", async (e
       return;
     }
 
-    const sayimName = sayimData.note || "Yeni Sayım";
+    const sayimName = sayimData.toplanmaYeri || "Yeni Sayım";
     const creatorId = sayimData.createdBy;
 
     if (staffId === creatorId) {
@@ -140,7 +147,7 @@ exports.sendDavetResponseNotification = onDocumentUpdated("davetler/{davetId}", 
     const sayimDoc = await admin.firestore().collection("sayimlar").doc(sayimId).get();
     if (!sayimDoc.exists) return;
     const sayimData = sayimDoc.data();
-    const sayimName = sayimData.note || "Bilinmeyen Sayım";
+    const sayimName = sayimData.toplanmaYeri || "Bilinmeyen Sayım";
     const creatorId = sayimData.createdBy;
 
     if (staffId === creatorId) return;
@@ -183,7 +190,7 @@ exports.sendDavetReminderNotification = onDocumentUpdated("davetler/{davetId}", 
 
   try {
     const sayimDoc = await admin.firestore().collection("sayimlar").doc(sayimId).get();
-    const sayimName = sayimDoc.exists ? (sayimDoc.data().note || "Sayım") : "Sayım";
+    const sayimName = sayimDoc.exists ? (sayimDoc.data().toplanmaYeri || "Sayım") : "Sayım";
 
     await sendNotificationAndLog({
       userId: staffId,
@@ -215,7 +222,7 @@ exports.sendDavetCancelledNotification = onDocumentDeleted("davetler/{davetId}",
 
   try {
     const sayimDoc = await admin.firestore().collection("sayimlar").doc(sayimId).get();
-    const sayimName = sayimDoc.exists ? (sayimDoc.data().note || "Sayım") : "Sayım";
+    const sayimName = sayimDoc.exists ? (sayimDoc.data().toplanmaYeri || "Sayım") : "Sayım";
 
     await sendNotificationAndLog({
       userId: staffId,
@@ -336,7 +343,7 @@ exports.sayimAutoReminder = onSchedule("every 60 minutes", async (event) => {
         const userData = userDoc.data();
         if (userData.sayimReminderEnabled === false) continue;
 
-        const sayimName = sayimData.note || "Sayım";
+        const sayimName = sayimData.toplanmaYeri || "Sayım";
         
         await sendNotificationAndLog({
           userId: davet.userId,
@@ -552,15 +559,46 @@ exports.sendTestNotification = onDocumentCreated("test_notifications/{docId}", a
   // Wait 10 seconds so the user can put the app in the background to test push notifications
   await new Promise(resolve => setTimeout(resolve, 10000));
 
-  await sendNotificationAndLog({
-    userId: data.userId,
-    title: "Test Bildirimi",
-    body: "Uygulama kapalıyken (veya arka plandayken) de bildirim alabiliyorsunuz. Harika!",
-    type: "test",
-    relatedId: event.params.docId,
-    dataPayload: {
-      type: "test"
-    },
-    tag: `test_${event.params.docId}`
-  });
+  const userDoc = await admin.firestore().collection("users").doc(data.userId).get();
+  if (!userDoc.exists) return;
+
+  const userData = userDoc.data();
+  const hasEmail = userData.email && userData.email.trim() !== "";
+
+  if (hasEmail) {
+    // E-postası olan kullanıcıya e-posta gönder (mail koleksiyonu üzerinden)
+    await admin.firestore().collection("mail").add({
+      to: userData.email,
+      message: {
+        subject: "WP Sayım - Bildirim Testi",
+        html: `<h3>WP Sayım - Bildirim Testi</h3>
+               <p>Bu bir test e-postasıdır. Eğer bu mesajı alıyorsanız, bildirim sisteminiz başarıyla çalışıyor demektir.</p>
+               <p>Uygulama kapalıyken de bu e-postayı alabiliyorsunuz. Harika!</p>`
+      }
+    });
+
+    // Uygulama içi bildirimi de kaydet
+    await admin.firestore().collection("notifications").add({
+      userId: data.userId,
+      title: "Test E-postası Gönderildi",
+      body: "E-posta adresinize test maili gönderildi. Lütfen gelen kutunuzu kontrol edin.",
+      type: "test",
+      relatedId: event.params.docId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      isRead: false
+    });
+  } else {
+    // E-postası olmayan kullanıcıya normal push notification gönder
+    await sendNotificationAndLog({
+      userId: data.userId,
+      title: "Test Bildirimi",
+      body: "Uygulama kapalıyken (veya arka plandayken) de bildirim alabiliyorsunuz. Harika!",
+      type: "test",
+      relatedId: event.params.docId,
+      dataPayload: {
+        type: "test"
+      },
+      tag: `test_${event.params.docId}`
+    });
+  }
 });

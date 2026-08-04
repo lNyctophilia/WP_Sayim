@@ -112,7 +112,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
             await notificationService.sendEmailNotification(
               targetUserId: davet.userId,
               subject: AppStrings.get('sayim_cancelled', isTr ? 'tr' : 'en') ?? 'Sayım İptali',
-              textContent: 'Merhaba ${user.fullName},\n\nKabul ettiğiniz "${currentSayim.note}" isimli sayım iptal edilmiştir.\n\nBilginize.',
+              textContent: 'Merhaba ${user.fullName},\n\nKabul ettiğiniz "${currentSayim.toplanmaYeri}" isimli sayım iptal edilmiştir.\n\nBilginize.',
             );
           }
         }
@@ -564,7 +564,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                             await notificationService.sendEmailNotification(
                               targetUserId: davet.userId,
                               subject: AppStrings.get('sayim_cancelled', isTr ? 'tr' : 'en') ?? 'Sayım İptali',
-                              textContent: 'Merhaba ${userName},\n\nKabul ettiğiniz "${currentSayim.note}" isimli sayımdan çıkarıldınız.\n\nBilginize.',
+                              textContent: 'Merhaba ${userName},\n\nKabul ettiğiniz "${currentSayim.toplanmaYeri}" isimli sayımdan çıkarıldınız.\n\nBilginize.',
                             );
                           }
 

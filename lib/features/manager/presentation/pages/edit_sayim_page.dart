@@ -279,7 +279,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
                 await notificationService.sendEmailNotification(
                   targetUserId: davet.userId,
                   subject: AppStrings.get('sayim_cancelled', widget.lang.currentLang) ?? 'Sayım İptali',
-                  textContent: 'Merhaba ${user.fullName},\n\nKabul ettiğiniz "${updatedSayim.note}" isimli sayımdan çıkarıldınız.\n\nBilginize.',
+                  textContent: 'Merhaba ${user.fullName},\n\nKabul ettiğiniz "${updatedSayim.toplanmaYeri}" isimli sayımdan çıkarıldınız.\n\nBilginize.',
                 );
               }
             } catch (_) {}

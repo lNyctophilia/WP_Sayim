@@ -34,6 +34,7 @@ class Sayim {
   final String id;
   final String note;
   final String firmaAdi;
+  final String toplanmaYeri;
   final DateTime date;
   final int maxKisi;
   final int maxYonetici;
@@ -52,6 +53,7 @@ class Sayim {
     required this.id,
     required this.note,
     this.firmaAdi = '',
+    this.toplanmaYeri = '',
     required this.date,
     this.maxKisi = 20,
     this.maxYonetici = 2,
@@ -71,6 +73,7 @@ class Sayim {
     String? id,
     String? note,
     String? firmaAdi,
+    String? toplanmaYeri,
     DateTime? date,
     int? maxKisi,
     int? maxYonetici,
@@ -89,6 +92,7 @@ class Sayim {
       id: id ?? this.id,
       note: note ?? this.note,
       firmaAdi: firmaAdi ?? this.firmaAdi,
+      toplanmaYeri: toplanmaYeri ?? this.toplanmaYeri,
       date: date ?? this.date,
       maxKisi: maxKisi ?? this.maxKisi,
       maxYonetici: maxYonetici ?? this.maxYonetici,
@@ -112,6 +116,7 @@ class Sayim {
       id: doc.id,
       note: data['note'] as String? ?? '',
       firmaAdi: data['firmaAdi'] as String? ?? '',
+      toplanmaYeri: data['toplanmaYeri'] as String? ?? '',
       date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       maxKisi: data['maxKisi'] as int? ?? 20,
       maxYonetici: data['maxYonetici'] as int? ?? 2,
@@ -180,6 +185,7 @@ class Sayim {
     return {
       'note': note,
       'firmaAdi': firmaAdi,
+      'toplanmaYeri': toplanmaYeri,
       'date': Timestamp.fromDate(date),
       'maxKisi': maxKisi,
       'maxYonetici': maxYonetici,
