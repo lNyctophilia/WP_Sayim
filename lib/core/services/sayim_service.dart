@@ -82,6 +82,7 @@ class SayimService {
         'note': combinedNote,
         'toplanmaYeri': newSayim.toplanmaYeri,
         'grupSaati': grup.saat,
+        'sayimStartTime': newSayim.startTime,
         'sayimId': newSayim.id,
       };
 
@@ -154,6 +155,7 @@ class SayimService {
           'note': combinedNote,
           'toplanmaYeri': sayim.toplanmaYeri,
           'grupSaati': grup.saat,
+          'sayimStartTime': sayim.startTime,
           'sayimId': sayim.id,
         };
 
