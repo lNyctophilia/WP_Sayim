@@ -35,9 +35,11 @@ class AuthService {
   /// Devam eden bir giriş işlemi var mı? (Oturum çakışması race-condition'ı önlemek için)
   static bool isLoggingIn = false;
   static DateTime? lastLoginTime;
+  static String? currentSessionId;
 
   /// Telefon numarası (veya eski kullanıcı adı) + şifre ile giriş yap
   Future<AppUser?> login(String identifier, String password) async {
+    lastLoginTime = DateTime.now();
     isLoggingIn = true;
     try {
       final email = _toEmail(identifier);
@@ -58,6 +60,7 @@ class AuthService {
       }
 
       final String sessionId = DateTime.now().millisecondsSinceEpoch.toString();
+      currentSessionId = sessionId;
       await StorageService().setSessionId(sessionId);
       
       await _firestore.collection('users').doc(credential.user!.uid).update({
