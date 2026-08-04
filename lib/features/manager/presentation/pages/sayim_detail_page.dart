@@ -386,27 +386,21 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: userSnapshot.data!.isOwner 
-                                      ? AppColors.danger.withValues(alpha: 0.1)
-                                      : userSnapshot.data!.isManager 
-                                          ? AppColors.accentLight.withValues(alpha: 0.1) 
-                                          : AppColors.divider.withValues(alpha: 0.5),
+                                  color: davet.role == DavetRole.manager
+                                      ? AppColors.accentLight.withValues(alpha: 0.1) 
+                                      : AppColors.divider.withValues(alpha: 0.5),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
-                                  userSnapshot.data!.isOwner 
-                                      ? 'Admin' 
-                                      : userSnapshot.data!.isManager 
-                                          ? (AppStrings.get('manager', isTr ? 'tr' : 'en')) 
-                                          : (AppStrings.get('staff', isTr ? 'tr' : 'en')),
+                                  davet.role == DavetRole.manager
+                                      ? (AppStrings.get('manager', isTr ? 'tr' : 'en')) 
+                                      : (AppStrings.get('staff', isTr ? 'tr' : 'en')),
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
-                                    color: userSnapshot.data!.isOwner 
-                                        ? AppColors.danger
-                                        : userSnapshot.data!.isManager 
-                                            ? AppColors.accentLight 
-                                            : AppColors.textSecondary,
+                                    color: davet.role == DavetRole.manager
+                                        ? AppColors.accentLight 
+                                        : AppColors.textSecondary,
                                   ),
                                 ),
                               ),
