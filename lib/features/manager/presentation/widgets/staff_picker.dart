@@ -69,6 +69,9 @@ class _StaffPickerState extends State<StaffPicker> {
   final SettingsService _settingsService = SettingsService();
   AppSettings _settings = AppSettings();
   bool _isLoadingSettings = true;
+  
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   DateTime? _lastSnackBarTime;
   String? _lastSnackBarMsg;
@@ -100,6 +103,12 @@ class _StaffPickerState extends State<StaffPicker> {
   void initState() {
     super.initState();
     _loadSettings();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadSettings() async {
@@ -267,9 +276,43 @@ class _StaffPickerState extends State<StaffPicker> {
       );
     }
 
+    final filteredConfigs = _configs.where((config) {
+      final u = config.user;
+      final q = _searchQuery.toLowerCase();
+      if (q.isEmpty) return true;
+      return u.fullName.toLowerCase().contains(q) ||
+             u.username.toLowerCase().contains(q) ||
+             (u.phone?.toLowerCase().contains(q) ?? false);
+    }).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Search Box
+        TextField(
+          controller: _searchController,
+          style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
+          onChanged: (val) {
+            setState(() {
+              _searchQuery = val;
+            });
+          },
+          decoration: InputDecoration(
+            hintText: AppStrings.get('search', widget.isTr ? 'tr' : 'en') == 'search' 
+                ? (widget.isTr ? 'Personel Ara (İsim veya Telefon)' : 'Search Staff (Name or Phone)') 
+                : AppStrings.get('search', widget.isTr ? 'tr' : 'en'),
+            hintStyle: TextStyle(color: AppColors.textHint, fontSize: 13),
+            filled: true,
+            fillColor: AppColors.surface,
+            prefixIcon: Icon(Icons.search, color: AppColors.textSecondary, size: 20),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
+        ),
+        const SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -322,10 +365,10 @@ class _StaffPickerState extends State<StaffPicker> {
         ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: _configs.length,
+          itemCount: filteredConfigs.length,
           separatorBuilder: (context, index) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
-            final config = _configs[index];
+            final config = filteredConfigs[index];
             return _buildUserCard(config);
           },
         ),

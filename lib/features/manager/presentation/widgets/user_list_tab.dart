@@ -30,6 +30,9 @@ class _UserListTabState extends State<UserListTab>
   List<AppUser> _pendingUsers = [];
   bool _isLoading = true;
 
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   bool get wantKeepAlive => true;
 
@@ -37,6 +40,12 @@ class _UserListTabState extends State<UserListTab>
   void initState() {
     super.initState();
     _loadUsers();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadUsers() async {
@@ -120,12 +129,81 @@ class _UserListTabState extends State<UserListTab>
     }
   }
 
+  List<AppUser> get _filteredApprovedUsers {
+    if (_searchQuery.isEmpty) return _approvedUsers;
+    final query = _searchQuery.toLowerCase();
+    return _approvedUsers.where((user) {
+      final nameMatches = user.fullName.toLowerCase().contains(query);
+      final phoneMatches = user.phone?.toLowerCase().contains(query) ?? false;
+      return nameMatches || phoneMatches;
+    }).toList();
+  }
+
+  List<AppUser> get _filteredPendingUsers {
+    if (_searchQuery.isEmpty) return _pendingUsers;
+    final query = _searchQuery.toLowerCase();
+    return _pendingUsers.where((user) {
+      final nameMatches = user.fullName.toLowerCase().contains(query);
+      final phoneMatches = user.phone?.toLowerCase().contains(query) ?? false;
+      return nameMatches || phoneMatches;
+    }).toList();
+  }
+
+  Widget _buildSearchBar(bool isTr) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (value) {
+          setState(() {
+            _searchQuery = value;
+          });
+        },
+        style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 14),
+        decoration: InputDecoration(
+          hintText: isTr ? 'İsim veya telefon ile ara...' : 'Search by name or phone...',
+          hintStyle: TextStyle(color: AppColors.textHint, fontSize: 14),
+          prefixIcon: Icon(Icons.search, color: AppColors.textSecondary, size: 20),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: Icon(Icons.clear, color: AppColors.textSecondary, size: 20),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() {
+                      _searchQuery = '';
+                    });
+                  },
+                )
+              : null,
+          filled: true,
+          fillColor: AppColors.surface,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: AppColors.divider),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: AppColors.divider),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: AppColors.accentLight),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final isTr = widget.lang.currentLang == 'tr';
     final isManagerList = widget.targetRole == UserRole.manager;
     final title = isManagerList ? widget.lang.tr('managers') : widget.lang.tr('existing_staff');
+
+    final filteredApproved = _filteredApprovedUsers;
+    final filteredPending = _filteredPendingUsers;
 
     return RefreshIndicator(
       onRefresh: _loadUsers,
@@ -134,20 +212,24 @@ class _UserListTabState extends State<UserListTab>
           ? Center(child: CircularProgressIndicator(color: AppColors.accentLight))
           : CustomScrollView(
               slivers: [
-                if (!isManagerList && _pendingUsers.isNotEmpty) ...[
+                if (_approvedUsers.isNotEmpty || _pendingUsers.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: _buildSearchBar(isTr),
+                  ),
+                if (!isManagerList && filteredPending.isNotEmpty) ...[
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(20, 16, 16, 8),
                       child: Text(
-                        '${widget.lang.tr('pending_approvals')} (${_pendingUsers.length})',
+                        '${widget.lang.tr('pending_approvals')} (${filteredPending.length})',
                         style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.warning),
                       ),
                     ),
                   ),
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
-                      (context, index) => _buildPendingUserCard(_pendingUsers[index]),
-                      childCount: _pendingUsers.length,
+                      (context, index) => _buildPendingUserCard(filteredPending[index]),
+                      childCount: filteredPending.length,
                     ),
                   ),
                   const SliverToBoxAdapter(child: SizedBox(height: 16)),
@@ -162,22 +244,24 @@ class _UserListTabState extends State<UserListTab>
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 16, 16, 8),
                     child: Text(
-                      '$title (${_approvedUsers.length})',
+                      '$title (${filteredApproved.length})',
                       style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
                     ),
                   ),
                 ),
-                _approvedUsers.isEmpty
+                filteredApproved.isEmpty
                     ? SliverFillRemaining(
-                        child: _buildEmptyState(isTr, isManagerList),
+                        child: _searchQuery.isNotEmpty 
+                            ? Center(child: Text(isTr ? 'Sonuç bulunamadı' : 'No results found', style: TextStyle(color: AppColors.textHint)))
+                            : _buildEmptyState(isTr, isManagerList),
                       )
                     : SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (context, index) => Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: _buildUserCard(_approvedUsers[index]),
+                            child: _buildUserCard(filteredApproved[index]),
                           ),
-                          childCount: _approvedUsers.length,
+                          childCount: filteredApproved.length,
                         ),
                       ),
               ],
@@ -323,7 +407,7 @@ class _UserListTabState extends State<UserListTab>
           ),
           child: Center(
             child: Text(
-              user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : '?',
+               user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : '?',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -375,3 +459,4 @@ class _UserListTabState extends State<UserListTab>
     );
   }
 }
+

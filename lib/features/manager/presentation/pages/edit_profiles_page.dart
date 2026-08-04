@@ -152,6 +152,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
         address: _addressController.text.trim().isNotEmpty ? _addressController.text.trim() : null,
         latitude: _selectedLat,
         longitude: _selectedLng,
+        email: _emailController.text.trim(),
       );
 
       // Refresh user list
@@ -286,13 +287,13 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                           ),
                           const SizedBox(height: 16),
 
-                          _buildLabel(isTr ? 'E-posta (Sadece Görüntüleme)' : 'Email (Read Only)'),
+                          _buildLabel(isTr ? 'E-posta' : 'Email'),
                           const SizedBox(height: 6),
                           _buildTextField(
                             controller: _emailController,
-                            hintText: isTr ? 'E-posta adresi bulunmuyor' : 'No email address',
+                            hintText: isTr ? 'E-posta adresi girin' : 'Enter email address',
                             icon: Icons.email_outlined,
-                            readOnly: true,
+                            keyboardType: TextInputType.emailAddress,
                           ),
                           const SizedBox(height: 16),
 
