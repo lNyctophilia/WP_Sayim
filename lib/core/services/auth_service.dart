@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/app_user.dart';
 import 'notification_service.dart';
+import 'storage_service.dart';
 
 /// Firebase Auth servisi — pseudo-email yöntemiyle kullanıcı adı + şifre
 ///
@@ -33,6 +34,7 @@ class AuthService {
 
   /// Devam eden bir giriş işlemi var mı? (Oturum çakışması race-condition'ı önlemek için)
   static bool isLoggingIn = false;
+  static DateTime? lastLoginTime;
 
   /// Telefon numarası (veya eski kullanıcı adı) + şifre ile giriş yap
   Future<AppUser?> login(String identifier, String password) async {
@@ -56,8 +58,7 @@ class AuthService {
       }
 
       final String sessionId = DateTime.now().millisecondsSinceEpoch.toString();
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('session_id', sessionId);
+      await StorageService().setSessionId(sessionId);
       
       await _firestore.collection('users').doc(credential.user!.uid).update({
         'sessionId': sessionId,
@@ -69,6 +70,8 @@ class AuthService {
       Future.delayed(const Duration(seconds: 2), () {
         isLoggingIn = false;
       });
+
+      lastLoginTime = DateTime.now();
 
       return appUser;
     } on FirebaseAuthException {
@@ -91,8 +94,7 @@ class AuthService {
     }
     await _auth.signOut();
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('session_id');
+      await StorageService().setSessionId(null);
     } catch (_) {}
   }
 

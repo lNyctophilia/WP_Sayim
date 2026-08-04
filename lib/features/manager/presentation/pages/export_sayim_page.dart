@@ -96,8 +96,8 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       centerStyle.hAlign = xlsio.HAlignType.center;
       centerStyle.vAlign = xlsio.VAlignType.center;
 
-      final managerDavetler = acceptedDavetler.where((d) => userMap[d.userId]?.isManager == true).toList();
-      final personnelDavetler = acceptedDavetler.where((d) => userMap[d.userId]?.isManager != true).toList();
+      final managerDavetler = acceptedDavetler.where((d) => d.role == DavetRole.manager).toList();
+      final personnelDavetler = acceptedDavetler.where((d) => d.role != DavetRole.manager).toList();
 
       // Firma ve Mağaza Adı Çıkarımı
       String firmaAdi = _selectedSayim!.firmaAdi.isNotEmpty ? _selectedSayim!.firmaAdi : 'Bilinmeyen Firma';

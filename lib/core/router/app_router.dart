@@ -178,9 +178,11 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
               );
             }
 
-            // Oturum çakışması kontrolü (Eğer aktif bir giriş işlemi yoksa)
+            // Oturum çakışması kontrolü (Eğer aktif bir giriş işlemi yoksa ve son girişten en az 10 saniye geçmişse)
             final localSessionId = widget.storage.getSessionId();
-            if (!AuthService.isLoggingIn && appUser.sessionId != null && localSessionId != null && appUser.sessionId != localSessionId) {
+            final isRecentlyLoggedIn = AuthService.lastLoginTime != null && DateTime.now().difference(AuthService.lastLoginTime!).inSeconds < 10;
+            
+            if (!isRecentlyLoggedIn && !AuthService.isLoggingIn && appUser.sessionId != null && localSessionId != null && appUser.sessionId != localSessionId) {
               // Farklı bir cihazda giriş yapılmış, bu cihazı oturumdan at (Kicked = true)
               Future.microtask(() => _authService.logout(true));
               return Scaffold(

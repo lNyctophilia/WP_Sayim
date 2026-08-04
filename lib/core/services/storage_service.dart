@@ -4,6 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// İş günü verileri Firestore üzerinden yönetilir (WorkDayRepository).
 /// Bu servis sadece yerel ayarları (dil, oturum, son görüntülenen ay) saklar.
 class StorageService {
+  static final StorageService _instance = StorageService._internal();
+  factory StorageService() => _instance;
+  StorageService._internal();
   static const String _prefsLang = 'language';
   static const String _prefsCityInner = 'city_inner_payment';
   static const String _prefsCityOuter = 'city_outer_payment';

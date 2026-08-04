@@ -49,6 +49,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
   final _passwordController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
+  final _emailController = TextEditingController();
   UserRole _selectedRole = UserRole.staff;
   
   double? _selectedLat;
@@ -68,6 +69,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
     _passwordController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -105,6 +107,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
         _passwordController.text = user.password ?? '';
         _phoneController.text = user.phone ?? '';
         _addressController.text = user.address ?? '';
+        _emailController.text = user.email ?? '';
         UserRole role = user.roles.isNotEmpty ? user.roles.first : UserRole.staff;
         if (role == UserRole.manager) {
           role = UserRole.managerA1;
@@ -280,6 +283,16 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                               LengthLimitingTextInputFormatter(30),
                             ],
                             validator: (v) => (v == null || v.trim().length < 3) ? (AppStrings.get('min_3_chars', isTr ? 'tr' : 'en')) : null,
+                          ),
+                          const SizedBox(height: 16),
+
+                          _buildLabel(isTr ? 'E-posta (Sadece Görüntüleme)' : 'Email (Read Only)'),
+                          const SizedBox(height: 6),
+                          _buildTextField(
+                            controller: _emailController,
+                            hintText: isTr ? 'E-posta adresi bulunmuyor' : 'No email address',
+                            icon: Icons.email_outlined,
+                            readOnly: true,
                           ),
                           const SizedBox(height: 16),
 
@@ -469,6 +482,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
     required String hintText,
     required IconData icon,
     bool obscureText = false,
+    bool readOnly = false,
     TextInputType? keyboardType,
     Widget? suffixIcon,
     List<TextInputFormatter>? inputFormatters,
@@ -477,6 +491,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
+      readOnly: readOnly,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       validator: validator,
