@@ -86,6 +86,7 @@ class DavetService {
       note: combinedNote,
       toplanmaYeri: sayim.toplanmaYeri,
       grupSaati: grup.saat,
+      sayimStartTime: sayim.startTime,
       sayimId: sayim.id,
     );
 
