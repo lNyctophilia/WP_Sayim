@@ -178,13 +178,13 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
   }
 
   Future<void> _submit() async {
-    if (_noteController.text.trim().isEmpty) {
-      final isTr = widget.lang.currentLang == 'tr';
+    final isTr = widget.lang.currentLang == 'tr';
+    bool isValid = _formKey.currentState!.validate();
+
+    if (!isValid || _startTime == null) {
       _showErrorSnackBar(AppStrings.get('cannot_be_empty', isTr ? 'tr' : 'en'));
       return;
     }
-
-    if (!_formKey.currentState!.validate()) return;
     
     if (_gruplar.isEmpty) {
       _showErrorSnackBar(AppStrings.get('add_time_group_error', widget.lang.currentLang));
@@ -381,6 +381,9 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
                         ),
                         prefixIcon: Icon(Icons.business_rounded, color: AppColors.textSecondary),
                       ),
+                      validator: (val) => val == null || val.trim().isEmpty
+                          ? (AppStrings.get('cannot_be_empty', isTr ? 'tr' : 'en'))
+                          : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -397,6 +400,9 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
                         ),
                         prefixIcon: Icon(Icons.meeting_room_rounded, color: AppColors.textSecondary),
                       ),
+                      validator: (val) => val == null || val.trim().isEmpty
+                          ? (AppStrings.get('cannot_be_empty', isTr ? 'tr' : 'en'))
+                          : null,
                     ),
                     const SizedBox(height: 12),
                     Row(

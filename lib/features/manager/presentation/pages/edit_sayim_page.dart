@@ -191,7 +191,18 @@ class _EditSayimPageState extends State<EditSayimPage> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    final isTr = widget.lang.currentLang == 'tr';
+    bool isValid = _formKey.currentState!.validate();
+
+    if (!isValid || _startTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppStrings.get('cannot_be_empty', isTr ? 'tr' : 'en')),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+      return;
+    }
     
     if (_gruplar.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -422,6 +433,9 @@ class _EditSayimPageState extends State<EditSayimPage> {
                         ),
                         prefixIcon: Icon(Icons.business_rounded, color: AppColors.textSecondary),
                       ),
+                      validator: (val) => val == null || val.trim().isEmpty
+                          ? (AppStrings.get('cannot_be_empty', isTr ? 'tr' : 'en'))
+                          : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -438,6 +452,9 @@ class _EditSayimPageState extends State<EditSayimPage> {
                         ),
                         prefixIcon: Icon(Icons.meeting_room_rounded, color: AppColors.textSecondary),
                       ),
+                      validator: (val) => val == null || val.trim().isEmpty
+                          ? (AppStrings.get('cannot_be_empty', isTr ? 'tr' : 'en'))
+                          : null,
                     ),
                     const SizedBox(height: 12),
                     Row(

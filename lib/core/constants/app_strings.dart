@@ -331,6 +331,7 @@ class AppStrings {
     'note_job_location': {'tr': 'Not / İş / Yer', 'en': 'Note / Job / Location'},
     'company_name': {'tr': 'Firma Adı / Marka (Örn: Süvari)', 'en': 'Company / Brand Name'},
     'note_city_location': {'tr': 'Şehir ve Mekan (Örn: Denizli Teraspark)', 'en': 'City and Location'},
+    'meeting_place': {'tr': 'Toplanma Yeri', 'en': 'Meeting Place'},
     'cannot_be_empty': {'tr': 'Boş bırakılamaz', 'en': 'Cannot be empty'},
     'standard_personnel': {'tr': 'Personel Sayısı', 'en': 'Personnel Count'},
     'standard_manager': {'tr': 'Yönetici Sayısı', 'en': 'Manager Count'},
