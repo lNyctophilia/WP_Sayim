@@ -377,19 +377,46 @@ exports.sendApprovalNotification = onDocumentUpdated("users/{userId}", async (ev
   if (!oldData || !newData) return;
 
   if (oldData.isApproved === false && newData.isApproved === true) {
-    await sendNotificationAndLog({
-      userId: event.params.userId,
-      title: "Hesabınız Onaylandı!",
-      body: "WP Sayım uygulamasına kayıt başvurunuz onaylandı. Artık giriş yapabilirsiniz.",
-      type: "approval",
-      relatedId: event.params.userId,
-      dataPayload: {
+    const hasEmail = newData.email && newData.email.trim() !== "";
+
+    if (hasEmail) {
+      // E-posta adresi olan kullanıcıya e-posta gönder
+      await admin.firestore().collection("mail").add({
+        to: newData.email,
+        message: {
+          subject: "WP Sayım - Hesabınız Onaylandı!",
+          html: `<h3>Hesabınız Onaylandı!</h3>
+                 <p>WP Sayım uygulamasına kayıt başvurunuz onaylandı. Artık e-posta adresiniz ve şifreniz ile giriş yapabilirsiniz.</p>
+                 <p><a href="https://lnyctophilia.github.io/WP_Sayim/">Uygulamaya Gitmek İçin Tıklayın</a></p>`
+        }
+      });
+
+      // Uygulama içi bildirimi de kaydet
+      await admin.firestore().collection("notifications").add({
+        userId: event.params.userId,
+        title: "Hesabınız Onaylandı!",
+        body: "WP Sayım uygulamasına kayıt başvurunuz onaylandı. Artık giriş yapabilirsiniz.",
         type: "approval",
-        userId: event.params.userId
-      },
-      tag: `approval_${event.params.userId}`,
-      link: "https://lnyctophilia.github.io/WP_Sayim/"
-    });
+        relatedId: event.params.userId,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        isRead: false
+      });
+    } else {
+      // E-postası olmayan (normal push notification alan) kullanıcıya bildirim gönder
+      await sendNotificationAndLog({
+        userId: event.params.userId,
+        title: "Hesabınız Onaylandı!",
+        body: "WP Sayım uygulamasına kayıt başvurunuz onaylandı. Artık giriş yapabilirsiniz.",
+        type: "approval",
+        relatedId: event.params.userId,
+        dataPayload: {
+          type: "approval",
+          userId: event.params.userId
+        },
+        tag: `approval_${event.params.userId}`,
+        link: "https://lnyctophilia.github.io/WP_Sayim/"
+      });
+    }
   }
 });
 
