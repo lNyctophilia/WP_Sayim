@@ -176,7 +176,6 @@
     })();
   </script>
 
-  <!-- Service Worker Interceptor for FCM on GitHub Pages -->
   <script>
     if ('serviceWorker' in navigator) {
       // Firebase'in arka planda yapmaya çalıştığı /firebase-messaging-sw.js isteğini yakalayıp 
@@ -197,6 +196,35 @@
         }
         return originalRegister.call(navigator.serviceWorker, url, options);
       };
+
+      // ─── iOS SUBSCRIPTION YENİLEME DİNLEYİCİSİ ───
+      // Service Worker, iOS subscription değiştiğinde veya push alındığında
+      // bu mesajları gönderir. Biz burada yakalarız, Dart tarafı da 
+      // onTokenRefresh ile Firestore'a kaydeder.
+      navigator.serviceWorker.addEventListener('message', function(event) {
+        if (!event.data || !event.data.type) return;
+        
+        const msgType = event.data.type;
+        console.log('[SW Message] Mesaj alındı:', msgType);
+        
+        if (msgType === 'SUBSCRIPTION_CHANGED' || 
+            msgType === 'SUBSCRIPTION_EXPIRED' || 
+            msgType === 'TOKEN_REFRESH_NEEDED') {
+          
+          // Firebase Messaging token'ını yeniden almak için deleteToken + getToken çağır
+          // Bu, Dart tarafındaki onTokenRefresh listener'ını tetikleyecek
+          // ve yeni token Firestore'a kaydedilecek.
+          window._swTokenRefreshNeeded = true;
+          
+          // Eğer Flutter uygulaması zaten yüklenmişse, custom event fırlat
+          // böylece Dart tarafı JS interop ile bunu yakalayabilir
+          window.dispatchEvent(new CustomEvent('fcm-token-refresh-needed', { 
+            detail: { reason: msgType } 
+          }));
+          
+          console.log('[SW Message] Token yenileme sinyali gönderildi. Sebep:', msgType);
+        }
+      });
     }
   </script>
 

@@ -93,6 +93,7 @@ class ThemeService extends ChangeNotifier {
         systemNavigationBarColor: AppColors.background,
         systemNavigationBarIconBrightness: AppColors.background.computeLuminance() > 0.5 ? Brightness.dark : Brightness.light,
         systemNavigationBarDividerColor: Colors.transparent,
+        systemNavigationBarContrastEnforced: false,
       ),
     );
 

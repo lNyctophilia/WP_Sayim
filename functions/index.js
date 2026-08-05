@@ -54,8 +54,37 @@ async function sendNotificationAndLog({ userId, title, body, type, relatedId, da
       
       try {
         await admin.messaging().send(message);
+        
+        // Push başarılı — son gönderim zamanını kaydet (keep-alive takibi için)
+        await admin.firestore().collection("users").doc(userId).update({
+          lastPushSentAt: admin.firestore.FieldValue.serverTimestamp()
+        });
       } catch (e) {
         console.error("Error sending push notification:", e);
+        
+        // ─── GEÇERSİZ TOKEN OTOMATİK TEMİZLEME ───
+        // iOS subscription sessizce expire/invalidate olduğunda veya cihaz değiştiğinde
+        // Firebase bu hata kodlarını döner. Token artık işe yaramıyorsa Firestore'dan sil,
+        // kullanıcı bir sonraki uygulama açılışında yeni token üretecek.
+        const invalidTokenCodes = [
+          'messaging/registration-token-not-registered',
+          'messaging/invalid-registration-token',
+          'messaging/third-party-auth-error',
+          'messaging/mismatched-credential'
+        ];
+        
+        if (e.code && invalidTokenCodes.includes(e.code)) {
+          console.log(`[TOKEN CLEANUP] Geçersiz token siliniyor. userId: ${userId}, hata: ${e.code}`);
+          try {
+            await admin.firestore().collection("users").doc(userId).update({
+              fcmToken: admin.firestore.FieldValue.delete(),
+              fcmTokenInvalidatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              fcmTokenInvalidReason: e.code
+            });
+          } catch (cleanupErr) {
+            console.error("[TOKEN CLEANUP] Token silinirken hata:", cleanupErr);
+          }
+        }
       }
     }
 
@@ -676,4 +705,124 @@ exports.sendTestNotification = onDocumentCreated("test_notifications/{docId}", a
       tag: `test_${event.params.docId}`
     });
   }
+});
+
+// 12. iOS PWA Subscription Canlı Tutma (Keep-Alive)
+// Her gün saat 04:00'te çalışır.
+// Son 6 gündür push almamış, fcmToken'ı olan (email'i olmayan) kullanıcılara
+// sessiz bir keep-alive push gönderir.
+// iOS Safari, uzun süre push almayan PWA subscription'larını sessizce öldürür.
+// Bu fonksiyon, subscription'ı canlı tutarak bildirimlerin kesilmesini önler.
+exports.keepAliveSubscription = onSchedule({ schedule: "0 4 * * *", timeZone: "Europe/Istanbul" }, async (event) => {
+  const now = Date.now();
+  const sixDaysAgo = new Date(now - (6 * 24 * 60 * 60 * 1000));
+  
+  console.log("[KEEP-ALIVE] Başlatılıyor. 6 gündür push almamış kullanıcılar aranıyor...");
+  
+  const usersSnap = await admin.firestore().collection("users")
+    .where("isApproved", "==", true)
+    .where("active", "==", true)
+    .get();
+  
+  if (usersSnap.empty) {
+    console.log("[KEEP-ALIVE] Aktif kullanıcı bulunamadı.");
+    return;
+  }
+  
+  let sentCount = 0;
+  let skippedCount = 0;
+  let errorCount = 0;
+  
+  for (const userDoc of usersSnap.docs) {
+    const userData = userDoc.data();
+    const fcmToken = userData.fcmToken;
+    const hasEmail = userData.email && userData.email.trim() !== "";
+    
+    // Email'i olan kullanıcılar push almıyor, skip
+    if (!fcmToken || hasEmail) {
+      skippedCount++;
+      continue;
+    }
+    
+    // Son push zamanını kontrol et
+    const lastPush = userData.lastPushSentAt;
+    if (lastPush) {
+      const lastPushDate = lastPush.toDate ? lastPush.toDate() : new Date(lastPush);
+      if (lastPushDate > sixDaysAgo) {
+        // Son 6 gün içinde push almış, skip
+        skippedCount++;
+        continue;
+      }
+    }
+    // lastPushSentAt yoksa hiç push almamış demek — keep-alive gönder
+    
+    try {
+      const message = {
+        token: fcmToken,
+        // notification alanı YOK — data-only push
+        // Service Worker bu mesajı alıp sessiz bildirim gösterecek
+        data: {
+          type: "keep_alive",
+          timestamp: String(now)
+        },
+        webpush: {
+          headers: {
+            Topic: "keep_alive",
+            Urgency: "low",
+            TTL: "86400" // 24 saat TTL
+          }
+        },
+        android: {
+          priority: "normal"
+        },
+        apns: {
+          headers: {
+            "apns-priority": "5", // Düşük öncelik
+            "apns-collapse-id": "keep_alive"
+          },
+          payload: {
+            aps: {
+              "content-available": 1
+            }
+          }
+        }
+      };
+      
+      await admin.messaging().send(message);
+      
+      // Gönderim zamanını güncelle
+      await admin.firestore().collection("users").doc(userDoc.id).update({
+        lastPushSentAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+      
+      sentCount++;
+      console.log(`[KEEP-ALIVE] Gönderildi: ${userDoc.id}`);
+    } catch (e) {
+      errorCount++;
+      console.error(`[KEEP-ALIVE] Hata (${userDoc.id}):`, e.code || e.message);
+      
+      // Geçersiz token ise temizle
+      const invalidTokenCodes = [
+        'messaging/registration-token-not-registered',
+        'messaging/invalid-registration-token',
+        'messaging/third-party-auth-error',
+        'messaging/mismatched-credential'
+      ];
+      
+      if (e.code && invalidTokenCodes.includes(e.code)) {
+        console.log(`[KEEP-ALIVE][TOKEN CLEANUP] Geçersiz token siliniyor: ${userDoc.id}`);
+        try {
+          await admin.firestore().collection("users").doc(userDoc.id).update({
+            fcmToken: admin.firestore.FieldValue.delete(),
+            fcmTokenInvalidatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            fcmTokenInvalidReason: e.code
+          });
+        } catch (cleanupErr) {
+          console.error("[KEEP-ALIVE][TOKEN CLEANUP] Silme hatası:", cleanupErr);
+        }
+      }
+    }
+  }
+  
+  console.log(`[KEEP-ALIVE] Tamamlandı. Gönderilen: ${sentCount}, Atlanan: ${skippedCount}, Hata: ${errorCount}`);
 });

@@ -5,6 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/app_notification.dart';
+import '../utils/sw_token_refresh_stub.dart'
+    if (dart.library.js_interop) '../utils/sw_token_refresh_web.dart'
+    as sw_refresh;
 
 class NotificationService {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -18,6 +21,8 @@ class NotificationService {
       'BOkvHMWfKFEaXrwF-TgJ9KrrJSnNqL3tO966nz5F-esnB6SYZCfSIy6uWe9dvVTKfhPsTZ771DOsGVJY4JeDmio';
 
   /// İzin iste, token al ve Firestore'a kaydet
+  /// Her uygulama açılışında çağrılır — iOS subscription yenilemelerini yakalamak için
+  /// token'ı her seferinde agresif olarak Firestore'a yazar.
   Future<void> initialize() async {
     try {
       // 1. İzin İste (Özellikle iOS için gereklidir, Android 13+ için de prompt çıkar)
@@ -29,16 +34,120 @@ class NotificationService {
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         debugPrint('Kullanıcı bildirim izni verdi.');
+        
+        // ─── AGRESİF TOKEN YENİLEME ───
+        // Her açılışta token'ı al ve Firestore'a yaz.
+        // iOS subscription sessizce değişmiş olabilir, bu yüzden
+        // "değişmediyse yazma" optimizasyonu YAPMIYORUZ.
         await _saveTokenToDatabase();
         
         // Token yenilendiğinde dinle ve güncelle
         _messaging.onTokenRefresh.listen(_updateToken);
+        
+        // ─── WEB: SERVICE WORKER MESAJ DİNLEYİCİSİ ───
+        // iOS subscription değiştiğinde veya push alındığında SW'den 
+        // 'fcm-token-refresh-needed' event'i gelir, biz de token'ı yenileriz.
+        if (kIsWeb) {
+          _listenForSubscriptionChanges();
+        }
       } else {
         debugPrint('Kullanıcı bildirim iznini reddetti.');
       }
     } catch (e) {
       debugPrint('Bildirim başlatılırken hata (Desteklenmiyor olabilir): $e');
     }
+  }
+
+  /// Web platformunda Service Worker'dan gelen subscription değişikliği
+  /// mesajlarını dinler ve token'ı yeniden kaydeder.
+  void _listenForSubscriptionChanges() {
+    try {
+      // JS interop ile 'fcm-token-refresh-needed' custom event'ini dinle
+      // Bu event, index.html'deki SW message listener tarafından fırlatılır.
+      _addJsEventListener();
+      debugPrint('[iOS Push Fix] SW subscription değişikliği dinleyicisi kuruldu.');
+    } catch (e) {
+      debugPrint('[iOS Push Fix] JS event listener kurulurken hata: $e');
+    }
+  }
+
+  /// JS event listener'ı kur (web only)
+  void _addJsEventListener() {
+    if (!kIsWeb) return;
+    
+    try {
+      // dart:js_interop kullanarak window.addEventListener çağır
+      final callback = () async {
+        debugPrint('[iOS Push Fix] Token yenileme sinyali alındı! Yeniden kaydediliyor...');
+        
+        // Mevcut token'ı sil ve yenisini al
+        try {
+          await _messaging.deleteToken();
+          debugPrint('[iOS Push Fix] Eski token silindi, yenisi alınıyor...');
+        } catch (e) {
+          debugPrint('[iOS Push Fix] Token silme hatası (devam ediliyor): $e');
+        }
+        
+        // Yeni token al ve Firestore'a kaydet
+        await _saveTokenToDatabase();
+      };
+      
+      // Web platformunda window event listener'ı kur
+      _registerWebEventListener(callback);
+    } catch (e) {
+      debugPrint('[iOS Push Fix] Event listener kurma hatası: $e');
+    }
+  }
+
+  /// Web event listener kayıt (conditional import ile)
+  void _registerWebEventListener(Function callback) {
+    // Web platformunda çalışan JS interop kodu
+    // index.html'deki 'fcm-token-refresh-needed' custom event'ini dinler
+    try {
+      // 1. Doğrudan JS event listener — anında tetiklenir
+      sw_refresh.addFcmTokenRefreshListener(callback);
+      
+      // 2. Periyodik kontrol (fallback) — JS event kaçırılırsa flag'den yakala
+      Future.delayed(const Duration(seconds: 10), () async {
+        _startTokenRefreshPolling(callback);
+      });
+    } catch (e) {
+      debugPrint('[iOS Push Fix] Listener/Polling kurulurken hata: $e');
+    }
+  }
+
+  /// Periyodik token yenileme kontrolü (Web only, 60 saniyede bir)
+  void _startTokenRefreshPolling(Function callback) async {
+    // Her 60 saniyede bir JS flag'ini kontrol et
+    while (true) {
+      await Future.delayed(const Duration(seconds: 60));
+      try {
+        if (!kIsWeb) break;
+        // window._swTokenRefreshNeeded flag'ini kontrol et
+        // Bu flag, SW'den mesaj geldiğinde index.html'de true yapılıyor
+        if (_checkAndClearRefreshFlag()) {
+          await callback();
+        }
+      } catch (e) {
+        // Hata olsa bile döngüye devam
+        debugPrint('[iOS Push Fix] Polling kontrolü hatası: $e');
+      }
+    }
+  }
+
+  /// JS tarafındaki _swTokenRefreshNeeded flag'ini kontrol et ve temizle
+  bool _checkAndClearRefreshFlag() {
+    if (!kIsWeb) return false;
+    try {
+      return _checkJsRefreshFlag();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// JS flag kontrolü (web only, conditional import)
+  static bool _checkJsRefreshFlag() {
+    return sw_refresh.checkAndClearSwRefreshFlag();
   }
 
   /// Kayıt sırasında kullanmak için (veritabanına yazmadan) token alır
@@ -64,6 +173,7 @@ class NotificationService {
   }
 
   /// FCM Token alıp kullanıcının Firestore dokümanına kaydetme
+  /// Her çağrıda token'ı Firestore'a yazar (iOS subscription yenilemelerini yakalamak için)
   Future<void> _saveTokenToDatabase() async {
     final user = _auth.currentUser;
     if (user == null) return; // Giriş yapılmamışsa kaydetme
@@ -80,11 +190,17 @@ class NotificationService {
       if (token != null) {
         await _updateToken(token);
         
-        // Başarılı olursa eski hatayı temizle
+        // Başarılı olursa eski hatayı ve invalidation bilgisini temizle
+        // (Backend, geçersiz token tespit ettiğinde bu alanları set ediyor)
         await _firestore.collection('users').doc(user.uid).set(
-          {'fcmError': FieldValue.delete()},
+          {
+            'fcmError': FieldValue.delete(),
+            'fcmTokenInvalidatedAt': FieldValue.delete(),
+            'fcmTokenInvalidReason': FieldValue.delete(),
+          },
           SetOptions(merge: true),
         );
+        debugPrint('[iOS Push Fix] Token başarıyla kaydedildi ve eski hata bilgileri temizlendi.');
       }
     } catch (e) {
       debugPrint('FCM Token alınırken hata: $e');

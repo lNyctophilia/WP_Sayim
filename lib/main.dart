@@ -8,6 +8,7 @@ import 'core/services/language_service.dart';
 import 'core/services/storage_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_service.dart';
+import 'core/constants/app_colors.dart';
 import 'core/router/app_router.dart';
 
 @pragma('vm:entry-point')
@@ -79,14 +80,25 @@ class _DayTrackAppState extends State<DayTrackApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'WP Sayım',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
-      home: AppRouter(
-        storage: widget.storage,
-        lang: widget.lang,
-        themeService: widget.themeService,
+    final bool isLight = AppColors.background.computeLuminance() > 0.5;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(
+        statusBarColor: AppColors.background,
+        statusBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
+        systemNavigationBarColor: AppColors.background,
+        systemNavigationBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
+        systemNavigationBarDividerColor: Colors.transparent,
+        systemNavigationBarContrastEnforced: false,
+      ),
+      child: MaterialApp(
+        title: 'WP Sayım',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.darkTheme,
+        home: AppRouter(
+          storage: widget.storage,
+          lang: widget.lang,
+          themeService: widget.themeService,
+        ),
       ),
     );
   }
