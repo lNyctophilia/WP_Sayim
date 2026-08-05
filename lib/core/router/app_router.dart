@@ -128,99 +128,104 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
           return InstallPromptPage(lang: widget.lang);
         }
 
-        // Kullanıcı giriş yapmamış
-        if (!snapshot.hasData || snapshot.data == null) {
-          return LoginPage(
-            lang: widget.lang,
-            onLoginSuccess: (_) {
-              // StreamBuilder otomatik olarak yeniden build edecek
-            },
-          );
-        }
-
-        // Kullanıcı giriş yapmış — rolünü kontrol et
-        return StreamBuilder<AppUser?>(
-          stream: _authService.getUserDataStream(snapshot.data!.uid),
-          builder: (context, userSnapshot) {
-            if (userSnapshot.connectionState == ConnectionState.waiting) {
-              return _buildSplashScreen();
-            }
-
-            if (userSnapshot.hasError) {
-              // Hata durumunda (ör: çevrimdışıyken cache yoksa) otomatik çıkış YAPMA!
-              // Kullanıcıyı sadece bir hata ekranında beklet.
-              return Scaffold(
-                body: Center(
-                  child: Text(
-                    'Bağlantı hatası veya yetki sorunu: ${userSnapshot.error}\nLütfen internet bağlantınızı kontrol edin.',
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+        return ValueListenableBuilder<bool>(
+          valueListenable: AuthService.isLoginValidationRunning,
+          builder: (context, isValidationRunning, child) {
+            // Kullanıcı giriş yapmamış veya doğrulama devam ediyor
+            if (!snapshot.hasData || snapshot.data == null || isValidationRunning) {
+              return LoginPage(
+                lang: widget.lang,
+                onLoginSuccess: (_) {
+                  // StreamBuilder otomatik olarak yeniden build edecek
+                },
               );
             }
 
-            final appUser = userSnapshot.data;
-
-            if (appUser == null) {
-              // Firestore'da kullanıcı verisi gerçekten yok (silinmiş)
-              // Sadece o zaman çıkış yap.
-              Future.microtask(() => _authService.logout());
-              return _buildSplashScreen();
-            }
-
-            // Aktif olmayan hesapsa girişine izin verme
-            if (!appUser.active) {
-              Future.microtask(() => _authService.logout());
-              return Scaffold(
-                body: Center(
-                  child: Text('Hesabınız askıya alınmış.'),
-                ),
-              );
-            }
-
-            // Oturum çakışması kontrolü (Eğer aktif bir giriş işlemi yoksa ve son girişten en az 10 saniye geçmişse)
-            final localSessionId = widget.storage.getSessionId();
-            final isRecentlyLoggedIn = AuthService.lastLoginTime != null && DateTime.now().difference(AuthService.lastLoginTime!).inSeconds < 10;
-            final isCurrentSession = appUser.sessionId != null && appUser.sessionId == AuthService.currentSessionId;
-            
-            if (!isCurrentSession && !isRecentlyLoggedIn && !AuthService.isLoggingIn && appUser.sessionId != null && localSessionId != null && appUser.sessionId != localSessionId) {
-              // Farklı bir cihazda giriş yapılmış, bu cihazı oturumdan at (Kicked = true)
-              Future.microtask(() => _authService.logout(true));
-              return Scaffold(
-                body: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Text(
-                      'Hesabınıza başka bir cihazdan giriş yapıldı.\nGüvenliğiniz için bu cihazdaki oturumunuz kapatıldı.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.redAccent, fontSize: 16),
-                    ),
-                  ),
-                ),
-              );
-            }
-
-            // Bildirim servisini başlat (Sadece yeni bir kullanıcı geldiğinde)
-            if (_initializedUid != appUser.id) {
-              _initializedUid = appUser.id;
-              _notificationService.initialize().then((_) {
-                _checkAndPromptNotificationPermission();
-              });
-              
-              // Uygulama açıkken (ön plandayken) gelen bildirimleri dinle
-              FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-                if (message.notification != null) {
-                  final title = message.notification!.title ?? 'Bildirim';
-                  final body = message.notification!.body ?? '';
-
-                  // Her sayfanın üzerinde (en üstte) görünecek özel toast bildirimi
-                  BottomToast.show(context, title, body);
+            // Kullanıcı giriş yapmış — rolünü kontrol et
+            return StreamBuilder<AppUser?>(
+              stream: _authService.getUserDataStream(snapshot.data!.uid),
+              builder: (context, userSnapshot) {
+                if (userSnapshot.connectionState == ConnectionState.waiting) {
+                  return _buildSplashScreen();
                 }
-              });
-            }
 
-            // Rol bazlı yönlendirme
-            return _buildHomeForRole(appUser);
+                if (userSnapshot.hasError) {
+                  // Hata durumunda (ör: çevrimdışıyken cache yoksa) otomatik çıkış YAPMA!
+                  // Kullanıcıyı sadece bir hata ekranında beklet.
+                  return Scaffold(
+                    body: Center(
+                      child: Text(
+                        'Bağlantı hatası veya yetki sorunu: ${userSnapshot.error}\nLütfen internet bağlantınızı kontrol edin.',
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  );
+                }
+
+                final appUser = userSnapshot.data;
+
+                if (appUser == null) {
+                  // Firestore'da kullanıcı verisi gerçekten yok (silinmiş)
+                  // Sadece o zaman çıkış yap.
+                  Future.microtask(() => _authService.logout());
+                  return _buildSplashScreen();
+                }
+
+                // Aktif olmayan hesapsa girişine izin verme
+                if (!appUser.active) {
+                  Future.microtask(() => _authService.logout());
+                  return Scaffold(
+                    body: Center(
+                      child: Text('Hesabınız askıya alınmış.'),
+                    ),
+                  );
+                }
+
+                // Oturum çakışması kontrolü (Eğer aktif bir giriş işlemi yoksa ve son girişten en az 10 saniye geçmişse)
+                final localSessionId = widget.storage.getSessionId();
+                final isRecentlyLoggedIn = AuthService.lastLoginTime != null && DateTime.now().difference(AuthService.lastLoginTime!).inSeconds < 10;
+                final isCurrentSession = appUser.sessionId != null && appUser.sessionId == AuthService.currentSessionId;
+                
+                if (!isCurrentSession && !isRecentlyLoggedIn && !AuthService.isLoggingIn && appUser.sessionId != null && localSessionId != null && appUser.sessionId != localSessionId) {
+                  // Farklı bir cihazda giriş yapılmış, bu cihazı oturumdan at (Kicked = true)
+                  Future.microtask(() => _authService.logout(true));
+                  return Scaffold(
+                    body: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Text(
+                          'Hesabınıza başka bir cihazdan giriş yapıldı.\nGüvenliğiniz için bu cihazdaki oturumunuz kapatıldı.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.redAccent, fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                // Bildirim servisini başlat (Sadece yeni bir kullanıcı geldiğinde)
+                if (_initializedUid != appUser.id) {
+                  _initializedUid = appUser.id;
+                  _notificationService.initialize().then((_) {
+                    _checkAndPromptNotificationPermission();
+                  });
+                  
+                  // Uygulama açıkken (ön plandayken) gelen bildirimleri dinle
+                  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+                    if (message.notification != null) {
+                      final title = message.notification!.title ?? 'Bildirim';
+                      final body = message.notification!.body ?? '';
+
+                      // Her sayfanın üzerinde (en üstte) görünecek özel toast bildirimi
+                      BottomToast.show(context, title, body);
+                    }
+                  });
+                }
+
+                // Rol bazlı yönlendirme
+                return _buildHomeForRole(appUser);
+              },
+            );
           },
         );
       },

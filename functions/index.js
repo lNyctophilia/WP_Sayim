@@ -426,7 +426,7 @@ exports.sendApprovalNotification = onDocumentUpdated("users/{userId}", async (ev
       await sendEmailJSEmail(
         email.trim(),
         "WP Sayım - Hesabınız Onaylandı!",
-        "WP Sayım uygulamasına kayıt başvurunuz onaylandı. Artık e-posta adresiniz ve şifreniz ile giriş yapabilirsiniz.\n\nUygulamaya Gitmek İçin Tıklayın: https://lnyctophilia.github.io/WP_Sayim/"
+        "WP Sayım uygulamasına kayıt başvurunuz onaylandı. Artık telefon numarası ve şifreniz ile giriş yapabilirsiniz."
       );
 
       // Uygulama içi bildirimi de kaydet
@@ -648,7 +648,7 @@ exports.sendTestNotification = onDocumentCreated("test_notifications/{docId}", a
     await sendEmailJSEmail(
       userData.email,
       "WP Sayım - Bildirim Testi",
-      "Bu bir test e-postasıdır. Eğer bu mesajı alıyorsanız, bildirim sisteminiz başarıyla çalışıyor demektir.\n\nUygulama kapalıyken de bu e-postayı alabiliyorsunuz. Harika!"
+      "Bu bir test e-postasıdır. Eğer bu mesajı alıyorsanız, bildirim sisteminiz başarıyla çalışıyor demektir."
     );
 
     // Uygulama içi bildirimi de kaydet

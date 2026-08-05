@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -34,6 +35,7 @@ class AuthService {
 
   /// Devam eden bir giriş işlemi var mı? (Oturum çakışması race-condition'ı önlemek için)
   static bool isLoggingIn = false;
+  static final ValueNotifier<bool> isLoginValidationRunning = ValueNotifier<bool>(false);
   static DateTime? lastLoginTime;
   static String? currentSessionId;
 
@@ -41,6 +43,7 @@ class AuthService {
   Future<AppUser?> login(String identifier, String password) async {
     lastLoginTime = DateTime.now();
     isLoggingIn = true;
+    isLoginValidationRunning.value = true;
     try {
       final email = _toEmail(identifier);
       final credential = await _auth.signInWithEmailAndPassword(
@@ -51,11 +54,13 @@ class AuthService {
       final appUser = await getUserData(credential.user!.uid);
       if (appUser == null || appUser.isDeleted || !appUser.active) {
         await logout();
+        isLoginValidationRunning.value = false;
         throw FirebaseAuthException(code: 'user-disabled');
       }
 
       if (!appUser.isApproved) {
         await logout();
+        isLoginValidationRunning.value = false;
         throw FirebaseAuthException(code: 'not-approved', message: 'User is not approved yet.');
       }
 
@@ -66,6 +71,8 @@ class AuthService {
       await _firestore.collection('users').doc(credential.user!.uid).update({
         'sessionId': sessionId,
       });
+
+      isLoginValidationRunning.value = false;
 
       // Firestore stream'inin güncel sessionId'yi alabilmesi için 
       // isLoggingIn bayrağını biraz gecikmeli kapatıyoruz.
@@ -79,9 +86,11 @@ class AuthService {
       return appUser;
     } on FirebaseAuthException {
       isLoggingIn = false;
+      isLoginValidationRunning.value = false;
       rethrow;
     } catch (e) {
       isLoggingIn = false;
+      isLoginValidationRunning.value = false;
       rethrow;
     }
   }
