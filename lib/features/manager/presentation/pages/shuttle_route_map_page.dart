@@ -329,7 +329,9 @@ class _ShuttleRouteMapPageState extends State<ShuttleRouteMapPage> {
                                 ],
                               ),
                               child: Text(
-                                widget.optimizedWaypoints[i]['name'] ?? '',
+                                (i == 0 || i == widget.optimizedWaypoints.length - 1)
+                                    ? (widget.optimizedWaypoints[i]['name'] ?? '')
+                                    : '$i. ${widget.optimizedWaypoints[i]['name'] ?? ''}',
                                 style: TextStyle(
                                   color: _waypointStates[i].isTarget ? Colors.white : AppColors.textPrimary,
                                   fontWeight: _waypointStates[i].isTarget ? FontWeight.bold : FontWeight.normal,
@@ -338,13 +340,6 @@ class _ShuttleRouteMapPageState extends State<ShuttleRouteMapPage> {
                                 textAlign: TextAlign.center,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                            Icon(
-                              Icons.location_on,
-                              color: _waypointStates[i].isTarget 
-                                  ? AppColors.accentLight 
-                                  : (_waypointStates[i].isPassed ? Colors.grey : Colors.red),
-                              size: _waypointStates[i].isTarget ? 36 : 24,
                             ),
                           ],
                         ),
