@@ -516,7 +516,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                         await _davetService.deleteDavet(davet.id, isSayimClosed: currentSayim.effectiveStatus == SayimStatus.closed);
                         
                         // Remove from invitedUserIds
-                        final updatedInvited = List<String>.from(currentSayim.invitedUserIds)..remove(davet.userId);
+                        final updatedInvited = List<String>.from(currentSayim.invitedUserIds)..removeWhere((id) => id == davet.userId);
                         final updatedSayim = currentSayim.copyWith(invitedUserIds: updatedInvited);
                         await _sayimService.updateSayim(updatedSayim);
                       },
@@ -565,7 +565,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                           await _davetService.deleteDavet(davet.id, isSayimClosed: currentSayim.effectiveStatus == SayimStatus.closed);
                           
                           // Remove from invitedUserIds
-                          final updatedInvited = List<String>.from(currentSayim.invitedUserIds)..remove(davet.userId);
+                          final updatedInvited = List<String>.from(currentSayim.invitedUserIds)..removeWhere((id) => id == davet.userId);
                           final updatedSayim = currentSayim.copyWith(invitedUserIds: updatedInvited);
                           await _sayimService.updateSayim(updatedSayim);
 
@@ -657,7 +657,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                         await _davetService.deleteDavet(davet.id, isSayimClosed: currentSayim.effectiveStatus == SayimStatus.closed);
                         
                         // Remove from invitedUserIds
-                        final updatedInvited = List<String>.from(currentSayim.invitedUserIds)..remove(davet.userId);
+                        final updatedInvited = List<String>.from(currentSayim.invitedUserIds)..removeWhere((id) => id == davet.userId);
                         final updatedSayim = currentSayim.copyWith(invitedUserIds: updatedInvited);
                         await _sayimService.updateSayim(updatedSayim);
                       },

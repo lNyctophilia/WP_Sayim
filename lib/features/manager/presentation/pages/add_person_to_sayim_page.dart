@@ -9,6 +9,7 @@ import '../../../../core/services/davet_service.dart';
 import '../../../../core/services/sayim_service.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/notification_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/staff_picker.dart';
 
 class AddPersonToSayimPage extends StatefulWidget {
@@ -130,10 +131,20 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
       }
 
       // 2. Sayım'ın invitedUserIds listesini güncelle
-      final updatedInvitedIds = List<String>.from(widget.sayim.invitedUserIds);
-      updatedInvitedIds.addAll(_selectedConfigs.map((c) => c.user.id));
+      // Fetch latest sayim to avoid overwriting concurrent removals (ghost records)
+      final latestSayimDoc = await FirebaseFirestore.instance.collection('sayimlar').doc(widget.sayim.id).get();
+      final latestSayim = Sayim.fromFirestore(latestSayimDoc);
       
-      final updatedSayim = widget.sayim.copyWith(
+      final updatedInvitedIds = List<String>.from(latestSayim.invitedUserIds);
+      
+      // Sadece listede olmayanları ekle (çifte ID oluşumunu engellemek için)
+      for (var c in _selectedConfigs) {
+        if (!updatedInvitedIds.contains(c.user.id)) {
+          updatedInvitedIds.add(c.user.id);
+        }
+      }
+      
+      final updatedSayim = latestSayim.copyWith(
         invitedUserIds: updatedInvitedIds,
       );
       await _sayimService.updateSayim(updatedSayim);
