@@ -224,6 +224,7 @@ class NotificationService {
     try {
       await _firestore.collection('users').doc(user.uid).update({
         'fcmToken': token,
+        'pushVersion': 2, // Yeni: Keep-alive (sessiz bildirim) sürüm kontrolü
       });
       debugPrint('FCM Token Firestore\'a kaydedildi.');
     } catch (e) {

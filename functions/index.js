@@ -737,9 +737,11 @@ exports.keepAliveSubscription = onSchedule({ schedule: "0 4 * * *", timeZone: "E
     const userData = userDoc.data();
     const fcmToken = userData.fcmToken;
     const hasEmail = userData.email && userData.email.trim() !== "";
+    const pushVersion = userData.pushVersion;
     
     // Email'i olan kullanıcılar push almıyor, skip
-    if (!fcmToken || hasEmail) {
+    // Ayrıca eski Service Worker sürümünde olanlara atma (pushVersion 2 değilse titrer!)
+    if (!fcmToken || hasEmail || pushVersion !== 2) {
       skippedCount++;
       continue;
     }
