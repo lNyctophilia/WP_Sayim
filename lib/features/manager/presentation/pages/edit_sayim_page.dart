@@ -333,7 +333,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
             await notificationService.sendEmailNotification(
               targetUserId: config.user.id,
               subject: AppStrings.get('new_sayim_invitation', widget.lang.currentLang) ?? 'Yeni Sayım Daveti',
-              textContent: 'Merhaba ${config.user.fullName},\n\nYeni bir sayım için davet edildiniz!\n\nTarih: $sayimTarihi\nSaat: $grupSaati\nNot: ${updatedSayim.note}\n\nLütfen uygulamaya girerek daveti yanıtlayın.',
+              textContent: 'Merhaba ${config.user.fullName},\n\nYeni bir sayım için davet edildiniz!\n\nTarih: $sayimTarihi\nSaat: $grupSaati\nToplanma Yeri: ${updatedSayim.toplanmaYeri}\n\nLütfen uygulamaya girerek daveti yanıtlayın.',
             );
           }
 

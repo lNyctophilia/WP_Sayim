@@ -120,7 +120,7 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
           await _notificationService.sendEmailNotification(
             targetUserId: config.user.id,
             subject: AppStrings.get('new_sayim_invitation', isTr ? 'tr' : 'en') ?? 'Yeni Sayım Daveti',
-            textContent: 'Merhaba ${config.user.fullName},\n\nYeni bir sayım için davet edildiniz!\n\nTarih: $sayimTarihi\nSaat: $grupSaati\nNot: ${widget.sayim.note}\n\nLütfen uygulamaya girerek daveti yanıtlayın.',
+            textContent: 'Merhaba ${config.user.fullName},\n\nYeni bir sayım için davet edildiniz!\n\nTarih: $sayimTarihi\nSaat: $grupSaati\nToplanma Yeri: ${widget.sayim.toplanmaYeri}\n\nLütfen uygulamaya girerek daveti yanıtlayın.',
           );
         }
 

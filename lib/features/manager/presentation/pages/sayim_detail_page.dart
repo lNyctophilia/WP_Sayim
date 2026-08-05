@@ -471,7 +471,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                           await _notificationService.sendEmailNotification(
                             targetUserId: davet.userId,
                             subject: AppStrings.get('new_sayim_invitation', isTr ? 'tr' : 'en') ?? 'Yeni Sayım Daveti',
-                            textContent: 'Merhaba ${userSnapshot.data!.fullName},\n\nYeni bir sayım için davet edildiniz!\n\nTarih: $sayimTarihi\nSaat: $grupAdi\nNot: ${currentSayim.note}\n\nLütfen uygulamaya girerek daveti yanıtlayın.',
+                            textContent: 'Merhaba ${userSnapshot.data!.fullName},\n\nYeni bir sayım için davet edildiniz!\n\nTarih: $sayimTarihi\nSaat: $grupAdi\nToplanma Yeri: ${currentSayim.toplanmaYeri}\n\nLütfen uygulamaya girerek daveti yanıtlayın.',
                           );
                         }
 

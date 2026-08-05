@@ -580,8 +580,12 @@ exports.cleanupOldNotifications = onSchedule({ schedule: "0 4 1,15 * *", timeZon
 
 // 11. Test Bildirimi Gönder (Kullanıcı ayarlardan test ettiğinde)
 exports.sendTestNotification = onDocumentCreated("test_notifications/{docId}", async (event) => {
+  console.log("sendTestNotification triggered for docId:", event.params.docId);
   const data = event.data.data();
-  if (!data || !data.userId) return;
+  if (!data || !data.userId) {
+    console.log("Missing data or userId, aborting.");
+    return;
+  }
 
   // Wait 10 seconds so the user can put the app in the background to test push notifications
   await new Promise(resolve => setTimeout(resolve, 10000));

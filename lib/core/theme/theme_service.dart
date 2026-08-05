@@ -52,25 +52,37 @@ class ThemeService extends ChangeNotifier {
 
       case AppThemeType.custom:
         final seedColor = Color(_storage.getCustomThemeColor());
-        final isDark = seedColor.computeLuminance() < 0.5;
-        final colorScheme = ColorScheme.fromSeed(
-          seedColor: seedColor,
-          brightness: isDark ? Brightness.dark : Brightness.light,
-        );
-
-        AppColors.background = seedColor;
-        AppColors.surface = Color.lerp(seedColor, colorScheme.primary, 0.05)!;
-        AppColors.card = Color.lerp(seedColor, colorScheme.primary, 0.08)!;
-        AppColors.cardLight = Color.lerp(seedColor, colorScheme.primary, 0.12)!;
-        AppColors.accent = colorScheme.primary;
-        AppColors.accentLight = colorScheme.primaryContainer;
-        AppColors.todayBorder = colorScheme.primary;
-        AppColors.divider = colorScheme.outlineVariant;
-        AppColors.textPrimary = colorScheme.onSurface;
-        AppColors.textSecondary = colorScheme.onSurfaceVariant;
-        AppColors.textHint = colorScheme.onSurfaceVariant.withValues(alpha: 0.7);
-        AppColors.cityInner = colorScheme.secondary;
-        AppColors.cityOuter = colorScheme.tertiary;
+        final hslSeed = HSLColor.fromColor(seedColor);
+        final hue = hslSeed.hue;
+        
+        // 1. Matematiksel Katmanlar (Elevation by Lightness)
+        // Orijinal temanın doygunluk (S) ve parlaklık (L) değerleri baz alınarak uyarlanmıştır.
+        AppColors.background = HSLColor.fromAHSL(1.0, hue, 0.60, 0.10).toColor();
+        AppColors.surface = HSLColor.fromAHSL(1.0, hue, 0.47, 0.14).toColor();
+        AppColors.card = HSLColor.fromAHSL(1.0, hue, 0.44, 0.19).toColor();
+        AppColors.cardLight = HSLColor.fromAHSL(1.0, hue, 0.42, 0.23).toColor();
+        
+        // 2. Vurgu (Accent)
+        AppColors.accent = HSLColor.fromAHSL(1.0, hue, 0.49, 0.30).toColor();
+        // accentLight kullanıcının seçtiği saf orijinal renk olarak kalır ki butonlar parlasın.
+        AppColors.accentLight = seedColor; 
+        AppColors.todayBorder = seedColor;
+        
+        // 3. Çizgiler (Divider)
+        AppColors.divider = HSLColor.fromAHSL(1.0, hue, 0.45, 0.21).toColor();
+        
+        // 4. Metin Renkleri (Tinted Whites)
+        // Tam beyaz yerine, temanın renginden çok hafif bir esinti taşıyan (S: %10) kırık beyaz.
+        AppColors.textPrimary = HSLColor.fromAHSL(1.0, hue, 0.10, 0.95).toColor();
+        AppColors.textSecondary = HSLColor.fromAHSL(1.0, hue, 0.20, 0.60).toColor();
+        AppColors.textHint = HSLColor.fromAHSL(1.0, hue, 0.15, 0.40).toColor();
+        
+        // 5. Şehir ve Fonksiyon Renkleri (Orijinal temadaki açı farklarına göre hesaplandı)
+        final innerHue = (hue - 32 + 360) % 360; 
+        final outerHue = (hue + 171) % 360; 
+        
+        AppColors.cityInner = HSLColor.fromAHSL(1.0, innerHue, 0.70, 0.60).toColor();
+        AppColors.cityOuter = HSLColor.fromAHSL(1.0, outerHue, 0.80, 0.60).toColor();
         break;
     }
 
