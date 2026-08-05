@@ -181,6 +181,16 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
                   );
                 }
 
+                // Onaylanmamış hesapsa girişine izin verme
+                if (!appUser.isApproved) {
+                  Future.microtask(() => _authService.logout());
+                  return Scaffold(
+                    body: Center(
+                      child: Text('Hesabınız henüz onaylanmamış. Lütfen yöneticinin onaylamasını bekleyin.'),
+                    ),
+                  );
+                }
+
                 // Oturum çakışması kontrolü (Eğer aktif bir giriş işlemi yoksa ve son girişten en az 10 saniye geçmişse)
                 final localSessionId = widget.storage.getSessionId();
                 final isRecentlyLoggedIn = AuthService.lastLoginTime != null && DateTime.now().difference(AuthService.lastLoginTime!).inSeconds < 10;

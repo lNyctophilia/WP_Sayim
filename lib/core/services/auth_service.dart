@@ -54,13 +54,11 @@ class AuthService {
       final appUser = await getUserData(credential.user!.uid);
       if (appUser == null || appUser.isDeleted || !appUser.active) {
         await logout();
-        isLoginValidationRunning.value = false;
         throw FirebaseAuthException(code: 'user-disabled');
       }
 
       if (!appUser.isApproved) {
         await logout();
-        isLoginValidationRunning.value = false;
         throw FirebaseAuthException(code: 'not-approved', message: 'User is not approved yet.');
       }
 
@@ -86,11 +84,18 @@ class AuthService {
       return appUser;
     } on FirebaseAuthException {
       isLoggingIn = false;
-      isLoginValidationRunning.value = false;
+      // Firebase authStateChanges akışının null dönmesi birkaç milisaniye sürebilir.
+      // Bu sırada AppRouter'ın Home'u render edip LoginPage'i yok etmesini önlemek için
+      // bayrağı gecikmeli indiriyoruz. Böylece LoginPage ekranda kalır ve hatayı gösterir.
+      Future.delayed(const Duration(milliseconds: 500), () {
+        isLoginValidationRunning.value = false;
+      });
       rethrow;
     } catch (e) {
       isLoggingIn = false;
-      isLoginValidationRunning.value = false;
+      Future.delayed(const Duration(milliseconds: 500), () {
+        isLoginValidationRunning.value = false;
+      });
       rethrow;
     }
   }
