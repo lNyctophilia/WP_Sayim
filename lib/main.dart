@@ -28,7 +28,8 @@ void main() async {
   }
 
   // Durum çubuğu yönetimi ThemeService tarafından yapılıyor
-  // main.dart içerisinde statik bir atama yapmaya gerek yok.
+  // EdgeToEdge aktif edilerek Android 10+ için siyah navigasyon bar engellenir
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
   // Servisleri başlat
   final storage = StorageService();
