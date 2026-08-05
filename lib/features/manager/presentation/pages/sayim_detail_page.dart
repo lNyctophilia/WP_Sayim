@@ -109,10 +109,12 @@ class _SayimDetailPageState extends State<SayimDetailPage>
         for (final davet in acceptedDavetler) {
           final user = await _getUser(davet.userId);
           if (user != null && user.email != null && user.email!.isNotEmpty) {
+            final formattedDate = '${currentSayim.date.day.toString().padLeft(2, '0')}.${currentSayim.date.month.toString().padLeft(2, '0')}.${currentSayim.date.year}';
+            final timeStr = currentSayim.startTime ?? (currentSayim.gruplar.isNotEmpty ? currentSayim.gruplar.first.saat : '');
             await notificationService.sendEmailNotification(
               targetUserId: davet.userId,
               subject: AppStrings.get('sayim_cancelled', isTr ? 'tr' : 'en') ?? 'Sayım İptali',
-              textContent: 'Merhaba ${user.fullName},\n\nKabul ettiğiniz "${currentSayim.toplanmaYeri}" isimli sayım iptal edilmiştir.\n\nBilginize.',
+              textContent: 'Merhaba ${user.fullName},\n\nKabul ettiğiniz "${currentSayim.firmaAdi}" isimli sayım iptal edilmiştir.\n\nTarih & Saat: $formattedDate $timeStr\nToplanma Yeri: ${currentSayim.toplanmaYeri}\n\nBilginize.',
             );
           }
         }
@@ -554,11 +556,13 @@ class _SayimDetailPageState extends State<SayimDetailPage>
 
                         if (confirm == true) {
                           if (currentSayim.effectiveStatus == SayimStatus.open && userSnapshot.data != null && userSnapshot.data!.email != null && userSnapshot.data!.email!.isNotEmpty) {
+                            final formattedDate = '${currentSayim.date.day.toString().padLeft(2, '0')}.${currentSayim.date.month.toString().padLeft(2, '0')}.${currentSayim.date.year}';
+                            final timeStr = currentSayim.startTime ?? (currentSayim.gruplar.isNotEmpty ? currentSayim.gruplar.first.saat : '');
                             final NotificationService notificationService = NotificationService();
                             await notificationService.sendEmailNotification(
                               targetUserId: davet.userId,
                               subject: AppStrings.get('sayim_cancelled', isTr ? 'tr' : 'en') ?? 'Sayım İptali',
-                              textContent: 'Merhaba ${userName},\n\nKabul ettiğiniz "${currentSayim.toplanmaYeri}" isimli sayımdan çıkarıldınız.\n\nBilginize.',
+                              textContent: 'Merhaba ${userName},\n\nKabul ettiğiniz "${currentSayim.firmaAdi}" isimli sayımdan çıkarıldınız.\n\nTarih & Saat: $formattedDate $timeStr\nToplanma Yeri: ${currentSayim.toplanmaYeri}\n\nBilginize.',
                             );
                           }
 

@@ -291,11 +291,13 @@ class _EditSayimPageState extends State<EditSayimPage> {
             try {
               final user = _allUsers.firstWhere((u) => u.id == davet.userId);
               if (user.email != null && user.email!.isNotEmpty) {
+                final formattedDate = '${updatedSayim.date.day.toString().padLeft(2, '0')}.${updatedSayim.date.month.toString().padLeft(2, '0')}.${updatedSayim.date.year}';
+                final timeStr = updatedSayim.startTime ?? (updatedSayim.gruplar.isNotEmpty ? updatedSayim.gruplar.first.saat : '');
                 final NotificationService notificationService = NotificationService();
                 await notificationService.sendEmailNotification(
                   targetUserId: davet.userId,
                   subject: AppStrings.get('sayim_cancelled', widget.lang.currentLang) ?? 'Sayım İptali',
-                  textContent: 'Merhaba ${user.fullName},\n\nKabul ettiğiniz "${updatedSayim.toplanmaYeri}" isimli sayımdan çıkarıldınız.\n\nBilginize.',
+                  textContent: 'Merhaba ${user.fullName},\n\nKabul ettiğiniz "${updatedSayim.firmaAdi}" isimli sayımdan çıkarıldınız.\n\nTarih & Saat: $formattedDate $timeStr\nToplanma Yeri: ${updatedSayim.toplanmaYeri}\n\nBilginize.',
                 );
               }
             } catch (_) {}

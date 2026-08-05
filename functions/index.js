@@ -88,6 +88,7 @@ async function sendEmailJSEmail(toEmail, subject, textContent) {
         service_id: 'service_qjvatbn',
         template_id: 'template_9wd7j5s',
         user_id: '6Ybd1Uu2O5Es_Rdtq',
+        accessToken: process.env.EMAILJS_PRIVATE_KEY,
         template_params: {
           to_email: toEmail,
           subject: subject,
@@ -408,6 +409,8 @@ exports.sendApprovalNotification = onDocumentUpdated("users/{userId}", async (ev
   const newData = event.data.after.data();
 
   if (!oldData || !newData) return;
+
+  console.log(`[sendApprovalNotification TRIGGER] User: ${event.params.userId} | old isApproved: ${oldData.isApproved}, new isApproved: ${newData.isApproved} | old email: ${oldData.email}, new email: ${newData.email}`);
 
   const wasApproved = oldData.isApproved === true;
   const isNowApproved = newData.isApproved === true;
