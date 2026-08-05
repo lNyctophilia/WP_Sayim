@@ -14,6 +14,7 @@ import '../../../../core/services/storage_service.dart';
 import '../widgets/manager_drawer.dart';
 import '../../../../features/home/presentation/widgets/custom_top_bar.dart';
 import 'manager_panel_page.dart';
+import 'shuttle_route_map_page.dart';
 import '../../../../core/theme/theme_service.dart';
 
 class ShuttlePanelPage extends StatefulWidget {
@@ -40,7 +41,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
   bool _isLoading = true;
   List<AppUser> _allStaff = [];
   final List<AppUser> _selectedStaff = [];
-  final int _maxSelection = 9; // Google Maps max waypoint sınırı 9'dur (başlangıç ve bitiş hariç)
+  final int _maxSelection = 50; // In-app map ile sınır 50'ye çıkarıldı
 
   @override
   void initState() {
@@ -208,141 +209,44 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
       // OSRM format: lon,lat;lon,lat...
       String coords = allPoints.map((p) => '${p['lon']},${p['lat']}').join(';');
       
-      // 4. Fetch Matrix
-      final url = Uri.parse('https://router.project-osrm.org/table/v1/driving/$coords?annotations=duration');
+      // 4. Fetch Trip Optimization
+      final url = Uri.parse('https://router.project-osrm.org/trip/v1/driving/$coords?source=first&destination=last&roundtrip=false&overview=full');
       final response = await http.get(url, headers: {'User-Agent': 'DaytrackApp/1.0'});
 
       if (response.statusCode != 200) {
-        throw Exception('OSRM matrix error: ${response.statusCode}');
+        throw Exception('OSRM trip error: ${response.statusCode}');
       }
 
       final data = json.decode(response.body);
-      final List<dynamic> durations = data['durations'];
-
-      // durations[i][j] gives time from i to j in seconds.
-      // Index 0 is Start, Index N-1 is End. Indices 1 to N-2 are Staffs.
-      int numStaff = validStaff.length;
-      List<int> bestOrder = [];
-      double bestDuration = double.infinity;
-
-      if (numStaff <= 10) {
-        // Generates permutations for small sets (brute-force)
-        void permute(List<int> arr, int k) {
-          if (k == arr.length) {
-            // Calculate total duration
-            double total = 0;
-            int prev = 0; // Start
-            for (int i = 0; i < arr.length; i++) {
-              int curr = arr[i] + 1; // map staff index to matrix index
-              var duration = durations[prev][curr];
-              if (duration == null) {
-                total = double.infinity;
-                break;
-              }
-              total += (duration as num).toDouble();
-              prev = curr;
-            }
-            // From last staff to End
-            var finalLeg = durations[prev][durations.length - 1];
-            if (finalLeg == null) {
-              total = double.infinity;
-            } else {
-              total += (finalLeg as num).toDouble();
-            }
-
-            if (total < bestDuration) {
-              bestDuration = total;
-              bestOrder = List.from(arr);
-            }
-            return;
-          }
-
-          for (int i = k; i < arr.length; i++) {
-            int temp = arr[i];
-            arr[i] = arr[k];
-            arr[k] = temp;
-            
-            permute(arr, k + 1);
-            
-            temp = arr[i];
-            arr[i] = arr[k];
-            arr[k] = temp;
-          }
-        }
-
-        List<int> staffIndices = List.generate(numStaff, (i) => i);
-        permute(staffIndices, 0);
-      } else {
-        // Nearest neighbor fallback for large sets to prevent app freeze
-        List<int> unvisited = List.generate(numStaff, (i) => i);
-        int current = 0; // Start point in matrix is index 0
-        double totalDuration = 0;
-        
-        while (unvisited.isNotEmpty) {
-           int next = -1;
-           double minToNext = double.infinity;
-           
-           for (int candidate in unvisited) {
-              var dur = durations[current][candidate + 1];
-              if (dur != null) {
-                 double d = (dur as num).toDouble();
-                 if (d < minToNext) {
-                    minToNext = d;
-                    next = candidate;
-                 }
-              }
-           }
-           
-           if (next == -1) break; // unreachable point
-           
-           bestOrder.add(next);
-           totalDuration += minToNext;
-           unvisited.remove(next);
-           current = next + 1; // update current index in matrix
-        }
-        
-        // Final leg from last staff to End
-        var finalLeg = durations[current][durations.length - 1];
-        if (finalLeg != null) {
-          totalDuration += (finalLeg as num).toDouble();
-        } else {
-          totalDuration = double.infinity;
-        }
-        
-        bestDuration = totalDuration;
+      
+      if (data['code'] != 'Ok') {
+        throw Exception('OSRM returned non-Ok code: ${data['code']}');
       }
 
-      if (bestDuration == double.infinity) {
-        throw Exception('Could not find a valid route between points.');
+      final waypoints = data['waypoints'] as List<dynamic>;
+      final encodedPolyline = data['trips'][0]['geometry'] as String;
+      
+      // Create a list to hold the correctly ordered points
+      List<Map<String, dynamic>> optimizedPoints = List.filled(allPoints.length, {});
+      
+      for (int i = 0; i < waypoints.length; i++) {
+        int optIndex = waypoints[i]['waypoint_index'];
+        optimizedPoints[optIndex] = allPoints[i];
       }
 
-      List<String> orderedWaypoints = [];
-      for (int i in bestOrder) {
-        final st = validStaff[i];
-        orderedWaypoints.add('${st.latitude},${st.longitude}');
-      }
-
-      final originStr = Uri.encodeComponent('${startLoc['latitude']},${startLoc['longitude']}');
-      final destStr = Uri.encodeComponent('${endLoc['latitude']},${endLoc['longitude']}');
-      final waypointsStr = orderedWaypoints.isNotEmpty 
-          ? Uri.encodeComponent(orderedWaypoints.join('|')) 
-          : '';
-
-      String mapUrl = 'https://www.google.com/maps/dir/?api=1&origin=$originStr&destination=$destStr';
-      if (waypointsStr.isNotEmpty) {
-        mapUrl += '&waypoints=$waypointsStr';
-      }
-      final uri = Uri.parse(mapUrl);
-
-      // Close loading dialog
+      // Navigate to custom map page
       if (mounted) {
-        Navigator.pop(context);
-      }
-
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        throw 'Could not launch Maps';
+        Navigator.pop(context); // Close loading dialog
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ShuttleRouteMapPage(
+              optimizedWaypoints: optimizedPoints,
+              encodedPolyline: encodedPolyline,
+              lang: widget.lang,
+            ),
+          ),
+        );
       }
 
     } catch (e) {
