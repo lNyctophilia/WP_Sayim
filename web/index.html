@@ -20,12 +20,12 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="WP Sayım Yönetim Uygulaması">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#0C1D37">
+  <meta name="theme-color" content="#0A1128">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="WP Sayım">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
   <!-- Explicit Apple Touch Icons for older iOS support (like iOS 15) -->
@@ -147,6 +147,57 @@
         checkForUpdates();
       }
     });
+
+    // ─── PWA Dinamik Tema Güncelleme ───
+    // Flutter ThemeService tarafından çağrılır.
+    // backgroundColor: Splash screen, status bar, icon bg hepsi bu renkle senkronize olur.
+    window.updatePwaTheme = function(backgroundColor) {
+      // 1. Meta theme-color güncelle (status bar / address bar rengi)
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', backgroundColor);
+      }
+
+      // 2. Body arka plan rengini güncelle (loading ekranı)
+      document.body.style.backgroundColor = backgroundColor;
+
+      // 3. Manifest'i dinamik olarak yeniden oluştur (splash screen rengi)
+      try {
+        const manifestLink = document.querySelector('link[rel="manifest"]');
+        if (manifestLink) {
+          // Mevcut manifest'i fetch et ve renklerini güncelle
+          fetch(manifestLink.href.split('?')[0] + '?v=' + Date.now(), { cache: 'no-store' })
+            .then(r => r.json())
+            .then(manifest => {
+              manifest.background_color = backgroundColor;
+              manifest.theme_color = backgroundColor;
+              const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              manifestLink.setAttribute('href', url);
+            })
+            .catch(e => console.warn('[PWA Theme] Manifest güncellenemedi:', e));
+        }
+      } catch (e) {
+        console.warn('[PWA Theme] Manifest güncellenirken hata:', e);
+      }
+
+      // 4. Rengi localStorage'a kaydet (sayfa yenilendiğinde hemen uygulamak için)
+      try {
+        localStorage.setItem('pwaThemeColor', backgroundColor);
+      } catch (e) {}
+
+      console.log('[PWA Theme] Tema güncellendi:', backgroundColor);
+    };
+
+    // Sayfa yüklendiğinde kaydedilmiş temayı uygula (Flutter yüklenmeden önce)
+    (function() {
+      const savedColor = localStorage.getItem('pwaThemeColor');
+      if (savedColor) {
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', savedColor);
+        document.body.style.backgroundColor = savedColor;
+      }
+    })();
   </script>
 
   <!-- Service Worker Interceptor for FCM on GitHub Pages -->
