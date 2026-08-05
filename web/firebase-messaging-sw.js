@@ -47,11 +47,12 @@ self.addEventListener('push', function(event) {
     // Sessiz bildirim göster → 3 saniye sonra otomatik kapat.
     // Kullanıcıyı rahatsız etmeden iOS subscription'ını canlı tutar.
     if (payload.data && payload.data.type === 'keep_alive') {
-      console.log('[firebase-messaging-sw.js] Keep-alive push alındı. Sessiz bildirim gösteriliyor...');
+      console.log('[firebase-messaging-sw.js] Keep-alive push alındı. Geçici bildirim gösteriliyor...');
       
-      const keepAlivePromise = self.registration.showNotification('', {
-        // Boş/minimal içerik
-        body: '',
+      const keepAlivePromise = self.registration.showNotification('Sistem Mesajı', {
+        body: 'Bildirim sistemini canlı tutmak için geçici bildirim.',
+        icon: '/icons/Icon-192.png',
+        badge: '/icons/Icon-192.png',
         silent: true,           // Ses yok
         vibrate: [],            // Titreşim yok
         requireInteraction: false, // Otomatik kapanabilir

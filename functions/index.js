@@ -746,15 +746,22 @@ exports.keepAliveSubscription = onSchedule({ schedule: "0 4 * * *", timeZone: "E
     
     // Son push zamanını kontrol et
     const lastPush = userData.lastPushSentAt;
-    if (lastPush) {
-      const lastPushDate = lastPush.toDate ? lastPush.toDate() : new Date(lastPush);
-      if (lastPushDate > sixDaysAgo) {
-        // Son 6 gün içinde push almış, skip
-        skippedCount++;
-        continue;
-      }
+    
+    // Eğer kullanıcı henüz hiç normal push almamışsa (alan yoksa), onu es geç.
+    // Sadece daha önce push almış ama üzerinden 6 gün geçmiş kişileri hedefle.
+    if (!lastPush) {
+      skippedCount++;
+      continue;
     }
-    // lastPushSentAt yoksa hiç push almamış demek — keep-alive gönder
+
+    const lastPushDate = lastPush.toDate ? lastPush.toDate() : new Date(lastPush);
+    if (lastPushDate > sixDaysAgo) {
+      // Son 6 gün içinde push almış, keep-alive'a gerek yok, skip
+      skippedCount++;
+      continue;
+    }
+    
+    // Buraya ulaştıysa: lastPushSentAt alanı var VE üzerinden 6 günden fazla geçmiş
     
     try {
       const message = {
