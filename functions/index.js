@@ -74,6 +74,39 @@ async function sendNotificationAndLog({ userId, title, body, type, relatedId, da
   }
 }
 
+/**
+ * Yardımcı Fonksiyon: EmailJS ile e-posta gönder (Firebase Mail Extension yerine).
+ */
+async function sendEmailJSEmail(toEmail, subject, textContent) {
+  try {
+    const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        service_id: 'service_qjvatbn',
+        template_id: 'template_9wd7j5s',
+        user_id: '6Ybd1Uu2O5Es_Rdtq',
+        template_params: {
+          to_email: toEmail,
+          subject: subject,
+          message: textContent
+        }
+      }),
+    });
+
+    if (response.ok) {
+      console.log(`[EmailJS] Successfully sent email to ${toEmail}`);
+    } else {
+      const errorText = await response.text();
+      console.error(`[EmailJS] Error sending email to ${toEmail}:`, errorText);
+    }
+  } catch (error) {
+    console.error(`[EmailJS] Exception while sending email to ${toEmail}:`, error);
+  }
+}
+
 // 1. Yeni davet oluşturulduğunda personeli bilgilendir
 exports.sendDavetNotification = onDocumentCreated("davetler/{davetId}", async (event) => {
   const davetData = event.data.data();
@@ -376,20 +409,22 @@ exports.sendApprovalNotification = onDocumentUpdated("users/{userId}", async (ev
 
   if (!oldData || !newData) return;
 
-  if (oldData.isApproved === false && newData.isApproved === true) {
-    const hasEmail = newData.email && newData.email.trim() !== "";
+  const wasApproved = oldData.isApproved === true;
+  const isNowApproved = newData.isApproved === true;
+
+  if (!wasApproved && isNowApproved) {
+    const email = newData.email || "";
+    const hasEmail = email.trim() !== "";
+
+    console.log(`[sendApprovalNotification] User ${event.params.userId} approved. hasEmail: ${hasEmail}, email: '${email}'`);
 
     if (hasEmail) {
       // E-posta adresi olan kullanıcıya e-posta gönder
-      await admin.firestore().collection("mail").add({
-        to: newData.email,
-        message: {
-          subject: "WP Sayım - Hesabınız Onaylandı!",
-          html: `<h3>Hesabınız Onaylandı!</h3>
-                 <p>WP Sayım uygulamasına kayıt başvurunuz onaylandı. Artık e-posta adresiniz ve şifreniz ile giriş yapabilirsiniz.</p>
-                 <p><a href="https://lnyctophilia.github.io/WP_Sayim/">Uygulamaya Gitmek İçin Tıklayın</a></p>`
-        }
-      });
+      await sendEmailJSEmail(
+        email.trim(),
+        "WP Sayım - Hesabınız Onaylandı!",
+        "WP Sayım uygulamasına kayıt başvurunuz onaylandı. Artık e-posta adresiniz ve şifreniz ile giriş yapabilirsiniz.\n\nUygulamaya Gitmek İçin Tıklayın: https://lnyctophilia.github.io/WP_Sayim/"
+      );
 
       // Uygulama içi bildirimi de kaydet
       await admin.firestore().collection("notifications").add({
@@ -401,8 +436,10 @@ exports.sendApprovalNotification = onDocumentUpdated("users/{userId}", async (ev
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         isRead: false
       });
+      console.log(`[sendApprovalNotification] Added in-app notification for ${event.params.userId}`);
     } else {
       // E-postası olmayan (normal push notification alan) kullanıcıya bildirim gönder
+      console.log(`[sendApprovalNotification] No email found. Sending push notification for ${event.params.userId}`);
       await sendNotificationAndLog({
         userId: event.params.userId,
         title: "Hesabınız Onaylandı!",
@@ -603,18 +640,13 @@ exports.sendTestNotification = onDocumentCreated("test_notifications/{docId}", a
   console.log("sendTestNotification: hasEmail?", hasEmail, "email:", userData.email);
 
   if (hasEmail) {
-    console.log("sendTestNotification: Sending test email via 'mail' collection to:", userData.email);
-    // E-postası olan kullanıcıya e-posta gönder (mail koleksiyonu üzerinden)
-    await admin.firestore().collection("mail").add({
-      to: userData.email,
-      message: {
-        subject: "WP Sayım - Bildirim Testi",
-        html: `<h3>WP Sayım - Bildirim Testi</h3>
-               <p>Bu bir test e-postasıdır. Eğer bu mesajı alıyorsanız, bildirim sisteminiz başarıyla çalışıyor demektir.</p>
-               <p>Uygulama kapalıyken de bu e-postayı alabiliyorsunuz. Harika!</p>`
-      }
-    });
-    console.log("sendTestNotification: Added to 'mail' collection.");
+    console.log("sendTestNotification: Sending test email via EmailJS to:", userData.email);
+    // E-postası olan kullanıcıya e-posta gönder (EmailJS üzerinden)
+    await sendEmailJSEmail(
+      userData.email,
+      "WP Sayım - Bildirim Testi",
+      "Bu bir test e-postasıdır. Eğer bu mesajı alıyorsanız, bildirim sisteminiz başarıyla çalışıyor demektir.\n\nUygulama kapalıyken de bu e-postayı alabiliyorsunuz. Harika!"
+    );
 
     // Uygulama içi bildirimi de kaydet
     await admin.firestore().collection("notifications").add({
