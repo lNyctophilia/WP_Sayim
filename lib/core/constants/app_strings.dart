@@ -396,6 +396,7 @@ class AppStrings {
     'send_reminder_confirm_msg': {'tr': 'Bu kişiye yeniden hatırlatma bildirimi göndermek istediğinize emin misiniz?', 'en': 'Are you sure you want to send a reminder notification to this person?'},
     'cancel_invitation_confirm_title': {'tr': 'Daveti İptal Et', 'en': 'Cancel Invitation'},
     'cancel_invitation_confirm_msg': {'tr': 'Bu daveti iptal etmek istediğinize emin misiniz?', 'en': 'Are you sure you want to cancel this invitation?'},
+    'sayim_cancelled': {'tr': 'Sayım İptali', 'en': 'Count Cancelled'},
     'reinvite_confirm_title': {'tr': 'Yeniden Davet Et', 'en': 'Re-invite'},
     'reinvite_confirm_msg': {'tr': 'Bu kişiye yeniden davet göndermek istediğinize emin misiniz?', 'en': 'Are you sure you want to send a new invitation to this person?'},
     'remove_invitation_confirm_title': {'tr': 'Daveti Sil', 'en': 'Remove Invitation'},

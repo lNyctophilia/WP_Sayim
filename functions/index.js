@@ -580,23 +580,30 @@ exports.cleanupOldNotifications = onSchedule({ schedule: "0 4 1,15 * *", timeZon
 
 // 11. Test Bildirimi Gönder (Kullanıcı ayarlardan test ettiğinde)
 exports.sendTestNotification = onDocumentCreated("test_notifications/{docId}", async (event) => {
-  console.log("sendTestNotification triggered for docId:", event.params.docId);
+  console.log("sendTestNotification START! docId:", event.params.docId);
   const data = event.data.data();
   if (!data || !data.userId) {
-    console.log("Missing data or userId, aborting.");
+    console.log("sendTestNotification: Missing data or userId, aborting.");
     return;
   }
 
+  console.log("sendTestNotification: Waiting 10 seconds for user:", data.userId);
   // Wait 10 seconds so the user can put the app in the background to test push notifications
   await new Promise(resolve => setTimeout(resolve, 10000));
 
+  console.log("sendTestNotification: Wait finished. Fetching user:", data.userId);
   const userDoc = await admin.firestore().collection("users").doc(data.userId).get();
-  if (!userDoc.exists) return;
+  if (!userDoc.exists) {
+    console.log("sendTestNotification: User doc does not exist:", data.userId);
+    return;
+  }
 
   const userData = userDoc.data();
   const hasEmail = userData.email && userData.email.trim() !== "";
+  console.log("sendTestNotification: hasEmail?", hasEmail, "email:", userData.email);
 
   if (hasEmail) {
+    console.log("sendTestNotification: Sending test email via 'mail' collection to:", userData.email);
     // E-postası olan kullanıcıya e-posta gönder (mail koleksiyonu üzerinden)
     await admin.firestore().collection("mail").add({
       to: userData.email,
@@ -607,6 +614,7 @@ exports.sendTestNotification = onDocumentCreated("test_notifications/{docId}", a
                <p>Uygulama kapalıyken de bu e-postayı alabiliyorsunuz. Harika!</p>`
       }
     });
+    console.log("sendTestNotification: Added to 'mail' collection.");
 
     // Uygulama içi bildirimi de kaydet
     await admin.firestore().collection("notifications").add({
@@ -618,6 +626,7 @@ exports.sendTestNotification = onDocumentCreated("test_notifications/{docId}", a
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       isRead: false
     });
+    console.log("sendTestNotification: Added to 'notifications' collection.");
   } else {
     // E-postası olmayan kullanıcıya normal push notification gönder
     await sendNotificationAndLog({

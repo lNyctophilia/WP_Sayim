@@ -404,14 +404,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           : null,
       body: Stack(
         children: [
-          // Arkaplan Deseni (Tam Ekran, Daha Saydam)
-          Positioned.fill(
-            child: CustomPaint(
-              painter: BackgroundPatternPainter(
-                color: AppColors.textHint.withValues(alpha: 0.04),
-              ),
-            ),
-          ),
           Column(
             children: [
               // Üst bar — farklı renk, yuvarlak alt köşeler
@@ -740,31 +732,4 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 }
 
-/// Arkaplan için tüm ekranı kaplayan, şık ve çok saydam nokta (dot) deseni
-class BackgroundPatternPainter extends CustomPainter {
-  final Color color;
-
-  BackgroundPatternPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    const double spacing = 24.0;
-    const double radius = 1.2;
-
-    for (double y = 0; y < size.height + spacing; y += spacing) {
-      for (double x = 0; x < size.width + spacing; x += spacing) {
-        // Satırlara göre hafif kaydırma (çapraz bir his vermek için)
-        final offsetX = (y / spacing) % 2 == 0 ? 0.0 : spacing / 2.0;
-        canvas.drawCircle(Offset(x + offsetX, y), radius, paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
 
