@@ -6,12 +6,12 @@ import 'package:web/web.dart' as web;
 /// - meta theme-color (status bar / address bar)
 /// - manifest background_color + theme_color (splash screen)
 /// - body background-color (loading ekranı)
-void updatePwaThemeColor(String hexColor) {
+void updatePwaTheme(String bgHex, String accentHex, String textHex) {
   try {
     final win = web.window as JSObject;
     // index.html'deki updatePwaTheme fonksiyonunu çağır
     if (win.hasProperty('updatePwaTheme'.toJS).toDart) {
-      win.callMethod('updatePwaTheme'.toJS, hexColor.toJS);
+      win.callMethod('updatePwaTheme'.toJS, bgHex.toJS, accentHex.toJS, textHex.toJS);
     }
   } catch (e) {
     // Sessizce devam et — kritik olmayan özellik

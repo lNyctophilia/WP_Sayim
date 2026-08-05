@@ -1,2 +1,2 @@
 /// Stub — native platformlarda hiçbir şey yapmaz.
-void updatePwaThemeColor(String hexColor) {}
+void updatePwaTheme(String bgHex, String accentHex, String textHex) {}

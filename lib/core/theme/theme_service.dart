@@ -55,35 +55,53 @@ class ThemeService extends ChangeNotifier {
         final seedColor = Color(_storage.getCustomThemeColor());
         final hslSeed = HSLColor.fromColor(seedColor);
         final hue = hslSeed.hue;
+        final sat = hslSeed.saturation;
+        final isLight = seedColor.computeLuminance() > 0.5;
         
-        // 1. Matematiksel Katmanlar (Elevation by Lightness)
-        // Orijinal temanın doygunluk (S) ve parlaklık (L) değerleri baz alınarak uyarlanmıştır.
-        AppColors.background = HSLColor.fromAHSL(1.0, hue, 0.60, 0.10).toColor();
-        AppColors.surface = HSLColor.fromAHSL(1.0, hue, 0.47, 0.14).toColor();
-        AppColors.card = HSLColor.fromAHSL(1.0, hue, 0.44, 0.19).toColor();
-        AppColors.cardLight = HSLColor.fromAHSL(1.0, hue, 0.42, 0.23).toColor();
+        // Siyah/Beyaz/Gri seçildiyse doygunluğu 0'da tut, yoksa 0.10 gibi ufak bir tint bırak
+        final textSat = sat > 0.05 ? 0.10 : 0.0;
         
-        // 2. Vurgu (Accent)
-        AppColors.accent = HSLColor.fromAHSL(1.0, hue, 0.49, 0.30).toColor();
-        // accentLight kullanıcının seçtiği saf orijinal renk olarak kalır ki butonlar parlasın.
-        AppColors.accentLight = seedColor; 
-        AppColors.todayBorder = seedColor;
+        if (isLight) {
+          // AÇIK TEMA
+          final bgSat = sat.clamp(0.0, 0.15); // Açık arkaplanda fazla doygunluk göz yorar
+          AppColors.background = HSLColor.fromAHSL(1.0, hue, bgSat, 0.98).toColor();
+          AppColors.surface = HSLColor.fromAHSL(1.0, hue, bgSat, 0.95).toColor();
+          AppColors.card = HSLColor.fromAHSL(1.0, hue, bgSat, 0.92).toColor();
+          AppColors.cardLight = HSLColor.fromAHSL(1.0, hue, bgSat, 0.88).toColor();
+          
+          AppColors.accent = HSLColor.fromAHSL(1.0, hue, sat.clamp(0.4, 1.0), 0.40).toColor();
+          AppColors.accentLight = seedColor; 
+          AppColors.todayBorder = seedColor;
+          
+          AppColors.divider = HSLColor.fromAHSL(1.0, hue, bgSat, 0.85).toColor();
+          
+          AppColors.textPrimary = HSLColor.fromAHSL(1.0, hue, textSat, 0.10).toColor();
+          AppColors.textSecondary = HSLColor.fromAHSL(1.0, hue, textSat + 0.05, 0.40).toColor();
+          AppColors.textHint = HSLColor.fromAHSL(1.0, hue, textSat + 0.05, 0.55).toColor();
+        } else {
+          // KOYU TEMA
+          final bgSat = sat.clamp(0.0, 0.40); // Koyu temada %40'a kadar doygunluk güzel durur
+          AppColors.background = HSLColor.fromAHSL(1.0, hue, bgSat, 0.10).toColor();
+          AppColors.surface = HSLColor.fromAHSL(1.0, hue, bgSat, 0.14).toColor();
+          AppColors.card = HSLColor.fromAHSL(1.0, hue, bgSat, 0.19).toColor();
+          AppColors.cardLight = HSLColor.fromAHSL(1.0, hue, bgSat, 0.23).toColor();
+          
+          AppColors.accent = HSLColor.fromAHSL(1.0, hue, sat.clamp(0.4, 1.0), 0.30).toColor();
+          AppColors.accentLight = seedColor; 
+          AppColors.todayBorder = seedColor;
+          
+          AppColors.divider = HSLColor.fromAHSL(1.0, hue, bgSat, 0.21).toColor();
+          
+          AppColors.textPrimary = HSLColor.fromAHSL(1.0, hue, textSat, 0.95).toColor();
+          AppColors.textSecondary = HSLColor.fromAHSL(1.0, hue, textSat + 0.10, 0.60).toColor();
+          AppColors.textHint = HSLColor.fromAHSL(1.0, hue, textSat + 0.05, 0.40).toColor();
+        }
         
-        // 3. Çizgiler (Divider)
-        AppColors.divider = HSLColor.fromAHSL(1.0, hue, 0.45, 0.21).toColor();
-        
-        // 4. Metin Renkleri (Tinted Whites)
-        // Tam beyaz yerine, temanın renginden çok hafif bir esinti taşıyan (S: %10) kırık beyaz.
-        AppColors.textPrimary = HSLColor.fromAHSL(1.0, hue, 0.10, 0.95).toColor();
-        AppColors.textSecondary = HSLColor.fromAHSL(1.0, hue, 0.20, 0.60).toColor();
-        AppColors.textHint = HSLColor.fromAHSL(1.0, hue, 0.15, 0.40).toColor();
-        
-        // 5. Şehir ve Fonksiyon Renkleri (Orijinal temadaki açı farklarına göre hesaplandı)
+        // Şehir ve Fonksiyon Renkleri (Gri seçildiyse renksiz tut)
         final innerHue = (hue - 32 + 360) % 360; 
         final outerHue = (hue + 171) % 360; 
-        
-        AppColors.cityInner = HSLColor.fromAHSL(1.0, innerHue, 0.70, 0.60).toColor();
-        AppColors.cityOuter = HSLColor.fromAHSL(1.0, outerHue, 0.80, 0.60).toColor();
+        AppColors.cityInner = HSLColor.fromAHSL(1.0, innerHue, sat > 0.05 ? 0.70 : 0.0, 0.60).toColor();
+        AppColors.cityOuter = HSLColor.fromAHSL(1.0, outerHue, sat > 0.05 ? 0.80 : 0.0, 0.60).toColor();
         break;
     }
 
@@ -99,7 +117,9 @@ class ThemeService extends ChangeNotifier {
 
     // PWA: status bar, splash screen ve manifest renklerini senkronize et
     final bgHex = '#${AppColors.background.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
-    updatePwaThemeColor(bgHex);
+    final accentHex = '#${AppColors.accentLight.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
+    final textHex = '#${AppColors.textSecondary.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
+    updatePwaTheme(bgHex, accentHex, textHex);
   }
 
   String getThemeName(AppThemeType type) {
