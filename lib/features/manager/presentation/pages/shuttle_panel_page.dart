@@ -210,7 +210,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
       String coords = allPoints.map((p) => '${p['lon']},${p['lat']}').join(';');
       
       // 4. Fetch Trip Optimization
-      final url = Uri.parse('https://router.project-osrm.org/trip/v1/driving/$coords?source=first&destination=last&roundtrip=false&overview=full');
+      final url = Uri.parse('https://router.project-osrm.org/trip/v1/driving/$coords?source=first&destination=last&roundtrip=false&overview=simplified');
       final response = await http.get(url, headers: {'User-Agent': 'DaytrackApp/1.0'});
 
       if (response.statusCode != 200) {

@@ -301,7 +301,7 @@ class _ShuttleRouteMapPageState extends State<ShuttleRouteMapPage> {
                       point: LatLng(widget.optimizedWaypoints[i]['lat'], widget.optimizedWaypoints[i]['lon']),
                       width: 150, // Enough width for names
                       height: 80,
-                      alignment: Alignment.topCenter,
+                      alignment: Alignment.bottomCenter,
                       child: GestureDetector(
                         onLongPress: () => _showWaypointDetails(widget.optimizedWaypoints[i]),
                         onTap: () => _showWaypointDetails(widget.optimizedWaypoints[i]),
