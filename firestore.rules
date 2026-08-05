@@ -53,7 +53,7 @@ service cloud.firestore {
         ) || 
         (
           request.auth.uid == userId && 
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fcmToken', 'sessionId', 'fcmError', 'sayimReminderEnabled'])
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fcmToken', 'sessionId', 'fcmError', 'sayimReminderEnabled', 'pushVersion', 'fcmTokenInvalidatedAt', 'fcmTokenInvalidReason'])
         );
     }
 
