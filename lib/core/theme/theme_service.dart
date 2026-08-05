@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/app_colors.dart';
+import '../utils/pwa_theme.dart';
 import '../services/storage_service.dart';
 
 enum AppThemeType {
@@ -93,6 +94,10 @@ class ThemeService extends ChangeNotifier {
         systemNavigationBarIconBrightness: AppColors.background.computeLuminance() > 0.5 ? Brightness.dark : Brightness.light,
       ),
     );
+
+    // PWA: Sadece safebar (status bar/address bar) rengini dinamik tut
+    final bgHex = '#${AppColors.background.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
+    updatePwaTheme(bgHex);
   }
 
   String getThemeName(AppThemeType type) {

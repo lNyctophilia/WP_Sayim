@@ -1,0 +1,1 @@
+void updatePwaTheme(String backgroundColor) {}

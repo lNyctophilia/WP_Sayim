@@ -152,6 +152,28 @@
         checkForUpdates();
       }
     });
+
+    // ─── PWA Safebar (Status Bar) Dinamik Güncelleme ───
+    window.updatePwaTheme = function(backgroundColor) {
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', backgroundColor);
+      }
+      
+      // Sayfa yenilendiğinde tekrar uygulamak için kaydet
+      try {
+        localStorage.setItem('pwaThemeColor', backgroundColor);
+      } catch (e) {}
+    };
+
+    // Yüklenişte kaydedilmiş safebar rengini uygula
+    (function() {
+      const savedBgColor = localStorage.getItem('pwaThemeColor');
+      if (savedBgColor) {
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', savedBgColor);
+      }
+    })();
   </script>
 
   <!-- Service Worker Interceptor for FCM on GitHub Pages -->
