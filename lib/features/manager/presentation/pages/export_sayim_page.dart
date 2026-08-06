@@ -296,10 +296,13 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
         }
       }
 
-      // 3. Sort users A-Z
+      // 3. Sort users by count (descending), then A-Z
       final List<MapEntry<String, int>> sortedUsers = userWorkCount.entries.toList();
       
       sortedUsers.sort((a, b) {
+        final countCmp = b.value.compareTo(a.value); // Descending by count
+        if (countCmp != 0) return countCmp;
+        // Fallback to name A-Z
         final userA = userMap[a.key]?.fullName ?? unknownUserStr;
         final userB = userMap[b.key]?.fullName ?? unknownUserStr;
         return userA.compareTo(userB);
@@ -336,51 +339,52 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       sheet.getRangeByIndex(2, 1, 2, 3).cellStyle = centerStyle;
       sheet.getRangeByIndex(2, 1, 2, 3).cellStyle.bold = true;
 
-      // Row 3: Summary Table Headers
-      sheet.getRangeByIndex(3, 1).setText(isTr ? 'Veri Adı' : 'Data Name');
-      sheet.getRangeByIndex(3, 1, 3, 2).merge();
-      sheet.getRangeByIndex(3, 3).setText(isTr ? 'Miktar' : 'Amount');
-      sheet.getRangeByIndex(3, 1, 3, 3).cellStyle = headerStyle;
+      // Row 3: Boş Satır (Başlık ile özet tablo arası)
 
-      // Row 4: Total Counts
-      sheet.getRangeByIndex(4, 1).setText(AppStrings.get('total_counts_in_month', isTr ? 'tr' : 'en').replaceAll(':', '').trim());
+      // Row 4: Summary Table Headers
+      sheet.getRangeByIndex(4, 1).setText(isTr ? 'Veri Adı' : 'Data Name');
       sheet.getRangeByIndex(4, 1, 4, 2).merge();
-      sheet.getRangeByIndex(4, 3).setNumber(totalSayim.toDouble());
-      
-      // Row 5: Total Shifts
-      sheet.getRangeByIndex(5, 1).setText(AppStrings.get('total_personnel_shifts', isTr ? 'tr' : 'en').replaceAll(':', '').trim());
+      sheet.getRangeByIndex(4, 3).setText(isTr ? 'Miktar' : 'Amount');
+      sheet.getRangeByIndex(4, 1, 4, 3).cellStyle = headerStyle;
+
+      // Row 5: Total Counts
+      sheet.getRangeByIndex(5, 1).setText(AppStrings.get('total_counts_in_month', isTr ? 'tr' : 'en').replaceAll(':', '').trim());
       sheet.getRangeByIndex(5, 1, 5, 2).merge();
-      sheet.getRangeByIndex(5, 3).setNumber(totalPersonelCalistirma.toDouble());
+      sheet.getRangeByIndex(5, 3).setNumber(totalSayim.toDouble());
+      
+      // Row 6: Total Shifts
+      sheet.getRangeByIndex(6, 1).setText(AppStrings.get('total_personnel_shifts', isTr ? 'tr' : 'en').replaceAll(':', '').trim());
+      sheet.getRangeByIndex(6, 1, 6, 2).merge();
+      sheet.getRangeByIndex(6, 3).setNumber(totalPersonelCalistirma.toDouble());
 
-      // Style for Rows 4 and 5
-      sheet.getRangeByIndex(4, 1, 5, 3).cellStyle.hAlign = xlsio.HAlignType.center;
-      sheet.getRangeByIndex(4, 1, 5, 3).cellStyle.vAlign = xlsio.VAlignType.center;
-      sheet.getRangeByIndex(4, 1, 5, 3).cellStyle.bold = true;
+      // Style for Rows 5 and 6
+      sheet.getRangeByIndex(5, 1, 6, 3).cellStyle.hAlign = xlsio.HAlignType.center;
+      sheet.getRangeByIndex(5, 1, 6, 3).cellStyle.vAlign = xlsio.VAlignType.center;
+      sheet.getRangeByIndex(5, 1, 6, 3).cellStyle.bold = true;
 
-      // Row 6: Boş satır (Excel'in tabloları ayırması ve sıralamanın bozulmaması için ZORUNLU)
+      // Row 7: Boş satır (Excel'in tabloları ayırması ve sıralamanın bozulmaması için ZORUNLU)
 
-      // Row 7: Table Headers
-      sheet.getRangeByIndex(7, 1).setText(AppStrings.get('order', isTr ? 'tr' : 'en'));
-      sheet.getRangeByIndex(7, 2).setText(AppStrings.get('personnel_name', isTr ? 'tr' : 'en'));
-      sheet.getRangeByIndex(7, 3).setText(AppStrings.get('participated_counts', isTr ? 'tr' : 'en'));
-      sheet.getRangeByIndex(7, 1, 7, 3).cellStyle = headerStyle;
+      // Row 8: Table Headers
+      sheet.getRangeByIndex(8, 1).setText(AppStrings.get('order', isTr ? 'tr' : 'en'));
+      sheet.getRangeByIndex(8, 2).setText(AppStrings.get('personnel_name', isTr ? 'tr' : 'en'));
+      sheet.getRangeByIndex(8, 3).setText(AppStrings.get('participated_counts', isTr ? 'tr' : 'en'));
+      sheet.getRangeByIndex(8, 1, 8, 3).cellStyle = headerStyle;
 
       // Data Rows
-      int r = 8;
-      int counter = 1;
+      int r = 9;
       for (var entry in sortedUsers) {
         final user = userMap[entry.key];
-        sheet.getRangeByIndex(r, 1).setNumber(counter.toDouble());
+        // Formül kullanarak sıranın Excel'de dinamik olmasını sağla (satır no - 8)
+        sheet.getRangeByIndex(r, 1).setFormula('=ROW()-8');
         sheet.getRangeByIndex(r, 2).setText(user?.fullName ?? unknownUserStr);
         sheet.getRangeByIndex(r, 3).setNumber(entry.value.toDouble());
         sheet.getRangeByIndex(r, 1, r, 3).cellStyle = centerStyle;
         r++;
-        counter++;
       }
 
       // Tablo başlıklarına (Sıra, Personel Adı, Katıldığı Sayım) Filtre/Sıralama özelliği ekle
-      if (r > 8) {
-        sheet.autoFilters.filterRange = sheet.getRangeByIndex(7, 1, r - 1, 3);
+      if (r > 9) {
+        sheet.autoFilters.filterRange = sheet.getRangeByIndex(8, 1, r - 1, 3);
       }
 
       sheet.setColumnWidthInPixels(1, 80);
