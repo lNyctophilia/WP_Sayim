@@ -28,6 +28,7 @@ echo [2/4] Build dosyalari docs/ klasorune kopyalaniyor...
 if exist docs rmdir /s /q docs
 mkdir docs
 xcopy build\web\* docs\ /s /e /q
+type nul > docs\.nojekyll
 echo Kopyalama tamamlandi!
 echo.
 
