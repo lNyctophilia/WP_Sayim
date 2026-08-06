@@ -259,7 +259,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     }
                   },
                   icon: const Icon(Icons.color_lens_rounded),
-                  label: Text(widget.lang.currentLang == 'tr' ? 'Özel Renk Seç' : 'Pick Custom Color'),
+                  label: Text(widget.lang.tr('pick_custom_color')),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.surface,
                     foregroundColor: AppColors.textPrimary,
@@ -422,7 +422,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
             title: Text(
-              'Sayım Hatırlatıcı', // You can use widget.lang.tr('sayim_reminder') if added to language files
+              widget.lang.tr('sayim_reminder'),
               style: TextStyle(
                 fontSize: 15,
                 color: isOldIos ? AppColors.textHint : AppColors.textPrimary,
@@ -431,8 +431,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             subtitle: Text(
               isOldIos 
-                  ? 'Cihazınız bu özelliği desteklemiyor' 
-                  : 'Sayıma 3 saat kala bildirim alırsınız',
+                  ? widget.lang.tr('device_not_supported')
+                  : widget.lang.tr('reminder_desc'),
               style: TextStyle(
                 fontSize: 12,
                 color: isOldIos ? AppColors.danger.withValues(alpha: 0.7) : AppColors.textSecondary,
@@ -486,7 +486,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
         title: Text(
-          'Bildirim gelmiyor mu?',
+          widget.lang.tr('notification_help'),
           style: TextStyle(
             fontSize: 15,
             color: AppColors.textPrimary,
@@ -494,7 +494,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
         subtitle: Text(
-          'Çözüm için tıkla',
+          widget.lang.tr('click_for_solution'),
           style: TextStyle(
             fontSize: 12,
             color: AppColors.textSecondary,
