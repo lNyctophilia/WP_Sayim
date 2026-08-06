@@ -19,6 +19,8 @@ async function sendNotificationAndLog({ userId, title, body, type, relatedId, da
 
     // E-posta adresi yoksa VE fcmToken varsa push notification at
     if (fcmToken && !hasEmail) {
+      const safeTopic = tag ? (tag.length > 32 ? tag.substring(tag.length - 32) : tag) : "";
+
       const message = {
         token: fcmToken,
         notification: { title, body },
@@ -34,7 +36,7 @@ async function sendNotificationAndLog({ userId, title, body, type, relatedId, da
         },
         webpush: {
           headers: { 
-            Topic: tag,
+            Topic: safeTopic,
             Urgency: "high"
           },
           notification: {
