@@ -332,7 +332,8 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       final monthName = AppStrings.getMonth(month, isTr ? 'tr' : 'en');
       sheet.getRangeByIndex(2, 1).setText('$monthName $year ${AppStrings.get('report_type_aylik', isTr ? 'tr' : 'en')}');
       sheet.getRangeByIndex(2, 1, 2, 3).merge();
-      sheet.getRangeByIndex(2, 1, 2, 3).cellStyle = headerStyle;
+      sheet.getRangeByIndex(2, 1, 2, 3).cellStyle = centerStyle;
+      sheet.getRangeByIndex(2, 1, 2, 3).cellStyle.bold = true;
 
       // Row 3: Summary Table Headers
       sheet.getRangeByIndex(3, 1).setText(isTr ? 'Veri Adı' : 'Data Name');
@@ -351,21 +352,18 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       sheet.getRangeByIndex(5, 3).setNumber(totalPersonelCalistirma.toDouble());
 
       // Style for Rows 4 and 5
-      sheet.getRangeByIndex(4, 1, 5, 2).cellStyle.hAlign = xlsio.HAlignType.left;
-      sheet.getRangeByIndex(4, 1, 5, 2).cellStyle.vAlign = xlsio.VAlignType.center;
-      sheet.getRangeByIndex(4, 1, 5, 2).cellStyle.bold = true;
-      sheet.getRangeByIndex(4, 3, 5, 3).cellStyle.hAlign = xlsio.HAlignType.center;
-      sheet.getRangeByIndex(4, 3, 5, 3).cellStyle.vAlign = xlsio.VAlignType.center;
-      sheet.getRangeByIndex(4, 3, 5, 3).cellStyle.bold = true;
+      sheet.getRangeByIndex(4, 1, 5, 3).cellStyle.hAlign = xlsio.HAlignType.center;
+      sheet.getRangeByIndex(4, 1, 5, 3).cellStyle.vAlign = xlsio.VAlignType.center;
+      sheet.getRangeByIndex(4, 1, 5, 3).cellStyle.bold = true;
 
-      // Row 7: Table Headers (Row 6 is left blank for separation)
-      sheet.getRangeByIndex(7, 1).setText(AppStrings.get('order', isTr ? 'tr' : 'en'));
-      sheet.getRangeByIndex(7, 2).setText(AppStrings.get('personnel_name', isTr ? 'tr' : 'en'));
-      sheet.getRangeByIndex(7, 3).setText(AppStrings.get('participated_counts', isTr ? 'tr' : 'en'));
-      sheet.getRangeByIndex(7, 1, 7, 3).cellStyle = headerStyle;
+      // Row 6: Table Headers
+      sheet.getRangeByIndex(6, 1).setText(AppStrings.get('order', isTr ? 'tr' : 'en'));
+      sheet.getRangeByIndex(6, 2).setText(AppStrings.get('personnel_name', isTr ? 'tr' : 'en'));
+      sheet.getRangeByIndex(6, 3).setText(AppStrings.get('participated_counts', isTr ? 'tr' : 'en'));
+      sheet.getRangeByIndex(6, 1, 6, 3).cellStyle = headerStyle;
 
       // Data Rows
-      int r = 8;
+      int r = 7;
       int counter = 1;
       for (var entry in sortedUsers) {
         final user = userMap[entry.key];
@@ -375,6 +373,11 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
         sheet.getRangeByIndex(r, 1, r, 3).cellStyle = centerStyle;
         r++;
         counter++;
+      }
+
+      // Tablo başlıklarına (Sıra, Personel Adı, Katıldığı Sayım) Filtre/Sıralama özelliği ekle
+      if (r > 7) {
+        sheet.autoFilters.filterRange = sheet.getRangeByIndex(6, 1, r - 1, 3);
       }
 
       sheet.setColumnWidthInPixels(1, 80);
