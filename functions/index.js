@@ -22,6 +22,9 @@ async function sendNotificationAndLog({ userId, title, body, type, relatedId, da
       const message = {
         token: fcmToken,
         notification: { title, body },
+        // ─── PWA (iOS/Android) ve Native Android ───
+        // `apns` bloğu iOS Safari'de hata verdiği için tamamen kaldırıldı.
+        // `android` bloğu APK kullananlar için eklendi (web push token'larında ignore edilir).
         android: {
           priority: "high",
           notification: {
@@ -34,20 +37,14 @@ async function sendNotificationAndLog({ userId, title, body, type, relatedId, da
             Topic: tag,
             Urgency: "high"
           },
-          fcmOptions: { link: link || "https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true" }
-        },
-        apns: {
-          headers: { 
-            "apns-collapse-id": tag,
-            "apns-priority": "10"
+          notification: {
+            title: title,
+            body: body,
+            icon: "/icons/Icon-192.png",
+            badge: "/icons/Icon-192.png",
+            requireInteraction: true
           },
-          payload: {
-            aps: {
-              sound: "default",
-              badge: 1,
-              "content-available": 1
-            }
-          }
+          fcmOptions: { link: link || "https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true" }
         },
         data: dataPayload
       };
@@ -669,7 +666,9 @@ exports.sendTestNotification = onDocumentCreated("test_notifications/{docId}", a
 
   const userData = userDoc.data();
   const hasEmail = userData.email && userData.email.trim() !== "";
-  console.log("sendTestNotification: hasEmail?", hasEmail, "email:", userData.email);
+  const fcmToken = userData.fcmToken;
+  const invalidReason = userData.fcmTokenInvalidReason;
+  console.log("sendTestNotification: hasEmail?", hasEmail, "| fcmToken?", !!fcmToken, "| invalidReason:", invalidReason || "none");
 
   if (hasEmail) {
     console.log("sendTestNotification: Sending test email via EmailJS to:", userData.email);
@@ -774,25 +773,15 @@ exports.keepAliveSubscription = onSchedule({ schedule: "0 4 * * *", timeZone: "E
           type: "keep_alive",
           timestamp: String(now)
         },
+        // `apns` iOS PWA'da hata verdiği için yok, `android` APK'lar için eklendi
+        android: {
+          priority: "normal"
+        },
         webpush: {
           headers: {
             Topic: "keep_alive",
             Urgency: "low",
             TTL: "86400" // 24 saat TTL
-          }
-        },
-        android: {
-          priority: "normal"
-        },
-        apns: {
-          headers: {
-            "apns-priority": "5", // Düşük öncelik
-            "apns-collapse-id": "keep_alive"
-          },
-          payload: {
-            aps: {
-              "content-available": 1
-            }
           }
         }
       };
