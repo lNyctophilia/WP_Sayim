@@ -283,6 +283,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       final allUsers = await _authService.getAllUsers();
       for (var u in allUsers) {
         userMap[u.id] = u;
+        userWorkCount[u.id] = 0; // Tüm personeli sıfır olarak ekle
       }
 
       for (var sayim in filteredSayimlar) {
@@ -356,14 +357,16 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       sheet.getRangeByIndex(4, 1, 5, 3).cellStyle.vAlign = xlsio.VAlignType.center;
       sheet.getRangeByIndex(4, 1, 5, 3).cellStyle.bold = true;
 
-      // Row 6: Table Headers
-      sheet.getRangeByIndex(6, 1).setText(AppStrings.get('order', isTr ? 'tr' : 'en'));
-      sheet.getRangeByIndex(6, 2).setText(AppStrings.get('personnel_name', isTr ? 'tr' : 'en'));
-      sheet.getRangeByIndex(6, 3).setText(AppStrings.get('participated_counts', isTr ? 'tr' : 'en'));
-      sheet.getRangeByIndex(6, 1, 6, 3).cellStyle = headerStyle;
+      // Row 6: Boş satır (Excel'in tabloları ayırması ve sıralamanın bozulmaması için ZORUNLU)
+
+      // Row 7: Table Headers
+      sheet.getRangeByIndex(7, 1).setText(AppStrings.get('order', isTr ? 'tr' : 'en'));
+      sheet.getRangeByIndex(7, 2).setText(AppStrings.get('personnel_name', isTr ? 'tr' : 'en'));
+      sheet.getRangeByIndex(7, 3).setText(AppStrings.get('participated_counts', isTr ? 'tr' : 'en'));
+      sheet.getRangeByIndex(7, 1, 7, 3).cellStyle = headerStyle;
 
       // Data Rows
-      int r = 7;
+      int r = 8;
       int counter = 1;
       for (var entry in sortedUsers) {
         final user = userMap[entry.key];
@@ -376,8 +379,8 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       }
 
       // Tablo başlıklarına (Sıra, Personel Adı, Katıldığı Sayım) Filtre/Sıralama özelliği ekle
-      if (r > 7) {
-        sheet.autoFilters.filterRange = sheet.getRangeByIndex(6, 1, r - 1, 3);
+      if (r > 8) {
+        sheet.autoFilters.filterRange = sheet.getRangeByIndex(7, 1, r - 1, 3);
       }
 
       sheet.setColumnWidthInPixels(1, 80);
