@@ -332,28 +332,40 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       final monthName = AppStrings.getMonth(month, isTr ? 'tr' : 'en');
       sheet.getRangeByIndex(2, 1).setText('$monthName $year ${AppStrings.get('report_type_aylik', isTr ? 'tr' : 'en')}');
       sheet.getRangeByIndex(2, 1, 2, 3).merge();
-      sheet.getRangeByIndex(2, 1, 2, 3).cellStyle = centerStyle;
-      sheet.getRangeByIndex(2, 1, 2, 3).cellStyle.bold = true;
+      sheet.getRangeByIndex(2, 1, 2, 3).cellStyle = headerStyle;
 
-      // Row 3, 4, 5: Totals
-      sheet.getRangeByIndex(3, 1).setText('${AppStrings.get('total_unique_personnel', isTr ? 'tr' : 'en')} ${sortedUsers.length}');
-      sheet.getRangeByIndex(3, 1, 3, 3).merge();
-      sheet.getRangeByIndex(4, 1).setText('${AppStrings.get('total_personnel_shifts', isTr ? 'tr' : 'en')} $totalPersonelCalistirma');
-      sheet.getRangeByIndex(4, 1, 4, 3).merge();
-      sheet.getRangeByIndex(5, 1).setText('${AppStrings.get('total_counts_in_month', isTr ? 'tr' : 'en')} $totalSayim');
-      sheet.getRangeByIndex(5, 1, 5, 3).merge();
+      // Row 3: Summary Table Headers
+      sheet.getRangeByIndex(3, 1).setText(isTr ? 'Veri Adı' : 'Data Name');
+      sheet.getRangeByIndex(3, 1, 3, 2).merge();
+      sheet.getRangeByIndex(3, 3).setText(isTr ? 'Miktar' : 'Amount');
+      sheet.getRangeByIndex(3, 1, 3, 3).cellStyle = headerStyle;
+
+      // Row 4: Total Counts
+      sheet.getRangeByIndex(4, 1).setText(AppStrings.get('total_counts_in_month', isTr ? 'tr' : 'en').replaceAll(':', '').trim());
+      sheet.getRangeByIndex(4, 1, 4, 2).merge();
+      sheet.getRangeByIndex(4, 3).setNumber(totalSayim.toDouble());
       
-      sheet.getRangeByIndex(3, 1, 5, 3).cellStyle.hAlign = xlsio.HAlignType.left;
-      sheet.getRangeByIndex(3, 1, 5, 3).cellStyle.bold = true;
+      // Row 5: Total Shifts
+      sheet.getRangeByIndex(5, 1).setText(AppStrings.get('total_personnel_shifts', isTr ? 'tr' : 'en').replaceAll(':', '').trim());
+      sheet.getRangeByIndex(5, 1, 5, 2).merge();
+      sheet.getRangeByIndex(5, 3).setNumber(totalPersonelCalistirma.toDouble());
 
-      // Row 6: Table Headers
-      sheet.getRangeByIndex(6, 1).setText(AppStrings.get('order', isTr ? 'tr' : 'en'));
-      sheet.getRangeByIndex(6, 2).setText(AppStrings.get('personnel_name', isTr ? 'tr' : 'en'));
-      sheet.getRangeByIndex(6, 3).setText(AppStrings.get('participated_counts', isTr ? 'tr' : 'en'));
-      sheet.getRangeByIndex(6, 1, 6, 3).cellStyle = headerStyle;
+      // Style for Rows 4 and 5
+      sheet.getRangeByIndex(4, 1, 5, 2).cellStyle.hAlign = xlsio.HAlignType.left;
+      sheet.getRangeByIndex(4, 1, 5, 2).cellStyle.vAlign = xlsio.VAlignType.center;
+      sheet.getRangeByIndex(4, 1, 5, 2).cellStyle.bold = true;
+      sheet.getRangeByIndex(4, 3, 5, 3).cellStyle.hAlign = xlsio.HAlignType.center;
+      sheet.getRangeByIndex(4, 3, 5, 3).cellStyle.vAlign = xlsio.VAlignType.center;
+      sheet.getRangeByIndex(4, 3, 5, 3).cellStyle.bold = true;
+
+      // Row 7: Table Headers (Row 6 is left blank for separation)
+      sheet.getRangeByIndex(7, 1).setText(AppStrings.get('order', isTr ? 'tr' : 'en'));
+      sheet.getRangeByIndex(7, 2).setText(AppStrings.get('personnel_name', isTr ? 'tr' : 'en'));
+      sheet.getRangeByIndex(7, 3).setText(AppStrings.get('participated_counts', isTr ? 'tr' : 'en'));
+      sheet.getRangeByIndex(7, 1, 7, 3).cellStyle = headerStyle;
 
       // Data Rows
-      int r = 7;
+      int r = 8;
       int counter = 1;
       for (var entry in sortedUsers) {
         final user = userMap[entry.key];
