@@ -15,6 +15,16 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// ─── SW AKTİVASYON GARANTİSİ ───
+// Yeni versiyon deploy edildiğinde beklemeden aktif olması ve
+// tüm açık sekmeleri (client'ları) hemen kontrol altına alması için:
+self.addEventListener('install', function(event) {
+  event.waitUntil(self.skipWaiting());
+});
+self.addEventListener('activate', function(event) {
+  event.waitUntil(clients.claim());
+});
+
 // ÇİFT BİLDİRİM ENGELLEYİCİ (Deduplicator)
 // Biz kendi 'push' event'imizde iOS'i memnun etmek için her zaman bildirim gösteriyoruz.
 // Ancak Firebase de arka plandayken kendi bildirimini göstermeye çalışır.

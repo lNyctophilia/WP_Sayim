@@ -61,6 +61,7 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       if (FirebaseAuth.instance.currentUser != null) {
         _checkAndPromptNotificationPermission();
+        _notificationService.refreshTokenOnResume();
       }
     }
   }

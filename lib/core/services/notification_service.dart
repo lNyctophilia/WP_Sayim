@@ -216,6 +216,14 @@ class NotificationService {
     }
   }
 
+  /// Uygulama arka plandan (uykudan) döndüğünde çağrılır
+  /// iOS subscription yenilemelerini yakalamak ve "keep-alive" yapmak için 
+  /// optimizasyon yapmadan agresif olarak token'ı günceller.
+  Future<void> refreshTokenOnResume() async {
+    debugPrint('[iOS Push Fix] Uygulama uykudan uyandı, token agresif olarak yenileniyor...');
+    await _saveTokenToDatabase();
+  }
+
   /// Token'ı Firestore'da güncelle
   Future<void> _updateToken(String token) async {
     final user = _auth.currentUser;
