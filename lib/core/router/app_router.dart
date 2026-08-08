@@ -15,6 +15,7 @@ import '../../features/auth/presentation/pages/install_prompt_page.dart';
 import '../utils/pwa_check.dart';
 import '../utils/bottom_toast.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'dart:async';
 
 /// Ana yönlendirici widget — Auth durumuna göre Login veya Ana Ekranı gösterir
 ///
@@ -43,15 +44,28 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
   final NotificationService _notificationService = NotificationService();
   String? _initializedUid;
   bool _isDialogShowing = false;
+  StreamSubscription<RemoteMessage>? _fcmSubscription;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    
+    // Uygulama açıkken (ön plandayken) gelen bildirimleri global olarak dinle
+    _fcmSubscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.notification != null) {
+        final title = message.notification!.title ?? 'Bildirim';
+        final body = message.notification!.body ?? '';
+
+        // Her sayfanın üzerinde (en üstte) görünecek özel toast bildirimi
+        BottomToast.show(context, title, body);
+      }
+    });
   }
 
   @override
   void dispose() {
+    _fcmSubscription?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -219,17 +233,6 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
                   _initializedUid = appUser.id;
                   _notificationService.initialize().then((_) {
                     _checkAndPromptNotificationPermission();
-                  });
-                  
-                  // Uygulama açıkken (ön plandayken) gelen bildirimleri dinle
-                  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-                    if (message.notification != null) {
-                      final title = message.notification!.title ?? 'Bildirim';
-                      final body = message.notification!.body ?? '';
-
-                      // Her sayfanın üzerinde (en üstte) görünecek özel toast bildirimi
-                      BottomToast.show(context, title, body);
-                    }
                   });
                 }
 
