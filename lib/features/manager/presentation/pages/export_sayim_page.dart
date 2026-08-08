@@ -374,8 +374,9 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       int r = 9;
       for (var entry in sortedUsers) {
         final user = userMap[entry.key];
-        // Formül kullanmak yerine statik sayı veriyoruz, çünkü Excel'de formül hata verebiliyor.
-        sheet.getRangeByIndex(r, 1).setNumber((r - 8).toDouble());
+        // Sıralama (Sort) yapıldığında satır numaralarının 1, 2, 3 diye kalması için
+        // ROW(A9) gibi göreceli bir formül kullanıyoruz.
+        sheet.getRangeByIndex(r, 1).setFormula('=ROW(A$r)-8');
         sheet.getRangeByIndex(r, 2).setText(user?.fullName ?? unknownUserStr);
         sheet.getRangeByIndex(r, 3).setNumber(entry.value.toDouble());
         sheet.getRangeByIndex(r, 1, r, 3).cellStyle = centerStyle;

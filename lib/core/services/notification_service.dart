@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/app_notification.dart';
+import '../utils/pwa_check.dart';
 import '../utils/sw_token_refresh_stub.dart'
     if (dart.library.js_interop) '../utils/sw_token_refresh_web.dart'
     as sw_refresh;
@@ -24,6 +25,11 @@ class NotificationService {
   /// Her uygulama açılışında çağrılır — iOS subscription yenilemelerini yakalamak için
   /// token'ı her seferinde agresif olarak Firestore'a yazar.
   Future<void> initialize() async {
+    if (kIsWeb && !isPWA()) {
+      debugPrint('Web tarayıcıda (PWA olmayan ortam) bildirim izni istenmeyecek.');
+      return;
+    }
+
     try {
       // 1. İzin İste (Özellikle iOS için gereklidir, Android 13+ için de prompt çıkar)
       NotificationSettings settings = await _messaging.requestPermission(
@@ -152,6 +158,11 @@ class NotificationService {
 
   /// Kayıt sırasında kullanmak için (veritabanına yazmadan) token alır
   Future<String?> getTokenForRegistration() async {
+    if (kIsWeb && !isPWA()) {
+      debugPrint('Web tarayıcıda (PWA olmayan ortam) bildirim token alınmayacak.');
+      return null;
+    }
+
     try {
       NotificationSettings settings = await _messaging.requestPermission(
         alert: true,
