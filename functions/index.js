@@ -284,12 +284,16 @@ exports.sendDavetCancelledNotification = onDocumentDeleted("davetler/{davetId}",
 
   try {
     const sayimDoc = await admin.firestore().collection("sayimlar").doc(sayimId).get();
-    const sayimName = sayimDoc.exists ? (sayimDoc.data().toplanmaYeri || "Sayım") : "Sayım";
+    
+    let notificationBody = "Kabul ettiğiniz bir sayım iptal edildi, lütfen uygulamadan kontrol edin.";
+    if (sayimDoc.exists && sayimDoc.data().toplanmaYeri) {
+      notificationBody = `Kabul ettiğin "${sayimDoc.data().toplanmaYeri}" isimli sayım iptal edildi.`;
+    }
 
     await sendNotificationAndLog({
       userId: staffId,
       title: "Sayım İptali",
-      body: `Kabul ettiğin "${sayimName}" isimli sayım iptal edildi.`,
+      body: notificationBody,
       type: "davet_cancelled",
       relatedId: sayimId,
       dataPayload: {
