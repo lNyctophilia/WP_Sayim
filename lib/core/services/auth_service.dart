@@ -36,6 +36,7 @@ class AuthService {
   /// Devam eden bir giriş işlemi var mı? (Oturum çakışması race-condition'ı önlemek için)
   static bool isLoggingIn = false;
   static final ValueNotifier<bool> isLoginValidationRunning = ValueNotifier<bool>(false);
+  static final ValueNotifier<bool> isRegistering = ValueNotifier<bool>(false);
   static DateTime? lastLoginTime;
   static String? currentSessionId;
 
@@ -58,7 +59,8 @@ class AuthService {
       }
 
       if (!appUser.isApproved) {
-        await logout();
+        // Token'ı SİLMİYORUZ (logout(true)) ki yönetici onayladığında bildirim gidebilsin.
+        await logout(true);
         throw FirebaseAuthException(code: 'not-approved', message: 'User is not approved yet.');
       }
 
@@ -128,6 +130,7 @@ class AuthService {
     String? fcmToken,
     String? email,
   }) async {
+    isRegistering.value = true;
     final authEmail = _toEmail(phone);
 
     try {
@@ -169,8 +172,10 @@ class AuthService {
       // Kullanıcı onaylı olmadığı için hemen oturumu kapatıyoruz
       await _auth.signOut();
 
+      isRegistering.value = false;
       return appUser;
     } catch (e) {
+      isRegistering.value = false;
       rethrow;
     }
   }

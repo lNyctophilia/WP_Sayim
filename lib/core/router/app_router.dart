@@ -146,20 +146,23 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
         return ValueListenableBuilder<bool>(
           valueListenable: AuthService.isLoginValidationRunning,
           builder: (context, isValidationRunning, child) {
-            // Kullanıcı giriş yapmamış veya doğrulama devam ediyor
-            if (!snapshot.hasData || snapshot.data == null || isValidationRunning) {
-              return LoginPage(
-                lang: widget.lang,
-                onLoginSuccess: (_) {
-                  // StreamBuilder otomatik olarak yeniden build edecek
-                },
-              );
-            }
+            return ValueListenableBuilder<bool>(
+              valueListenable: AuthService.isRegistering,
+              builder: (context, isRegistering, child) {
+                // Kullanıcı giriş yapmamış veya doğrulama devam ediyor
+                if (!snapshot.hasData || snapshot.data == null || isValidationRunning || isRegistering) {
+                  return LoginPage(
+                    lang: widget.lang,
+                    onLoginSuccess: (_) {
+                      // StreamBuilder otomatik olarak yeniden build edecek
+                    },
+                  );
+                }
 
-            // Kullanıcı giriş yapmış — rolünü kontrol et
-            return StreamBuilder<AppUser?>(
-              stream: _authService.getUserDataStream(snapshot.data!.uid),
-              builder: (context, userSnapshot) {
+                // Kullanıcı giriş yapmış — rolünü kontrol et
+                return StreamBuilder<AppUser?>(
+                  stream: _authService.getUserDataStream(snapshot.data!.uid),
+                  builder: (context, userSnapshot) {
                 if (userSnapshot.connectionState == ConnectionState.waiting) {
                   return _buildSplashScreen();
                 }
@@ -182,13 +185,13 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
                 if (appUser == null) {
                   // Firestore'da kullanıcı verisi gerçekten yok (silinmiş)
                   // Sadece o zaman çıkış yap.
-                  Future.microtask(() => _authService.logout());
+                  Future.microtask(() => _authService.logout(true));
                   return _buildSplashScreen();
                 }
 
                 // Aktif olmayan hesapsa girişine izin verme
                 if (!appUser.active) {
-                  Future.microtask(() => _authService.logout());
+                  Future.microtask(() => _authService.logout(true));
                   return Scaffold(
                     body: Center(
                       child: Text('Hesabınız askıya alınmış.'),
@@ -198,7 +201,7 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
 
                 // Onaylanmamış hesapsa girişine izin verme
                 if (!appUser.isApproved) {
-                  Future.microtask(() => _authService.logout());
+                  Future.microtask(() => _authService.logout(true));
                   return Scaffold(
                     body: Center(
                       child: Text('Hesabınız henüz onaylanmamış. Lütfen yöneticinin onaylamasını bekleyin.'),
@@ -238,6 +241,8 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
 
                 // Rol bazlı yönlendirme
                 return _buildHomeForRole(appUser);
+              },
+            );
               },
             );
           },
