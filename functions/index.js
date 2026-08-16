@@ -24,9 +24,16 @@ async function sendNotificationAndLog({ userId, title, body, type, relatedId, da
       const message = {
         token: fcmToken,
         notification: { title, body },
-        // ─── PWA (iOS/Android) ve Native Android ───
-        // `apns` bloğu iOS Safari'de hata verdiği için tamamen kaldırıldı.
-        // `android` bloğu APK kullananlar için eklendi (web push token'larında ignore edilir).
+        // ─── iOS PWA Web Push (APNS üzerinden iletiliyor) ───
+        // payload.aps EKLENMEZ — iOS PWA bunu kendi oluşturur, eklersek çakışır.
+        // Sadece delivery priority headers kullanılır.
+        apns: {
+          headers: {
+            "apns-priority": "10",
+            "apns-push-type": "alert"
+          }
+        },
+        // ─── Native Android APK ───
         android: {
           priority: "high",
           notification: {
@@ -54,10 +61,6 @@ async function sendNotificationAndLog({ userId, title, body, type, relatedId, da
       try {
         await admin.messaging().send(message);
         
-        // Push başarılı — son gönderim zamanını kaydet (keep-alive takibi için)
-        await admin.firestore().collection("users").doc(userId).update({
-          lastPushSentAt: admin.firestore.FieldValue.serverTimestamp()
-        });
       } catch (e) {
         console.error("Error sending push notification:", e);
         
@@ -659,9 +662,9 @@ exports.sendTestNotification = onDocumentCreated("test_notifications/{docId}", a
     return;
   }
 
-  console.log("sendTestNotification: Waiting 10 seconds for user:", data.userId);
-  // Wait 10 seconds so the user can put the app in the background to test push notifications
-  await new Promise(resolve => setTimeout(resolve, 10000));
+  console.log("sendTestNotification: Waiting 5 seconds for user:", data.userId);
+  // Wait 5 seconds so the user can put the app in the background to test push notifications
+  await new Promise(resolve => setTimeout(resolve, 5000));
 
   console.log("sendTestNotification: Wait finished. Fetching user:", data.userId);
   const userDoc = await admin.firestore().collection("users").doc(data.userId).get();
@@ -712,121 +715,3 @@ exports.sendTestNotification = onDocumentCreated("test_notifications/{docId}", a
   }
 });
 
-// 12. iOS PWA Subscription Canlı Tutma (Keep-Alive)
-// Her gün saat 04:00'te çalışır.
-// Son 6 gündür push almamış, fcmToken'ı olan (email'i olmayan) kullanıcılara
-// sessiz bir keep-alive push gönderir.
-// iOS Safari, uzun süre push almayan PWA subscription'larını sessizce öldürür.
-// Bu fonksiyon, subscription'ı canlı tutarak bildirimlerin kesilmesini önler.
-exports.keepAliveSubscription = onSchedule({ schedule: "0 4 * * *", timeZone: "Europe/Istanbul" }, async (event) => {
-  const now = Date.now();
-  const sixDaysAgo = new Date(now - (6 * 24 * 60 * 60 * 1000));
-  
-  console.log("[KEEP-ALIVE] Başlatılıyor. 6 gündür push almamış kullanıcılar aranıyor...");
-  
-  const usersSnap = await admin.firestore().collection("users")
-    .where("isApproved", "==", true)
-    .where("active", "==", true)
-    .get();
-  
-  if (usersSnap.empty) {
-    console.log("[KEEP-ALIVE] Aktif kullanıcı bulunamadı.");
-    return;
-  }
-  
-  let sentCount = 0;
-  let skippedCount = 0;
-  let errorCount = 0;
-  
-  for (const userDoc of usersSnap.docs) {
-    const userData = userDoc.data();
-    const fcmToken = userData.fcmToken;
-    const hasEmail = userData.email && userData.email.trim() !== "";
-    const pushVersion = userData.pushVersion;
-    
-    // Email'i olan kullanıcılar push almıyor, skip
-    // Ayrıca eski Service Worker sürümünde olanlara atma (pushVersion 2 değilse titrer!)
-    if (!fcmToken || hasEmail || pushVersion !== 2) {
-      skippedCount++;
-      continue;
-    }
-    
-    // Son push zamanını kontrol et
-    const lastPush = userData.lastPushSentAt;
-    
-    // Eğer kullanıcı henüz hiç normal push almamışsa (alan yoksa), onu es geç.
-    // Sadece daha önce push almış ama üzerinden 6 gün geçmiş kişileri hedefle.
-    if (!lastPush) {
-      skippedCount++;
-      continue;
-    }
-
-    const lastPushDate = lastPush.toDate ? lastPush.toDate() : new Date(lastPush);
-    if (lastPushDate > sixDaysAgo) {
-      // Son 6 gün içinde push almış, keep-alive'a gerek yok, skip
-      skippedCount++;
-      continue;
-    }
-    
-    // Buraya ulaştıysa: lastPushSentAt alanı var VE üzerinden 6 günden fazla geçmiş
-    
-    try {
-      const message = {
-        token: fcmToken,
-        // notification alanı YOK — data-only push
-        // Service Worker bu mesajı alıp sessiz bildirim gösterecek
-        data: {
-          type: "keep_alive",
-          timestamp: String(now)
-        },
-        // `apns` iOS PWA'da hata verdiği için yok, `android` APK'lar için eklendi
-        android: {
-          priority: "normal"
-        },
-        webpush: {
-          headers: {
-            Topic: "keep_alive",
-            Urgency: "low",
-            TTL: "86400" // 24 saat TTL
-          }
-        }
-      };
-      
-      await admin.messaging().send(message);
-      
-      // Gönderim zamanını güncelle
-      await admin.firestore().collection("users").doc(userDoc.id).update({
-        lastPushSentAt: admin.firestore.FieldValue.serverTimestamp()
-      });
-      
-      sentCount++;
-      console.log(`[KEEP-ALIVE] Gönderildi: ${userDoc.id}`);
-    } catch (e) {
-      errorCount++;
-      console.error(`[KEEP-ALIVE] Hata (${userDoc.id}):`, e.code || e.message);
-      
-      // Geçersiz token ise temizle
-      const invalidTokenCodes = [
-        'messaging/registration-token-not-registered',
-        'messaging/invalid-registration-token',
-        'messaging/third-party-auth-error',
-        'messaging/mismatched-credential'
-      ];
-      
-      if (e.code && invalidTokenCodes.includes(e.code)) {
-        console.log(`[KEEP-ALIVE][TOKEN CLEANUP] Geçersiz token siliniyor: ${userDoc.id}`);
-        try {
-          await admin.firestore().collection("users").doc(userDoc.id).update({
-            fcmToken: admin.firestore.FieldValue.delete(),
-            fcmTokenInvalidatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            fcmTokenInvalidReason: e.code
-          });
-        } catch (cleanupErr) {
-          console.error("[KEEP-ALIVE][TOKEN CLEANUP] Silme hatası:", cleanupErr);
-        }
-      }
-    }
-  }
-  
-  console.log(`[KEEP-ALIVE] Tamamlandı. Gönderilen: ${sentCount}, Atlanan: ${skippedCount}, Hata: ${errorCount}`);
-});

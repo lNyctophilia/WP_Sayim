@@ -127,6 +127,15 @@
           if ('serviceWorker' in navigator) {
             const registrations = await navigator.serviceWorker.getRegistrations();
             for (let registration of registrations) {
+              // firebase-messaging-sw.js'i KORUYORUZ — unregister edilirse push subscription ölür.
+              // Sadece Flutter cache SW'sini (flutter_service_worker.js) kaldırıyoruz.
+              const swUrl = registration.active?.scriptURL || registration.installing?.scriptURL || registration.waiting?.scriptURL || '';
+              if (swUrl.includes('firebase-messaging-sw')) {
+                console.log('[PWA Update] Firebase Messaging SW korunuyor:', swUrl);
+                // SW'yi güncelleye zorla (kaldırma)
+                try { await registration.update(); } catch(e) {}
+                continue;
+              }
               await registration.unregister();
             }
           }
@@ -150,6 +159,12 @@
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         checkForUpdates();
+        // Uygulamaya dönerken FCM token yenileme sinyali gönder.
+        // iOS PWA'da AppLifecycleState.resumed güvenilir çalışmayabileceği için
+        // web-native Visibility API üzerinden de token refresh tetikliyoruz.
+        window.dispatchEvent(new CustomEvent('fcm-token-refresh-needed', {
+          detail: { reason: 'VISIBILITY_CHANGE' }
+        }));
       }
     });
 
@@ -178,29 +193,8 @@
 
   <script>
     if ('serviceWorker' in navigator) {
-      // Firebase'in arka planda yapmaya çalıştığı /firebase-messaging-sw.js isteğini yakalayıp 
-      // GitHub Pages dizinimize (WP_Sayim) yönlendiriyoruz.
-      const originalRegister = navigator.serviceWorker.register;
-      navigator.serviceWorker.register = function(url, options) {
-        if (url === '/firebase-messaging-sw.js' || url.includes('firebase-messaging-sw.js')) {
-          console.log('[SW Interceptor] Firebase SW isteği yakalandı. Yönlendiriliyor...');
-          url = '/WP_Sayim/firebase-messaging-sw.js';
-          
-          // Scope'un da root dizin yerine WP_Sayim altında olması gerekiyor, 
-          // yoksa GitHub Pages güvenlik hatası verir (Max scope allowed).
-          if (options && options.scope) {
-            options.scope = '/WP_Sayim/firebase-cloud-messaging-push-scope';
-          } else if (!options) {
-            options = { scope: '/WP_Sayim/firebase-cloud-messaging-push-scope' };
-          }
-        }
-        return originalRegister.call(navigator.serviceWorker, url, options);
-      };
 
       // ─── iOS SUBSCRIPTION YENİLEME DİNLEYİCİSİ ───
-      // Service Worker, iOS subscription değiştiğinde veya push alındığında
-      // bu mesajları gönderir. Biz burada yakalarız, Dart tarafı da 
-      // onTokenRefresh ile Firestore'a kaydeder.
       navigator.serviceWorker.addEventListener('message', function(event) {
         if (!event.data || !event.data.type) return;
         
@@ -211,13 +205,7 @@
             msgType === 'SUBSCRIPTION_EXPIRED' || 
             msgType === 'TOKEN_REFRESH_NEEDED') {
           
-          // Firebase Messaging token'ını yeniden almak için deleteToken + getToken çağır
-          // Bu, Dart tarafındaki onTokenRefresh listener'ını tetikleyecek
-          // ve yeni token Firestore'a kaydedilecek.
           window._swTokenRefreshNeeded = true;
-          
-          // Eğer Flutter uygulaması zaten yüklenmişse, custom event fırlat
-          // böylece Dart tarafı JS interop ile bunu yakalayabilir
           window.dispatchEvent(new CustomEvent('fcm-token-refresh-needed', { 
             detail: { reason: msgType } 
           }));
@@ -225,6 +213,20 @@
           console.log('[SW Message] Token yenileme sinyali gönderildi. Sebep:', msgType);
         }
       });
+
+      // ─── FIREBASE MESSAGING SW REGISTER (updateViaCache: none) ───
+      const originalRegister = navigator.serviceWorker.register;
+      navigator.serviceWorker.register = function(url, options) {
+        if (url === '/firebase-messaging-sw.js' || url.includes('firebase-messaging-sw.js')) {
+          console.log('[SW Interceptor] Firebase SW isteği yakalandı. Yönlendiriliyor...');
+          url = '/WP_Sayim/firebase-messaging-sw.js';
+          options = Object.assign({}, options, {
+            scope: '/WP_Sayim/firebase-cloud-messaging-push-scope',
+            updateViaCache: 'none'
+          });
+        }
+        return originalRegister.call(navigator.serviceWorker, url, options);
+      };
     }
   </script>
 

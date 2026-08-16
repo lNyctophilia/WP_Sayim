@@ -13,6 +13,10 @@ firebase.initializeApp({
   appId: "1:224740813185:web:7e8779ae1b54a22c2c6080",
 });
 
+// VAPID public key — pushsubscriptionchange handler'ında yeniden abone olmak için gerekli.
+// Firebase Console → Project Settings → Cloud Messaging → Web Push certificates
+const VAPID_PUBLIC_KEY = 'BOkvHMWfKFEaXrwF-TgJ9KrrJSnNqL3tO966nz5F-esnB6SYZCfSIy6uWe9dvVTKfhPsTZ771DOsGVJY4JeDmio';
+
 const messaging = firebase.messaging();
 
 // ─── SW AKTİVASYON GARANTİSİ ───
@@ -26,15 +30,13 @@ self.addEventListener('activate', function(event) {
 });
 
 // ÇİFT BİLDİRİM ENGELLEYİCİ (Deduplicator)
-// Biz kendi 'push' event'imizde iOS'i memnun etmek için her zaman bildirim gösteriyoruz.
-// Ancak Firebase de arka plandayken kendi bildirimini göstermeye çalışır.
-// Bu çakışmayı önlemek için Service Worker'ın bildirim gösterme fonksiyonunu araya girerek eziyoruz.
+// Hem bizim 'push' listener'ımız hem de Firebase SDK aynı bildirimi göstermeye çalışır.
+// Bu çakışmayı önlemek için showNotification'ı araya girerek eziyoruz.
 let lastPushTime = 0;
 let lastPushTitle = "";
 const originalShowNotification = self.registration.showNotification.bind(self.registration);
 self.registration.showNotification = function(title, options) {
   const now = Date.now();
-  // Son 2 saniye içinde aynı başlıkla bir bildirim gösterildiyse, diğerini (Firebase'inkini) yoksay.
   if (now - lastPushTime < 2000 && lastPushTitle === title) {
     console.log('[firebase-messaging-sw.js] Çift bildirim engellendi:', title);
     return Promise.resolve();
@@ -44,76 +46,51 @@ self.registration.showNotification = function(title, options) {
   return originalShowNotification(title, options);
 };
 
-// iOS'in aboneliği öldürmemesi için, push event'inde her durumda (foreground/background)
+// iOS'un aboneliği öldürmemesi için, push event'inde her durumda (foreground/background)
 // event.waitUntil() içinde showNotification çağrılmak ZORUNDADIR.
 self.addEventListener('push', function(event) {
-  if (!event.data) return;
+  if (!event.data) {
+    // iOS: data gelse de gelmese de showNotification çağrılmalı (budget ihlali olmasın)
+    event.waitUntil(
+      self.registration.showNotification('WP Sayım', {
+        body: 'Yeni bir bildiriminiz var.',
+        icon: '/icons/Icon-192.png',
+        badge: '/icons/Icon-192.png',
+      })
+    );
+    return;
+  }
+
+  let title = 'WP Sayım';
+  let body = 'Yeni bir bildiriminiz var.';
+  let notifData = {};
 
   try {
     const payload = event.data.json();
-    
-    // ─── KEEP-ALIVE (SESSİZ) BİLDİRİM ───
-    // Backend'den gelen periyodik canlı tutma push'u.
-    // Sessiz bildirim göster → 3 saniye sonra otomatik kapat.
-    // Kullanıcıyı rahatsız etmeden iOS subscription'ını canlı tutar.
-    if (payload.data && payload.data.type === 'keep_alive') {
-      console.log('[firebase-messaging-sw.js] Keep-alive push alındı. Geçici bildirim gösteriliyor...');
-      
-      const keepAlivePromise = self.registration.showNotification('Sistem Mesajı', {
-        body: 'Bildirim sistemini canlı tutmak için geçici bildirim.',
-        icon: '/icons/Icon-192.png',
-        badge: '/icons/Icon-192.png',
-        silent: true,           // Ses yok
-        vibrate: [],            // Titreşim yok
-        requireInteraction: false, // Otomatik kapanabilir
-        tag: 'keep-alive',      // Aynı tag = üst üste binmez
-        renotify: false,        // Yeniden bildirim sesi çalmaz
-        data: { type: 'keep_alive' }
-      }).then(function() {
-        // 3 saniye sonra bildirimi sessizce kapat
-        return new Promise(function(resolve) {
-          setTimeout(function() {
-            self.registration.getNotifications({ tag: 'keep-alive' }).then(function(notifications) {
-              notifications.forEach(function(n) { n.close(); });
-              console.log('[firebase-messaging-sw.js] Keep-alive bildirim kapatıldı.');
-              resolve();
-            });
-          }, 3000);
-        });
-      });
-      
-      event.waitUntil(keepAlivePromise);
-      
-      // Token yenileme sinyali gönder
-      notifyClientsToRefreshToken();
-      return;
-    }
-    
-    // ─── NORMAL BİLDİRİM ───
-    const title = payload.notification?.title || payload.data?.title || 'WP Sayım';
-    const body = payload.notification?.body || payload.data?.body || 'Yeni bir bildiriminiz var.';
-    
-    // iOS abonelik bug'ını aşmak için bildirimi gösterip promise'i döndürüyoruz.
-    const promise = clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      // Her push alındığında client'lara token yenileme sinyali gönder
-      // iOS subscription'ının canlı kalmasını sağlar
-      notifyClientsToRefreshToken();
-      
-      return self.registration.showNotification(title, {
-        body: body,
-        icon: '/icons/Icon-192.png',
-        badge: '/icons/Icon-192.png',
-        vibrate: [200, 100, 200],
-        requireInteraction: true,
-        tag: 'wp-notification-' + Date.now(), // Unique tag
-        data: payload.data
-      });
-    });
-
-    event.waitUntil(promise);
+    title = payload.notification?.title || payload.data?.title || title;
+    body = payload.notification?.body || payload.data?.body || body;
+    notifData = payload.data || {};
   } catch (e) {
+    // JSON parse başarısız — fallback değerleri kullan (iOS budget koruması için yine de göster)
     console.error('[firebase-messaging-sw.js] Push parse hatası:', e);
   }
+
+  const promise = clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+    // Her push alındığında client'lara token yenileme sinyali gönder
+    notifyClientsToRefreshToken();
+
+    return self.registration.showNotification(title, {
+      body: body,
+      icon: '/icons/Icon-192.png',
+      badge: '/icons/Icon-192.png',
+      vibrate: [200, 100, 200],
+      requireInteraction: true,
+      tag: 'wp-notification-' + Date.now(), // Unique tag
+      data: notifData
+    });
+  });
+
+  event.waitUntil(promise);
 });
 
 // ─── iOS PUSH SUBSCRIPTION RENEWAL ────────────────────────────────
@@ -122,16 +99,23 @@ self.addEventListener('push', function(event) {
 // böylece Dart tarafı yeni FCM token'ı Firestore'a kaydedebilir.
 self.addEventListener('pushsubscriptionchange', function(event) {
   console.log('[firebase-messaging-sw.js] pushsubscriptionchange tetiklendi!');
-  console.log('[firebase-messaging-sw.js] Eski subscription:', event.oldSubscription);
-  
+
+  // VAPID key'i base64url → Uint8Array'e çevir
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = atob(base64);
+    return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
+  }
+
+  const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+
   event.waitUntil(
-    // Yeni subscription almayı dene
-    self.registration.pushManager.subscribe(
-      event.oldSubscription ? event.oldSubscription.options : { userVisibleOnly: true }
-    ).then(function(newSubscription) {
+    self.registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: applicationServerKey
+    }).then(function(newSubscription) {
       console.log('[firebase-messaging-sw.js] Yeni subscription alındı:', newSubscription.endpoint);
-      
-      // Açık olan tüm uygulama pencerelerine "token'ını yenile" mesajı gönder
       return clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(windowClients) {
         windowClients.forEach(function(client) {
           client.postMessage({
@@ -142,12 +126,9 @@ self.addEventListener('pushsubscriptionchange', function(event) {
       });
     }).catch(function(err) {
       console.error('[firebase-messaging-sw.js] Yeni subscription alınamadı:', err);
-      // Subscription tamamen öldüyse client'a haber ver, Dart tarafı resubscribe denesin
       return clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(windowClients) {
         windowClients.forEach(function(client) {
-          client.postMessage({
-            type: 'SUBSCRIPTION_EXPIRED'
-          });
+          client.postMessage({ type: 'SUBSCRIPTION_EXPIRED' });
         });
       });
     })
@@ -155,9 +136,6 @@ self.addEventListener('pushsubscriptionchange', function(event) {
 });
 
 // ─── PUSH ALIMINDA TOKEN CANLI TUTMA ──────────────────────────────
-// Her push alındığında, client'a "token'ını yenile" sinyali gönderiyoruz.
-// Bu, iOS'un service worker'ı uzun süre uyutmasını engellemeye yardımcı olur
-// ve token'ın her zaman güncel kalmasını sağlar.
 function notifyClientsToRefreshToken() {
   clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(windowClients) {
     windowClients.forEach(function(client) {
@@ -166,21 +144,10 @@ function notifyClientsToRefreshToken() {
   });
 }
 
-// Arka plan mesaj handler — uygulama kapalıyken gelen bildirimleri yakala
-messaging.onBackgroundMessage(function(payload) {
-  console.log('[firebase-messaging-sw.js] Arka plan bildirimi alındı:', payload);
-  // Firebase, notification varsa zaten göstermeye çalışacak (fakat bizim deduplicator engelleyecek)
-  // Biz zaten yukarıdaki 'push' dinleyicisinde iOS için garantili olarak gösterdik.
-  
-  // Token'ı taze tutmak için client'lara sinyal gönder
-  notifyClientsToRefreshToken();
-  return;
-});
-
 // Bildirime tıklanınca uygulamayı aç
 self.addEventListener('notificationclick', function(event) {
   console.log('[firebase-messaging-sw.js] Bildirime tıklandı:', event);
-  
+
   // iOS için kritik: Yönlendirme sorunlarını önler
   event.preventDefault();
   event.notification.close();

@@ -591,7 +591,6 @@ class CompiledApp {
       _1840: (x0,x1) => ({next: x0,error: x1}),
       _1841: x0 => ({vapidKey: x0}),
       _1842: x0 => globalThis.firebase_messaging.getMessaging(x0),
-      _1843: x0 => globalThis.firebase_messaging.deleteToken(x0),
       _1844: (x0,x1) => globalThis.firebase_messaging.getToken(x0,x1),
       _1846: (x0,x1) => globalThis.firebase_messaging.onMessage(x0,x1),
       _1850: x0 => x0.title,
