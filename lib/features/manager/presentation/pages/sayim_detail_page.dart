@@ -208,7 +208,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
               ),
             ),
             actions: [
-              if (widget.currentUser.id == currentSayim.createdBy || widget.currentUser.isOwner) ...[
+              if (widget.currentUser.isManager) ...[
                 if (currentSayim.effectiveStatus == SayimStatus.open)
                   IconButton(
                     icon: Icon(Icons.lock_outline_rounded, color: AppColors.warning, size: 20),
@@ -221,9 +221,8 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                     tooltip: AppStrings.get('open_count', isTr ? 'tr' : 'en'),
                     onPressed: () => _sayimService.openSayim(currentSayim.id),
                   ),
-                if (currentSayim.effectiveStatus == SayimStatus.open || widget.currentUser.isOwner)
-                  IconButton(
-                    icon: Icon(Icons.edit_rounded, color: AppColors.textPrimary, size: 20),
+                IconButton(
+                  icon: Icon(Icons.edit_rounded, color: AppColors.textPrimary, size: 20),
                     tooltip: AppStrings.get('edit', isTr ? 'tr' : 'en'),
                     onPressed: () {
                       Navigator.push(
@@ -297,7 +296,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
               ),
             ],
           ),
-          floatingActionButton: ((widget.currentUser.id == currentSayim.createdBy || widget.currentUser.isOwner) && (currentSayim.effectiveStatus == SayimStatus.open || widget.currentUser.isOwner)) 
+          floatingActionButton: widget.currentUser.isManager
             ? FloatingActionButton.extended(
                 backgroundColor: AppColors.accentLight,
                 foregroundColor: Colors.white,
@@ -334,7 +333,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
       );
     }
 
-    final isCreator = (widget.currentUser.id == currentSayim.createdBy || widget.currentUser.isOwner) && (currentSayim.effectiveStatus == SayimStatus.open || widget.currentUser.isOwner);
+    final isCreator = widget.currentUser.isManager;
 
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),

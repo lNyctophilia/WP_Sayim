@@ -313,33 +313,59 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ? Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Konum bilgisi — sola yaslı
+                          // Konum bilgisi ve Ücret — sola yaslı
                           Align(
                             alignment: Alignment.centerLeft,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 5,
-                              ),
-                              decoration: BoxDecoration(
-                                color: (existing.isCityCenter
-                                        ? AppColors.cityInner
-                                        : AppColors.cityOuter)
-                                    .withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                existing.isCityCenter
-                                    ? widget.lang.tr('city_inner')
-                                    : widget.lang.tr('city_outer'),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: existing.isCityCenter
-                                      ? AppColors.cityInner
-                                      : AppColors.cityOuter,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: (existing.isCityCenter
+                                            ? AppColors.cityInner
+                                            : AppColors.cityOuter)
+                                        .withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    existing.isCityCenter
+                                        ? widget.lang.tr('city_inner')
+                                        : widget.lang.tr('city_outer'),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: existing.isCityCenter
+                                          ? AppColors.cityInner
+                                          : AppColors.cityOuter,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                if (existing.payment > 0) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.success.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      '${existing.payment.toInt()} ₺',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.success,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -705,6 +731,24 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               color: AppColors.textSecondary,
                             ),
                           ),
+                          if (day.payment > 0) ...[
+                            const Spacer(),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.success.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '${day.payment.toInt()} ₺',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.success,
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                       const SizedBox(height: 8),

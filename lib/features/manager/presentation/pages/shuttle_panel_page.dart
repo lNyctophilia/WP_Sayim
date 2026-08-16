@@ -99,6 +99,37 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
     );
   }
 
+  void _openGoogleMaps(AppUser user) async {
+    final locationStr = _getLocationString(user);
+    if (locationStr.isEmpty) return;
+
+    final Uri url;
+    if (user.latitude != null && user.longitude != null) {
+      url = Uri.parse('https://www.google.com/maps/search/?api=1&query=${user.latitude},${user.longitude}');
+    } else {
+      url = Uri.parse('https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(locationStr)}');
+    }
+
+    final isTr = widget.lang.currentLang == 'tr';
+    final errorMsg = isTr ? 'Haritalar açılamadı' : 'Could not open maps';
+
+    try {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   String _getLocationString(AppUser user) {
     if (user.latitude != null && user.longitude != null) {
       return '${user.latitude},${user.longitude}';
@@ -380,12 +411,23 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        trailing: Checkbox(
-                          value: isSelected,
-                          onChanged: hasLocation
-                              ? (val) => _toggleSelection(staff)
-                              : null, // Konumu yoksa seçimi engelle
-                          activeColor: AppColors.accentLight,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (hasLocation)
+                              IconButton(
+                                icon: Icon(Icons.map, color: AppColors.accentLight),
+                                onPressed: () => _openGoogleMaps(staff),
+                                tooltip: isTr ? 'Haritada Göster' : 'Show on Map',
+                              ),
+                            Checkbox(
+                              value: isSelected,
+                              onChanged: hasLocation
+                                  ? (val) => _toggleSelection(staff)
+                                  : null, // Konumu yoksa seçimi engelle
+                              activeColor: AppColors.accentLight,
+                            ),
+                          ],
                         ),
                         onTap: hasLocation ? () => _toggleSelection(staff) : null,
                       );
