@@ -4,6 +4,6 @@
 
 bool checkAndClearSwRefreshFlag() => false;
 
-void addFcmTokenRefreshListener(Function callback) {
+void addFcmTokenRefreshListener(Function callback, {Function? onExpired}) {
   // Native platformlarda service worker yok, bir şey yapma
 }

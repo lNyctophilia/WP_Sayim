@@ -84,17 +84,25 @@ class NotificationService {
   /// JS event listener'ı kur (web only)
   void _addJsEventListener() {
     if (!kIsWeb) return;
-    
+
     try {
-      final callback = () async {
+      // Normal refresh: sadece getToken() → Firestore'a yaz
+      final onRefresh = () async {
         debugPrint('[iOS Push Fix] Token yenileme sinyali alındı! Yeniden kaydediliyor...');
-        
         // deleteToken() ÇAĞRILMIYOR — iOS'ta underlying subscription'ı öldürebilir.
-        // Sadece getToken() ile mevcut/yeni token al ve Firestore'a kaydet.
         await _saveTokenToDatabase();
       };
-      
-      sw_refresh.addFcmTokenRefreshListener(callback);
+
+      // SUBSCRIPTION_EXPIRED: izin yenile + token al (iOS tamamen unsubscribe etmiş olabilir)
+      final onExpired = () async {
+        debugPrint('[iOS Push Fix] Subscription expired! İzin yenileniyor ve token alınıyor...');
+        try {
+          await _messaging.requestPermission(alert: true, badge: true, sound: true);
+        } catch (_) {}
+        await _saveTokenToDatabase();
+      };
+
+      sw_refresh.addFcmTokenRefreshListener(onRefresh, onExpired: onExpired);
     } catch (e) {
       debugPrint('[iOS Push Fix] Event listener kurma hatası: $e');
     }
