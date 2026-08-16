@@ -389,9 +389,10 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
         counter++;
       }
 
-      // Tablo başlıklarına (Sıra, Personel Adı, Katıldığı Sayım) Filtre/Sıralama özelliği ekle
+      // Tablo başlıklarına (Personel Adı, Katıldığı Sayım) Filtre/Sıralama özelliği ekle.
+      // 1. sütun (Sıra) filtre dışında bırakıldı, böylece sıralama değişse de sıra numaraları 1,2,3... diye sabit kalır.
       if (r > 9) {
-        sheet.autoFilters.filterRange = sheet.getRangeByIndex(8, 1, r - 1, 3);
+        sheet.autoFilters.filterRange = sheet.getRangeByIndex(8, 2, r - 1, 3);
       }
 
       sheet.setColumnWidthInPixels(1, 80);
