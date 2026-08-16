@@ -4,7 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
-
+import '../pages/user_calendar_page.dart';
 /// Kullanıcı listesi sekmesi — Yönetici veya Personel listesi
 /// [targetRole] ile hangi roldeki kullanıcıları göstereceğini belirler
 class UserListTab extends StatefulWidget {
@@ -455,6 +455,17 @@ class _UserListTabState extends State<UserListTab>
               )
             : null,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => UserCalendarPage(
+                selectedUser: user,
+                lang: widget.lang,
+              ),
+            ),
+          );
+        },
       ),
     );
   }
