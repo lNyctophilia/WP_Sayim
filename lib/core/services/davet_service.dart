@@ -163,7 +163,7 @@ class DavetService {
   }
 
   /// Davetin detaylarını günceller ve ücret değişirse takvime (WorkDay) yansıtır
-  Future<void> updateDavetDetails(String davetId, double newUcret, int newGrupId, double newMultiplier) async {
+  Future<void> updateDavetDetails(String davetId, double newUcret, int newGrupId, double newMultiplier, DavetRole newRole) async {
     final doc = await _firestore.collection('davetler').doc(davetId).get();
     if (!doc.exists) return;
 
@@ -174,6 +174,7 @@ class DavetService {
       'ucret': newUcret,
       'grupId': newGrupId,
       'multiplier': newMultiplier,
+      'role': newRole.name,
     });
 
     if (davet.status == DavetStatus.accepted && davet.ucret != newUcret) {

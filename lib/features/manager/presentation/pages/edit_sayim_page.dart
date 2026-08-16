@@ -305,8 +305,8 @@ class _EditSayimPageState extends State<EditSayimPage> {
           await _davetService.deleteDavet(davet.id, isSayimClosed: updatedSayim.effectiveStatus == SayimStatus.closed);
         } else {
           final config = _selectedUsers[configIndex];
-          if (config.ucret != davet.ucret || config.grupId != davet.grupId || config.multiplier != davet.multiplier) {
-            await _davetService.updateDavetDetails(davet.id, config.ucret, config.grupId, config.multiplier);
+          if (config.ucret != davet.ucret || config.grupId != davet.grupId || config.multiplier != davet.multiplier || config.role != davet.role) {
+            await _davetService.updateDavetDetails(davet.id, config.ucret, config.grupId, config.multiplier, config.role);
           }
         }
       }

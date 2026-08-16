@@ -291,6 +291,12 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
         final acceptedDavetler = davetler.where((d) => d.status == DavetStatus.accepted).toList();
         
         for (var d in acceptedDavetler) {
+          if (!userMap.containsKey(d.userId)) {
+            final u = await _authService.getUserData(d.userId);
+            if (u != null) {
+              userMap[u.id] = u;
+            }
+          }
           userWorkCount[d.userId] = (userWorkCount[d.userId] ?? 0) + 1;
           totalPersonelCalistirma++;
         }
@@ -372,15 +378,15 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
 
       // Data Rows
       int r = 9;
+      int counter = 1;
       for (var entry in sortedUsers) {
         final user = userMap[entry.key];
-        // Sıralama (Sort) yapıldığında satır numaralarının 1, 2, 3 diye kalması için
-        // ROW(A9) gibi göreceli bir formül kullanıyoruz.
-        sheet.getRangeByIndex(r, 1).setFormula('=ROW(A$r)-8');
+        sheet.getRangeByIndex(r, 1).setNumber(counter.toDouble());
         sheet.getRangeByIndex(r, 2).setText(user?.fullName ?? unknownUserStr);
         sheet.getRangeByIndex(r, 3).setNumber(entry.value.toDouble());
         sheet.getRangeByIndex(r, 1, r, 3).cellStyle = centerStyle;
         r++;
+        counter++;
       }
 
       // Tablo başlıklarına (Sıra, Personel Adı, Katıldığı Sayım) Filtre/Sıralama özelliği ekle
