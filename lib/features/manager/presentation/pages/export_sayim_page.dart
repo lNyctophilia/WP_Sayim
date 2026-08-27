@@ -49,6 +49,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
   String? _selectedReportType;
   bool _isExcelLoading = false;
   bool _isPngLoading = false;
+  bool _isSummaryExpanded = false;
 
   @override
   void initState() {
@@ -651,11 +652,14 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
           ),
         ),
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
             Text(
               AppStrings.get('please_select_a_count_to_export_to_excel', isTr ? 'tr' : 'en'),
               style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
@@ -849,40 +853,92 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                     _buildSummaryRow(Icons.location_on_rounded, _selectedSayim!.note),
                     const SizedBox(height: 8),
                     _buildSummaryRow(Icons.calendar_month_rounded, DateFormat('dd.MM.yyyy').format(_selectedSayim!.date)),
-                    if (_selectedSayim!.startTime != null && _selectedSayim!.startTime!.isNotEmpty) ...[
+                    if (_isSummaryExpanded) ...[
+                      if (_selectedSayim!.startTime != null && _selectedSayim!.startTime!.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        _buildSummaryRow(Icons.access_time_rounded, '${isTr ? 'Başlangıç Saati:' : 'Start Time:'} ${_selectedSayim!.startTime!}'),
+                      ],
+                      if (_selectedSayim!.gruplar.isNotEmpty) ...[
+                        Builder(
+                          builder: (context) {
+                            final gruplarText = _selectedSayim!.gruplar.map((g) => g.saat).where((s) => s.isNotEmpty).join(', ');
+                            if (gruplarText.isEmpty) return const SizedBox.shrink();
+                            return Column(
+                              children: [
+                                const SizedBox(height: 8),
+                                _buildSummaryRow(Icons.schedule_rounded, '${isTr ? 'Saat Grupları:' : 'Time Groups:'} $gruplarText'),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
                       const SizedBox(height: 8),
-                      _buildSummaryRow(Icons.access_time_rounded, _selectedSayim!.startTime!),
+                      FutureBuilder<List<Davet>>(
+                        future: _davetService.getDavetlerBySayimFuture(_selectedSayim!.id),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return _buildSummaryRow(Icons.check_circle_outline_rounded, isTr ? 'Kişi Sayısı: Yükleniyor...' : 'Participants: Loading...');
+                          }
+                          if (snapshot.hasError || !snapshot.hasData) {
+                            return _buildSummaryRow(Icons.error_outline_rounded, isTr ? 'Kişi Sayısı: Hata' : 'Participants: Error');
+                          }
+                          final davetler = snapshot.data!;
+                          final acceptedDavetler = davetler.where((d) => d.status == DavetStatus.accepted).toList();
+                          final managerDavetler = acceptedDavetler.where((d) => d.role == DavetRole.manager).toList();
+                          final personnelDavetler = acceptedDavetler.where((d) => d.role != DavetRole.manager).toList();
+                          
+                          final acceptedText = isTr
+                              ? 'Kişi Sayısı: ${personnelDavetler.length}+${managerDavetler.length}'
+                              : 'Participants: ${personnelDavetler.length}+${managerDavetler.length}';
+                          return _buildSummaryRow(Icons.how_to_reg_rounded, acceptedText);
+                        },
+                      ),
                     ],
-                    const SizedBox(height: 8),
-                    _buildSummaryRow(Icons.groups_rounded, '${_selectedSayim!.invitedUserIds.length} ${AppStrings.get('invited', isTr ? 'tr' : 'en')}'),
-                    const SizedBox(height: 8),
-                    FutureBuilder<List<Davet>>(
-                      future: _davetService.getDavetlerBySayimFuture(_selectedSayim!.id),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return _buildSummaryRow(Icons.check_circle_outline_rounded, isTr ? 'Kabul Edenler: Yükleniyor...' : 'Accepted: Loading...');
-                        }
-                        if (snapshot.hasError || !snapshot.hasData) {
-                          return _buildSummaryRow(Icons.error_outline_rounded, isTr ? 'Kabul Edenler: Hata' : 'Accepted: Error');
-                        }
-                        final davetler = snapshot.data!;
-                        final acceptedDavetler = davetler.where((d) => d.status == DavetStatus.accepted).toList();
-                        final managerDavetler = acceptedDavetler.where((d) => d.role == DavetRole.manager).toList();
-                        final personnelDavetler = acceptedDavetler.where((d) => d.role != DavetRole.manager).toList();
-                        
-                        final acceptedText = isTr
-                            ? 'Kabul Edenler: ${personnelDavetler.length}+${managerDavetler.length} (${personnelDavetler.length} Personel, ${managerDavetler.length} Yönetici)'
-                            : 'Accepted: ${personnelDavetler.length}+${managerDavetler.length} (${personnelDavetler.length} Personnel, ${managerDavetler.length} Manager)';
-                        return _buildSummaryRow(Icons.how_to_reg_rounded, acceptedText);
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _isSummaryExpanded = !_isSummaryExpanded;
+                        });
                       },
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 12.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              _isSummaryExpanded 
+                                  ? (isTr ? 'Daha az göster' : 'Show less') 
+                                  : (isTr ? 'Daha fazla göster' : 'Show more'),
+                              style: TextStyle(
+                                color: AppColors.accentLight,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            Icon(
+                              _isSummaryExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                              color: AppColors.accentLight,
+                              size: 20,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
-            
-            if ((_selectedReportType == 'sayim' && _selectedSayim != null) ||
-                (_selectedReportType == 'aylik' && _selectedMonthKey != null)) ...[
-              const Spacer(),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+      if ((_selectedReportType == 'sayim' && _selectedSayim != null) ||
+          (_selectedReportType == 'aylik' && _selectedMonthKey != null)) 
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0, bottom: 24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
               ElevatedButton.icon(
                 onPressed: _isExcelLoading ? null : _exportToExcel,
                 style: ElevatedButton.styleFrom(
@@ -907,7 +963,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                 ),
               ),
               if (_selectedReportType == 'sayim') ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 ElevatedButton.icon(
                   onPressed: _isPngLoading ? null : _exportToPng,
                   style: ElevatedButton.styleFrom(
@@ -932,11 +988,11 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                   ),
                 ),
               ],
-              const SizedBox(height: 32),
-            ]
             ],
           ),
         ),
+            ],
+          ),
         ),
       ],
     );
@@ -1060,16 +1116,19 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                         itemCount: filteredTypes.length,
                         itemBuilder: (context, index) {
                           final type = filteredTypes[index];
-                          return ListTile(
-                            title: Text(type['label']!, style: TextStyle(color: AppColors.textPrimary)),
-                            onTap: () {
-                              setState(() {
-                                _selectedReportType = type['value'];
-                                _selectedMonthKey = null;
-                                _selectedSayim = null;
-                              });
-                              Navigator.pop(context);
-                            },
+                          return Container(
+                            color: index % 2 == 0 ? AppColors.surface : Colors.transparent,
+                            child: ListTile(
+                              title: Text(type['label']!, style: TextStyle(color: AppColors.textPrimary)),
+                              onTap: () {
+                                setState(() {
+                                  _selectedReportType = type['value'];
+                                  _selectedMonthKey = null;
+                                  _selectedSayim = null;
+                                });
+                                Navigator.pop(context);
+                              },
+                            ),
                           );
                         },
                       ),
@@ -1156,15 +1215,18 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                         itemCount: filteredMonths.length,
                         itemBuilder: (context, index) {
                           final m = filteredMonths[index];
-                          return ListTile(
-                            title: Text(m['label']!, style: TextStyle(color: AppColors.textPrimary)),
-                            onTap: () {
-                              setState(() {
-                                _selectedMonthKey = m['key'];
-                                _selectedSayim = null;
-                              });
-                              Navigator.pop(context);
-                            },
+                          return Container(
+                            color: index % 2 == 0 ? AppColors.surface : Colors.transparent,
+                            child: ListTile(
+                              title: Text(m['label']!, style: TextStyle(color: AppColors.textPrimary)),
+                              onTap: () {
+                                setState(() {
+                                  _selectedMonthKey = m['key'];
+                                  _selectedSayim = null;
+                                });
+                                Navigator.pop(context);
+                              },
+                            ),
                           );
                         },
                       ),
@@ -1249,14 +1311,17 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                         itemCount: filtered.length,
                         itemBuilder: (context, index) {
                           final item = filtered[index];
-                          return ListTile(
-                            title: Text(item['label']!, style: TextStyle(color: AppColors.textPrimary)),
-                            onTap: () {
-                              setState(() {
-                                _selectedSayim = item['sayim'];
-                              });
-                              Navigator.pop(context);
-                            },
+                          return Container(
+                            color: index % 2 == 0 ? AppColors.surface : Colors.transparent,
+                            child: ListTile(
+                              title: Text(item['label']!, style: TextStyle(color: AppColors.textPrimary)),
+                              onTap: () {
+                                setState(() {
+                                  _selectedSayim = item['sayim'];
+                                });
+                                Navigator.pop(context);
+                              },
+                            ),
                           );
                         },
                       ),

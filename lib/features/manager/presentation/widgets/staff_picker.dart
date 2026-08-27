@@ -127,7 +127,8 @@ class _StaffPickerState extends State<StaffPicker> {
     if (oldWidget.users != widget.users ||
         oldWidget.availableGroups != widget.availableGroups ||
         oldWidget.sayimSehirTipi != widget.sayimSehirTipi ||
-        oldWidget.globalMultiplier != widget.globalMultiplier) {
+        oldWidget.globalMultiplier != widget.globalMultiplier ||
+        oldWidget.busyUserIds != widget.busyUserIds) {
       _initConfigs(preserveSelection: true, oldWidget: oldWidget);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _notifyChanges();
