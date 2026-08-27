@@ -2,6 +2,7 @@ import 'package:daytrack/core/constants/app_strings.dart';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_saver/file_saver.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xlsio;
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -59,6 +60,175 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       await _exportSayimRaporu();
     } else if (_selectedReportType == 'aylik') {
       await _exportAylikRapor();
+    }
+  }
+
+  Future<void> _exportToPng() async {
+    if (_selectedSayim == null) return;
+
+    setState(() => _isLoading = true);
+    
+    try {
+      final davetler = await _davetService.getDavetlerBySayimFuture(_selectedSayim!.id);
+      final acceptedDavetler = davetler.where((d) => d.status == DavetStatus.accepted).toList();
+
+      final Map<String, AppUser> userMap = {};
+      final allUsers = await _authService.getAllUsers();
+      for (var u in allUsers) {
+        userMap[u.id] = u;
+      }
+      
+      for (var d in acceptedDavetler) {
+        if (!userMap.containsKey(d.userId)) {
+          final u = await _authService.getUserData(d.userId);
+          if (u != null) {
+            userMap[u.id] = u;
+          }
+        }
+      }
+
+      final managerDavetler = acceptedDavetler.where((d) => d.role == DavetRole.manager).toList();
+      final personnelDavetler = acceptedDavetler.where((d) => d.role != DavetRole.manager).toList();
+
+      String firmaAdi = _selectedSayim!.firmaAdi.isNotEmpty ? _selectedSayim!.firmaAdi : 'Bilinmeyen Firma';
+      String not = _selectedSayim!.note;
+      List<String> words = not.split(' ').where((w) => w.trim().isNotEmpty).toList();
+      String magazaAdi = firmaAdi;
+      if (words.isNotEmpty) {
+        magazaAdi = "$firmaAdi-${words.join('-')}";
+      }
+      final dateStrFormatted = DateFormat('dd.MM.yyyy').format(_selectedSayim!.date);
+
+      Widget buildRow(String index, String name, String time, {bool isHeader = false}) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: Row(
+            children: [
+              SizedBox(width: 40, child: Text(index, style: TextStyle(fontWeight: isHeader ? FontWeight.bold : FontWeight.normal, color: Colors.black87, fontSize: 16))),
+              Expanded(child: Text(name, style: TextStyle(fontWeight: isHeader ? FontWeight.bold : FontWeight.normal, color: Colors.black87, fontSize: 16))),
+              SizedBox(width: 100, child: Text(time, style: TextStyle(fontWeight: isHeader ? FontWeight.bold : FontWeight.normal, color: Colors.black87, fontSize: 16))),
+            ],
+          ),
+        );
+      }
+
+      final pngWidget = Container(
+        width: 600,
+        padding: const EdgeInsets.all(32),
+        color: Colors.white,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Sayım Raporu', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF003366))),
+            const SizedBox(height: 16),
+            Text('Mağaza: $magazaAdi', style: const TextStyle(fontSize: 18, color: Colors.black87)),
+            Text('Tarih: $dateStrFormatted', style: const TextStyle(fontSize: 18, color: Colors.black87)),
+            const SizedBox(height: 24),
+            
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF003366),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                children: [
+                  Expanded(
+                    child: Text('Sayım Yöneticileri', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            buildRow('#', 'Ad Soyad', 'Saat', isHeader: true),
+            const Divider(color: Colors.black26),
+            ...managerDavetler.asMap().entries.map((entry) {
+              final idx = entry.key + 1;
+              final davet = entry.value;
+              final user = userMap[davet.userId];
+              String saatStr = "";
+              try {
+                final grp = _selectedSayim!.gruplar.firstWhere((g) => g.grupId == davet.grupId);
+                saatStr = grp.saat;
+              } catch (e) {}
+              return buildRow('$idx', user?.fullName ?? 'Bilinmeyen Kullanıcı', saatStr);
+            }),
+            
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF003366),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                children: [
+                  Expanded(
+                    child: Text('Sayım Personelleri', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            buildRow('#', 'Ad Soyad', 'Saat', isHeader: true),
+            const Divider(color: Colors.black26),
+            ...personnelDavetler.asMap().entries.map((entry) {
+              final idx = entry.key + 1;
+              final davet = entry.value;
+              final user = userMap[davet.userId];
+              String saatStr = "";
+              try {
+                final grp = _selectedSayim!.gruplar.firstWhere((g) => g.grupId == davet.grupId);
+                saatStr = grp.saat;
+              } catch (e) {}
+              return buildRow('$idx', user?.fullName ?? 'Bilinmeyen Kullanıcı', saatStr);
+            }),
+          ],
+        ),
+      );
+
+      final screenshotController = ScreenshotController();
+      final Uint8List imageBytes = await screenshotController.captureFromWidget(
+        Material(child: pngWidget),
+        delay: const Duration(milliseconds: 100),
+        pixelRatio: 2.0,
+      );
+
+      String extraName = "";
+      if (words.isNotEmpty) {
+        extraName = "_${words.join('_')}";
+      }
+      final dateStr = DateFormat('dd-MM-yyyy').format(_selectedSayim!.date);
+      final String fileName = 'Sayim_Detay_${firmaAdi}${extraName}_$dateStr';
+
+      final savedPath = await FileSaver.instance.saveFile(
+        name: fileName,
+        bytes: imageBytes,
+        fileExtension: 'png',
+        mimeType: MimeType.png,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('PNG dosyası başarıyla indirildi:\n$savedPath'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Hata oluştu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -719,6 +889,32 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
+              if (_selectedReportType == 'sayim') ...[
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: _isLoading ? null : _exportToPng,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accentLight.withOpacity(0.8),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  icon: _isLoading 
+                      ? const SizedBox(
+                          width: 20, 
+                          height: 20, 
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Icon(Icons.image_rounded),
+                  label: Text(
+                    isTr ? 'PNG Olarak İndir' : 'Download PNG',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
               const SizedBox(height: 32),
             ]
             ],
