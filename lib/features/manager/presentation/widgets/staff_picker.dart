@@ -159,7 +159,10 @@ class _StaffPickerState extends State<StaffPicker> {
 
   void _initConfigs({bool preserveSelection = false, StaffPicker? oldWidget}) {
     final oldConfigs = preserveSelection ? _configs : (widget.initialSelections ?? <SelectedUserConfig>[]);
-    _configs = widget.users.map((u) {
+    
+    final validUsers = widget.users.where((u) => !widget.busyUserIds.contains(u.id)).toList();
+
+    _configs = validUsers.map((u) {
       final old = (preserveSelection || widget.initialSelections != null)
           ? oldConfigs.where((c) => c.user.id == u.id).firstOrNull
           : null;
@@ -196,12 +199,9 @@ class _StaffPickerState extends State<StaffPicker> {
           newMultiplier = widget.globalMultiplier; // Force new multiplier
         }
         
-        
-        bool isBusy = widget.busyUserIds.contains(u.id);
-        
         return SelectedUserConfig(
           user: u,
-          isSelected: isBusy ? false : (old.isSelected || (widget.initialSelections?.any((c) => c.user.id == u.id) ?? false)),
+          isSelected: old.isSelected || (widget.initialSelections?.any((c) => c.user.id == u.id) ?? false),
           grupId: groupExists ? old.grupId : defaultGrupId,
           role: old.role,
           multiplier: newMultiplier,
@@ -213,12 +213,10 @@ class _StaffPickerState extends State<StaffPicker> {
       final role = u.isManager || u.isOwner ? DavetRole.manager : DavetRole.staff;
       final multiplier = widget.globalMultiplier;
       final autoWage = _calculateWage(role, multiplier, null, u);
-      
-      bool isBusy = widget.busyUserIds.contains(u.id);
 
       return SelectedUserConfig(
         user: u,
-        isSelected: isBusy ? false : (widget.initialSelections?.any((c) => c.user.id == u.id) ?? false),
+        isSelected: widget.initialSelections?.any((c) => c.user.id == u.id) ?? false,
         ucret: autoWage > 0 ? autoWage : (u.defaultWage ?? 0.0),
         role: role,
         grupId: defaultGrupId,
@@ -239,13 +237,8 @@ class _StaffPickerState extends State<StaffPicker> {
     setState(() {
       _selectAll = val;
       for (var c in _configs) {
-        if (!widget.busyUserIds.contains(c.user.id)) {
-          c.isSelected = val;
-          if (!val) {
-            c.isExpanded = false;
-          }
-        } else {
-          c.isSelected = false;
+        c.isSelected = val;
+        if (!val) {
           c.isExpanded = false;
         }
       }
@@ -403,7 +396,7 @@ class _StaffPickerState extends State<StaffPicker> {
         config.ucret = _calculateWage(config.role, config.multiplier, null, config.user);
         config.isExpanded = false;
       }
-      _selectAll = _configs.every((c) => c.isSelected || widget.busyUserIds.contains(c.user.id));
+      _selectAll = _configs.isNotEmpty && _configs.every((c) => c.isSelected);
     });
     _notifyChanges();
   }
@@ -411,16 +404,10 @@ class _StaffPickerState extends State<StaffPicker> {
   Widget _buildUserCard(SelectedUserConfig config) {
     final u = config.user;
     final isMe = u.id == widget.currentUser.id;
-    final isBusy = widget.busyUserIds.contains(u.id);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: isBusy ? () {
-        _showLimitSnackBar(
-          'Bu kişi seçili tarihte başka bir sayımda!',
-          'This person is already in another count on the selected date!',
-        );
-      } : () {
+      onTap: () {
         if (!config.isSelected) {
           _toggleSelection(config, true);
         } else {
@@ -431,7 +418,7 @@ class _StaffPickerState extends State<StaffPicker> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: isBusy ? AppColors.surface : AppColors.card,
+          color: AppColors.card,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: config.isSelected
@@ -445,16 +432,12 @@ class _StaffPickerState extends State<StaffPicker> {
           children: [
             Row(
               children: [
-                AbsorbPointer(
-                  absorbing: isBusy,
-                  child: Checkbox(
-                    value: config.isSelected,
-                    onChanged: (val) {
-                      _toggleSelection(config, val ?? false);
-                    },
-                    activeColor: AppColors.accentLight,
-                    fillColor: isBusy ? WidgetStateProperty.all(AppColors.textHint.withValues(alpha: 0.5)) : null,
-                  ),
+                Checkbox(
+                  value: config.isSelected,
+                  onChanged: (val) {
+                    _toggleSelection(config, val ?? false);
+                  },
+                  activeColor: AppColors.accentLight,
                 ),
                 Expanded(
                 child: Column(

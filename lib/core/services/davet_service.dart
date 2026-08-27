@@ -177,7 +177,7 @@ class DavetService {
       'role': newRole.name,
     });
 
-    if (davet.status == DavetStatus.accepted && davet.ucret != newUcret) {
+    if (davet.status == DavetStatus.accepted && (davet.ucret != newUcret || davet.grupId != newGrupId)) {
       final sayimDoc = await _firestore.collection('sayimlar').doc(davet.sayimId).get();
       if (sayimDoc.exists) {
         final sayim = Sayim.fromFirestore(sayimDoc);
@@ -187,7 +187,24 @@ class DavetService {
             .doc(davet.userId)
             .collection('gunler')
             .doc(dateString);
-        batch.update(workDayRef, {'payment': newUcret});
+            
+        final updateData = <String, dynamic>{};
+        if (davet.ucret != newUcret) {
+          updateData['payment'] = newUcret;
+        }
+        if (davet.grupId != newGrupId) {
+          final newGrup = sayim.gruplar.firstWhere(
+            (g) => g.grupId == newGrupId,
+            orElse: () => const SayimGrup(grupId: 1, saat: ''),
+          );
+          final combinedNote = '${sayim.firmaAdi} ${sayim.note} ${newGrup.saat}'.trim();
+          updateData['grupSaati'] = newGrup.saat;
+          updateData['note'] = combinedNote;
+        }
+        
+        if (updateData.isNotEmpty) {
+          batch.update(workDayRef, updateData);
+        }
       }
     }
 

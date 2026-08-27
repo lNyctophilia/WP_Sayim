@@ -637,3 +637,101 @@ exports.sendTestNotification = onDocumentCreated("test_notifications/{docId}", a
   }
 });
 
+// 12. Davetin grubu değiştirildiğinde personeli bilgilendir
+exports.sendDavetGrupChangedNotification = onDocumentUpdated("davetler/{davetId}", async (event) => {
+  const oldData = event.data.before.data();
+  const newData = event.data.after.data();
+
+  if (!oldData || !newData) return;
+  if (oldData.grupId === newData.grupId) return; // Grup değişmemiş
+  if (newData.isPast === true) return;
+  if (newData.status === "declined") return; // Reddeden kişiye bildirim atmayalım
+
+  const staffId = newData.userId;
+  const sayimId = newData.sayimId;
+
+  try {
+    const sayimDoc = await admin.firestore().collection("sayimlar").doc(sayimId).get();
+    if (!sayimDoc.exists) return;
+
+    const sayimData = sayimDoc.data();
+    if (sayimData.status === "closed") return;
+
+    const sayimName = sayimData.toplanmaYeri || "Sayım";
+    const grup = sayimData.gruplar?.find(g => g.grupId === newData.grupId);
+    const yeniSaat = grup ? grup.saat : "";
+
+    await sendNotificationAndLog({
+      userId: staffId,
+      title: "Sayım Saati Güncellendi",
+      body: `"${sayimName}" sayımındaki saatiniz ${yeniSaat} olarak güncellenmiştir.`,
+      type: "davet_time_updated",
+      relatedId: sayimId,
+      dataPayload: {
+        type: "davet_time_updated",
+        sayimId: sayimId,
+        davetId: event.params.davetId
+      },
+      tag: `davet_time_updated_${event.params.davetId}`
+    });
+  } catch (error) {
+    console.error("Error processing sendDavetGrupChangedNotification:", error);
+  }
+});
+
+// 13. Sayım grubunun saati değiştirildiğinde o gruptaki personeli bilgilendir
+exports.sendSayimTimeChangedNotification = onDocumentUpdated("sayimlar/{sayimId}", async (event) => {
+  const oldData = event.data.before.data();
+  const newData = event.data.after.data();
+
+  if (!oldData || !newData) return;
+  if (newData.status === "closed") return;
+
+  const oldGruplar = oldData.gruplar || [];
+  const newGruplar = newData.gruplar || [];
+
+  // Find groups whose time has changed
+  const changedGroups = [];
+  for (const newGrup of newGruplar) {
+    const oldGrup = oldGruplar.find(g => g.grupId === newGrup.grupId);
+    if (oldGrup && oldGrup.saat !== newGrup.saat) {
+      changedGroups.push(newGrup);
+    }
+  }
+
+  if (changedGroups.length === 0) return;
+
+  const sayimName = newData.toplanmaYeri || "Sayım";
+
+  try {
+    const davetlerSnap = await admin.firestore().collection("davetler")
+      .where("sayimId", "==", event.params.sayimId)
+      .where("status", "in", ["accepted", "pending"])
+      .get();
+
+    if (davetlerSnap.empty) return;
+
+    for (const davetDoc of davetlerSnap.docs) {
+      const davet = davetDoc.data();
+      const changedGrup = changedGroups.find(g => g.grupId === davet.grupId);
+      
+      if (changedGrup) {
+        await sendNotificationAndLog({
+          userId: davet.userId,
+          title: "Sayım Saati Güncellendi",
+          body: `"${sayimName}" sayımındaki saatiniz ${changedGrup.saat} olarak güncellenmiştir.`,
+          type: "sayim_time_updated",
+          relatedId: event.params.sayimId,
+          dataPayload: {
+            type: "sayim_time_updated",
+            sayimId: event.params.sayimId,
+            davetId: davetDoc.id
+          },
+          tag: `sayim_time_updated_${davetDoc.id}`
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Error processing sendSayimTimeChangedNotification:", error);
+  }
+});

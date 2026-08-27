@@ -707,157 +707,115 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Rapor Türü Seçimi
-                    DropdownButtonFormField<String>(
-                      isExpanded: true,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: AppColors.card,
-                        border: OutlineInputBorder(
+                    InkWell(
+                      onTap: () => _showReportTypeSheet(context, isTr),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: AppColors.card,
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _selectedReportType == null
+                                    ? AppStrings.get('report_type', isTr ? 'tr' : 'en')
+                                    : (_selectedReportType == 'sayim'
+                                        ? AppStrings.get('report_type_sayim', isTr ? 'tr' : 'en')
+                                        : AppStrings.get('report_type_aylik', isTr ? 'tr' : 'en')),
+                                style: TextStyle(
+                                  color: _selectedReportType == null ? AppColors.textHint : AppColors.textPrimary,
+                                  fontSize: 16,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
+                          ],
+                        ),
                       ),
-                      dropdownColor: AppColors.card,
-                      value: _selectedReportType,
-                      hint: Text(
-                        AppStrings.get('report_type', isTr ? 'tr' : 'en'),
-                        style: TextStyle(color: AppColors.textHint),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                      items: [
-                        DropdownMenuItem<String>(
-                          value: 'sayim',
-                          child: Text(
-                            AppStrings.get('report_type_sayim', isTr ? 'tr' : 'en'),
-                            style: TextStyle(color: AppColors.textPrimary),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                        DropdownMenuItem<String>(
-                          value: 'aylik',
-                          child: Text(
-                            AppStrings.get('report_type_aylik', isTr ? 'tr' : 'en'),
-                            style: TextStyle(color: AppColors.textPrimary),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                      ],
-                      onChanged: (val) {
-                        setState(() {
-                          _selectedReportType = val;
-                          _selectedMonthKey = null;
-                          _selectedSayim = null;
-                        });
-                      },
                     ),
                     const SizedBox(height: 16),
                     // Ay Seçimi
-                    DropdownButtonFormField<String>(
-                      isExpanded: true,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: _selectedReportType == null ? AppColors.card.withOpacity(0.5) : AppColors.card,
-                        border: OutlineInputBorder(
+                    InkWell(
+                      onTap: _selectedReportType == null
+                          ? null
+                          : () => _showMonthSheet(context, isTr, availableMonths),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: _selectedReportType == null ? AppColors.card.withOpacity(0.5) : AppColors.card,
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      ),
-                      dropdownColor: AppColors.card,
-                      value: availableMonths.contains(_selectedMonthKey) ? _selectedMonthKey : null,
-                      hint: Text(
-                        _selectedReportType == null 
-                          ? AppStrings.get('select_report_type_first', isTr ? 'tr' : 'en')
-                          : AppStrings.get('select_month', isTr ? 'tr' : 'en'),
-                        style: TextStyle(color: _selectedReportType == null ? AppColors.textHint.withOpacity(0.5) : AppColors.textHint),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                      items: availableMonths.map((mKey) {
-                        final parts = mKey.split('-');
-                        final year = parts[0];
-                        final month = int.parse(parts[1]);
-                        final monthName = AppStrings.getMonth(month, isTr ? 'tr' : 'en');
-                        
-                        return DropdownMenuItem<String>(
-                          value: mKey,
-                          child: Text(
-                            '$monthName $year',
-                            style: TextStyle(color: AppColors.textPrimary),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: _selectedReportType == null 
-                        ? null 
-                        : (val) {
-                            setState(() {
-                              _selectedMonthKey = val;
-                              _selectedSayim = null; // Ay değiştiğinde sayım seçimini sıfırla
-                            });
-                          },
-                      disabledHint: Text(
-                        AppStrings.get('select_report_type_first', isTr ? 'tr' : 'en'),
-                        style: TextStyle(color: AppColors.textHint.withOpacity(0.5)),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _selectedReportType == null
+                                    ? AppStrings.get('select_report_type_first', isTr ? 'tr' : 'en')
+                                    : (_selectedMonthKey == null || !availableMonths.contains(_selectedMonthKey)
+                                        ? AppStrings.get('select_month', isTr ? 'tr' : 'en')
+                                        : (() {
+                                            final parts = _selectedMonthKey!.split('-');
+                                            final year = parts[0];
+                                            final month = int.parse(parts[1]);
+                                            return '${AppStrings.getMonth(month, isTr ? 'tr' : 'en')} $year';
+                                          })()),
+                                style: TextStyle(
+                                  color: _selectedReportType == null || _selectedMonthKey == null || !availableMonths.contains(_selectedMonthKey)
+                                      ? AppColors.textHint.withOpacity(_selectedReportType == null ? 0.5 : 1.0)
+                                      : AppColors.textPrimary,
+                                  fontSize: 16,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
+                          ],
+                        ),
                       ),
                     ),
                     if (_selectedReportType == 'sayim') ...[
                       const SizedBox(height: 16),
                       // Sayım Seçimi
-                      DropdownButtonFormField<Sayim>(
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: _selectedMonthKey == null ? AppColors.card.withOpacity(0.5) : AppColors.card,
-                          border: OutlineInputBorder(
+                      InkWell(
+                        onTap: _selectedMonthKey == null
+                            ? null
+                            : () => _showSayimSheet(context, isTr, filteredSayimlar),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: _selectedMonthKey == null ? AppColors.card.withOpacity(0.5) : AppColors.card,
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
                           ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        ),
-                        dropdownColor: AppColors.card,
-                        value: currentSelectedSayim,
-                        hint: Text(
-                          _selectedMonthKey == null 
-                            ? AppStrings.get('select_month_first', isTr ? 'tr' : 'en')
-                            : AppStrings.get('select_count', isTr ? 'tr' : 'en'),
-                          style: TextStyle(
-                            color: _selectedMonthKey == null ? AppColors.textHint.withOpacity(0.5) : AppColors.textHint
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  _selectedMonthKey == null
+                                      ? AppStrings.get('select_month_first', isTr ? 'tr' : 'en')
+                                      : (currentSelectedSayim == null
+                                          ? AppStrings.get('select_count', isTr ? 'tr' : 'en')
+                                          : '${currentSelectedSayim!.firmaAdi} ${currentSelectedSayim!.note} (${DateFormat('dd.MM.yyyy').format(currentSelectedSayim!.date)})'),
+                                  style: TextStyle(
+                                    color: _selectedMonthKey == null || currentSelectedSayim == null
+                                        ? AppColors.textHint.withOpacity(_selectedMonthKey == null ? 0.5 : 1.0)
+                                        : AppColors.textPrimary,
+                                    fontSize: 16,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
+                            ],
                           ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                        items: filteredSayimlar.map((sayim) {
-                          final dateStr = DateFormat('dd.MM.yyyy').format(sayim.date);
-                          return DropdownMenuItem<Sayim>(
-                            value: sayim,
-                            child: Text(
-                              '${sayim.firmaAdi} ${sayim.note} ($dateStr)',
-                              style: TextStyle(color: AppColors.textPrimary),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: _selectedMonthKey == null 
-                          ? null 
-                          : (val) {
-                              setState(() {
-                                _selectedSayim = val;
-                              });
-                            },
-                        disabledHint: Text(
-                          AppStrings.get('select_month_first', isTr ? 'tr' : 'en'),
-                          style: TextStyle(color: AppColors.textHint.withOpacity(0.5)),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
                         ),
                       ),
                     ],
@@ -886,6 +844,8 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                       ),
                     ),
                     const SizedBox(height: 12),
+                    _buildSummaryRow(Icons.business_rounded, _selectedSayim!.firmaAdi.isNotEmpty ? _selectedSayim!.firmaAdi : (isTr ? 'Bilinmeyen Firma' : 'Unknown Company')),
+                    const SizedBox(height: 8),
                     _buildSummaryRow(Icons.location_on_rounded, _selectedSayim!.note),
                     const SizedBox(height: 8),
                     _buildSummaryRow(Icons.calendar_month_rounded, DateFormat('dd.MM.yyyy').format(_selectedSayim!.date)),
@@ -895,6 +855,27 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                     ],
                     const SizedBox(height: 8),
                     _buildSummaryRow(Icons.groups_rounded, '${_selectedSayim!.invitedUserIds.length} ${AppStrings.get('invited', isTr ? 'tr' : 'en')}'),
+                    const SizedBox(height: 8),
+                    FutureBuilder<List<Davet>>(
+                      future: _davetService.getDavetlerBySayimFuture(_selectedSayim!.id),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return _buildSummaryRow(Icons.check_circle_outline_rounded, isTr ? 'Kabul Edenler: Yükleniyor...' : 'Accepted: Loading...');
+                        }
+                        if (snapshot.hasError || !snapshot.hasData) {
+                          return _buildSummaryRow(Icons.error_outline_rounded, isTr ? 'Kabul Edenler: Hata' : 'Accepted: Error');
+                        }
+                        final davetler = snapshot.data!;
+                        final acceptedDavetler = davetler.where((d) => d.status == DavetStatus.accepted).toList();
+                        final managerDavetler = acceptedDavetler.where((d) => d.role == DavetRole.manager).toList();
+                        final personnelDavetler = acceptedDavetler.where((d) => d.role != DavetRole.manager).toList();
+                        
+                        final acceptedText = isTr
+                            ? 'Kabul Edenler: ${personnelDavetler.length}+${managerDavetler.length} (${personnelDavetler.length} Personel, ${managerDavetler.length} Yönetici)'
+                            : 'Accepted: ${personnelDavetler.length}+${managerDavetler.length} (${personnelDavetler.length} Personnel, ${managerDavetler.length} Manager)';
+                        return _buildSummaryRow(Icons.how_to_reg_rounded, acceptedText);
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -1007,6 +988,286 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
           ),
         ),
       ],
+    );
+  }
+
+  Future<void> _showReportTypeSheet(BuildContext context, bool isTr) async {
+    String searchQuery = '';
+    
+    final allTypes = [
+      {'value': 'sayim', 'label': AppStrings.get('report_type_sayim', isTr ? 'tr' : 'en')},
+      {'value': 'aylik', 'label': AppStrings.get('report_type_aylik', isTr ? 'tr' : 'en')},
+    ];
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateSheet) {
+            final filteredTypes = allTypes.where((t) {
+              final q = searchQuery.toLowerCase();
+              return t['label']!.toLowerCase().contains(q);
+            }).toList();
+            
+            return DraggableScrollableSheet(
+              initialChildSize: 0.5,
+              minChildSize: 0.4,
+              maxChildSize: 0.9,
+              expand: false,
+              builder: (context, scrollController) {
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        AppStrings.get('report_type', isTr ? 'tr' : 'en'),
+                        style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      child: TextField(
+                        style: TextStyle(color: AppColors.textPrimary),
+                        decoration: InputDecoration(
+                          hintText: AppStrings.get('search', isTr ? 'tr' : 'en'),
+                          hintStyle: TextStyle(color: AppColors.textHint),
+                          prefixIcon: Icon(Icons.search, color: AppColors.textSecondary),
+                          filled: true,
+                          fillColor: AppColors.card,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        onChanged: (val) {
+                          setStateSheet(() {
+                            searchQuery = val;
+                          });
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        controller: scrollController,
+                        itemCount: filteredTypes.length,
+                        itemBuilder: (context, index) {
+                          final type = filteredTypes[index];
+                          return ListTile(
+                            title: Text(type['label']!, style: TextStyle(color: AppColors.textPrimary)),
+                            onTap: () {
+                              setState(() {
+                                _selectedReportType = type['value'];
+                                _selectedMonthKey = null;
+                                _selectedSayim = null;
+                              });
+                              Navigator.pop(context);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              }
+            );
+          }
+        );
+      }
+    );
+  }
+
+  Future<void> _showMonthSheet(BuildContext context, bool isTr, List<String> availableMonths) async {
+    String searchQuery = '';
+    
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateSheet) {
+            final List<Map<String, String>> allMonthsMap = availableMonths.map((mKey) {
+              final parts = mKey.split('-');
+              final year = parts[0];
+              final month = int.parse(parts[1]);
+              final monthName = AppStrings.getMonth(month, isTr ? 'tr' : 'en');
+              return {'key': mKey, 'label': '$monthName $year'};
+            }).toList();
+
+            final filteredMonths = allMonthsMap.where((m) {
+              final q = searchQuery.toLowerCase();
+              return m['label']!.toLowerCase().contains(q);
+            }).toList();
+            
+            return DraggableScrollableSheet(
+              initialChildSize: 0.6,
+              minChildSize: 0.4,
+              maxChildSize: 0.9,
+              expand: false,
+              builder: (context, scrollController) {
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        AppStrings.get('select_month', isTr ? 'tr' : 'en'),
+                        style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      child: TextField(
+                        style: TextStyle(color: AppColors.textPrimary),
+                        decoration: InputDecoration(
+                          hintText: AppStrings.get('search', isTr ? 'tr' : 'en'),
+                          hintStyle: TextStyle(color: AppColors.textHint),
+                          prefixIcon: Icon(Icons.search, color: AppColors.textSecondary),
+                          filled: true,
+                          fillColor: AppColors.card,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        onChanged: (val) {
+                          setStateSheet(() {
+                            searchQuery = val;
+                          });
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        controller: scrollController,
+                        itemCount: filteredMonths.length,
+                        itemBuilder: (context, index) {
+                          final m = filteredMonths[index];
+                          return ListTile(
+                            title: Text(m['label']!, style: TextStyle(color: AppColors.textPrimary)),
+                            onTap: () {
+                              setState(() {
+                                _selectedMonthKey = m['key'];
+                                _selectedSayim = null;
+                              });
+                              Navigator.pop(context);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              }
+            );
+          }
+        );
+      }
+    );
+  }
+
+  Future<void> _showSayimSheet(BuildContext context, bool isTr, List<Sayim> filteredSayimlar) async {
+    String searchQuery = '';
+    
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateSheet) {
+            final List<Map<String, dynamic>> allSayimsMap = filteredSayimlar.map((sayim) {
+              final dateStr = DateFormat('dd.MM.yyyy').format(sayim.date);
+              final label = '${sayim.firmaAdi} ${sayim.note} ($dateStr)';
+              return {'sayim': sayim, 'label': label};
+            }).toList();
+
+            final filtered = allSayimsMap.where((s) {
+              final q = searchQuery.toLowerCase();
+              return s['label']!.toLowerCase().contains(q);
+            }).toList();
+            
+            return DraggableScrollableSheet(
+              initialChildSize: 0.7,
+              minChildSize: 0.4,
+              maxChildSize: 0.9,
+              expand: false,
+              builder: (context, scrollController) {
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        AppStrings.get('select_count', isTr ? 'tr' : 'en'),
+                        style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      child: TextField(
+                        style: TextStyle(color: AppColors.textPrimary),
+                        decoration: InputDecoration(
+                          hintText: AppStrings.get('search', isTr ? 'tr' : 'en'),
+                          hintStyle: TextStyle(color: AppColors.textHint),
+                          prefixIcon: Icon(Icons.search, color: AppColors.textSecondary),
+                          filled: true,
+                          fillColor: AppColors.card,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        onChanged: (val) {
+                          setStateSheet(() {
+                            searchQuery = val;
+                          });
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        controller: scrollController,
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final item = filtered[index];
+                          return ListTile(
+                            title: Text(item['label']!, style: TextStyle(color: AppColors.textPrimary)),
+                            onTap: () {
+                              setState(() {
+                                _selectedSayim = item['sayim'];
+                              });
+                              Navigator.pop(context);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              }
+            );
+          }
+        );
+      }
     );
   }
 }
