@@ -42,6 +42,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
   List<AppUser> _allStaff = [];
   final List<AppUser> _selectedStaff = [];
   final int _maxSelection = 50; // In-app map ile sınır 50'ye çıkarıldı
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -374,11 +375,46 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
                     ],
                   ),
                 ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: TextField(
+                    style: TextStyle(color: AppColors.textPrimary),
+                    decoration: InputDecoration(
+                      hintText: AppStrings.get('search', isTr ? 'tr' : 'en'),
+                      hintStyle: TextStyle(color: AppColors.textHint),
+                      prefixIcon: Icon(Icons.search, color: AppColors.textSecondary),
+                      filled: true,
+                      fillColor: AppColors.card,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    onChanged: (val) {
+                      setState(() {
+                        _searchQuery = val;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(height: 8),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: _allStaff.length,
+                    itemCount: _allStaff.where((user) {
+                      final q = _searchQuery.toLowerCase();
+                      return user.fullName.toLowerCase().contains(q) || user.username.toLowerCase().contains(q);
+                    }).length,
                     itemBuilder: (context, index) {
-                      final staff = _allStaff[index];
+                      final filteredStaff = _allStaff.where((user) {
+                        final q = _searchQuery.toLowerCase();
+                        return user.fullName.toLowerCase().contains(q) || user.username.toLowerCase().contains(q);
+                      }).toList();
+                      final staff = filteredStaff[index];
                       final isSelected = _selectedStaff.contains(staff);
                       final hasLocation = _getLocationString(staff).isNotEmpty;
 

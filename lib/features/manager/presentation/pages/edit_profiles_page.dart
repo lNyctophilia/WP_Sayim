@@ -120,6 +120,96 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
     });
   }
 
+  Future<void> _showUserSelectSheet() async {
+    final isTr = widget.lang.currentLang == 'tr';
+    String searchQuery = '';
+    
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateSheet) {
+            final filteredUsers = _allUsers.where((u) {
+              final q = searchQuery.toLowerCase();
+              return u.fullName.toLowerCase().contains(q) || u.username.toLowerCase().contains(q);
+            }).toList();
+            
+            return DraggableScrollableSheet(
+              initialChildSize: 0.7,
+              minChildSize: 0.4,
+              maxChildSize: 0.9,
+              expand: false,
+              builder: (context, scrollController) {
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        AppStrings.get('select_user', isTr ? 'tr' : 'en'),
+                        style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      child: TextField(
+                        style: TextStyle(color: AppColors.textPrimary),
+                        decoration: InputDecoration(
+                          hintText: AppStrings.get('search', isTr ? 'tr' : 'en'),
+                          hintStyle: TextStyle(color: AppColors.textHint),
+                          prefixIcon: Icon(Icons.search, color: AppColors.textSecondary),
+                          filled: true,
+                          fillColor: AppColors.card,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        onChanged: (val) {
+                          setStateSheet(() {
+                            searchQuery = val;
+                          });
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        controller: scrollController,
+                        itemCount: filteredUsers.length,
+                        itemBuilder: (context, index) {
+                          final user = filteredUsers[index];
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: AppColors.accentLight,
+                              child: Text(user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : '?', style: const TextStyle(color: Colors.white)),
+                            ),
+                            title: Text(user.fullName, style: TextStyle(color: AppColors.textPrimary)),
+                            subtitle: Text('@${user.username}', style: TextStyle(color: AppColors.textSecondary)),
+                            onTap: () {
+                              _onUserSelected(user);
+                              Navigator.pop(context);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              }
+            );
+          }
+        );
+      }
+    );
+  }
+
   Future<void> _handleUpdate() async {
     if (!_formKey.currentState!.validate() || _selectedUser == null) return;
 
@@ -225,33 +315,30 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                     children: [
                   _buildLabel(AppStrings.get('select_user', isTr ? 'tr' : 'en')),
                   const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.divider),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<AppUser?>(
-                        isExpanded: true,
-                        hint: Text(
-                          AppStrings.get('select_a_person', isTr ? 'tr' : 'en'),
-                          style: TextStyle(color: AppColors.textHint),
-                        ),
-                        value: _selectedUser,
-                        dropdownColor: AppColors.card,
-                        icon: Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
-                        items: _allUsers.map((user) {
-                          return DropdownMenuItem<AppUser?>(
-                            value: user,
-                            child: Text(
-                              '${user.fullName} (@${user.username})',
-                              style: GoogleFonts.inter(color: AppColors.textPrimary),
+                  InkWell(
+                    onTap: _showUserSelectSheet,
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.divider),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            _selectedUser != null 
+                                ? '${_selectedUser!.fullName} (@${_selectedUser!.username})'
+                                : AppStrings.get('select_a_person', isTr ? 'tr' : 'en'),
+                            style: GoogleFonts.inter(
+                              color: _selectedUser != null ? AppColors.textPrimary : AppColors.textHint,
+                              fontSize: 16,
                             ),
-                          );
-                        }).toList(),
-                        onChanged: _onUserSelected,
+                          ),
+                          Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
+                        ],
                       ),
                     ),
                   ),

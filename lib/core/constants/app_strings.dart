@@ -470,6 +470,7 @@ class AppStrings {
     'route_calculated': {'tr': 'Rota başarıyla oluşturuldu!', 'en': 'Route created successfully!'},
     'route_error': {'tr': 'Rota hesaplanırken bir hata oluştu.', 'en': 'An error occurred while calculating route.'},
     'no_valid_location_for_routing': {'tr': 'Rota için geçerli başlangıç ve varış noktası seçilmeli.', 'en': 'Valid start and destination must be selected.'},
+    'search': {'tr': 'Ara...', 'en': 'Search...'},
   };
 
   static const List<String> monthKeys = [

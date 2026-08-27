@@ -47,7 +47,8 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
   Sayim? _selectedSayim;
   String? _selectedMonthKey;
   String? _selectedReportType;
-  bool _isLoading = false;
+  bool _isExcelLoading = false;
+  bool _isPngLoading = false;
 
   @override
   void initState() {
@@ -65,8 +66,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
 
   Future<void> _exportToPng() async {
     if (_selectedSayim == null) return;
-
-    setState(() => _isLoading = true);
+    setState(() => _isPngLoading = true);
     
     try {
       final davetler = await _davetService.getDavetlerBySayimFuture(_selectedSayim!.id);
@@ -99,9 +99,16 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       }
       final dateStrFormatted = DateFormat('dd.MM.yyyy').format(_selectedSayim!.date);
 
-      Widget buildRow(String index, String name, String time, {bool isHeader = false}) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
+      Widget buildRow(String index, String name, String time, {bool isHeader = false, bool isEven = false}) {
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 2.0),
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+          decoration: BoxDecoration(
+            color: isHeader 
+                ? Colors.transparent 
+                : isEven ? const Color(0xFF003366).withOpacity(0.06) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
           child: Row(
             children: [
               SizedBox(width: 40, child: Text(index, style: TextStyle(fontWeight: isHeader ? FontWeight.bold : FontWeight.normal, color: Colors.black87, fontSize: 16))),
@@ -120,10 +127,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Sayım Raporu', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF003366))),
-            const SizedBox(height: 16),
-            Text('Mağaza: $magazaAdi', style: const TextStyle(fontSize: 18, color: Colors.black87)),
-            Text('Tarih: $dateStrFormatted', style: const TextStyle(fontSize: 18, color: Colors.black87)),
+            Text(dateStrFormatted, style: const TextStyle(fontSize: 18, color: Colors.blue, fontWeight: FontWeight.bold)),
             const SizedBox(height: 24),
             
             Container(
@@ -142,7 +146,6 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
             ),
             const SizedBox(height: 12),
             buildRow('#', 'Ad Soyad', 'Saat', isHeader: true),
-            const Divider(color: Colors.black26),
             ...managerDavetler.asMap().entries.map((entry) {
               final idx = entry.key + 1;
               final davet = entry.value;
@@ -152,7 +155,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                 final grp = _selectedSayim!.gruplar.firstWhere((g) => g.grupId == davet.grupId);
                 saatStr = grp.saat;
               } catch (e) {}
-              return buildRow('$idx', user?.fullName ?? 'Bilinmeyen Kullanıcı', saatStr);
+              return buildRow('$idx', user?.fullName ?? 'Bilinmeyen Kullanıcı', saatStr, isEven: entry.key % 2 == 0);
             }),
             
             const SizedBox(height: 24),
@@ -172,7 +175,6 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
             ),
             const SizedBox(height: 12),
             buildRow('#', 'Ad Soyad', 'Saat', isHeader: true),
-            const Divider(color: Colors.black26),
             ...personnelDavetler.asMap().entries.map((entry) {
               final idx = entry.key + 1;
               final davet = entry.value;
@@ -182,17 +184,22 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                 final grp = _selectedSayim!.gruplar.firstWhere((g) => g.grupId == davet.grupId);
                 saatStr = grp.saat;
               } catch (e) {}
-              return buildRow('$idx', user?.fullName ?? 'Bilinmeyen Kullanıcı', saatStr);
+              return buildRow('$idx', user?.fullName ?? 'Bilinmeyen Kullanıcı', saatStr, isEven: entry.key % 2 == 0);
             }),
           ],
         ),
       );
+
+      double calculatedHeight = 200.0;
+      calculatedHeight += (managerDavetler.length + 1) * 45.0 + 80.0;
+      calculatedHeight += (personnelDavetler.length + 1) * 45.0 + 80.0;
 
       final screenshotController = ScreenshotController();
       final Uint8List imageBytes = await screenshotController.captureFromWidget(
         Material(child: pngWidget),
         delay: const Duration(milliseconds: 100),
         pixelRatio: 2.0,
+        targetSize: Size(600, calculatedHeight),
       );
 
       String extraName = "";
@@ -228,14 +235,14 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
         );
       }
     } finally {
-      setState(() => _isLoading = false);
+      setState(() => _isPngLoading = false);
     }
   }
 
   Future<void> _exportSayimRaporu() async {
     if (_selectedSayim == null) return;
 
-    setState(() => _isLoading = true);
+    setState(() => _isExcelLoading = true);
     
     try {
       // 2. Davetleri getir (sadece kabul edenler)
@@ -421,14 +428,14 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
         );
       }
     } finally {
-      setState(() => _isLoading = false);
+      setState(() => _isExcelLoading = false);
     }
   }
 
   Future<void> _exportAylikRapor() async {
     if (_selectedMonthKey == null) return;
     
-    setState(() => _isLoading = true);
+    setState(() => _isExcelLoading = true);
     final isTr = widget.lang.currentLang == 'tr';
     final unknownUserStr = AppStrings.get('unknown_user', isTr ? 'tr' : 'en');
     
@@ -601,7 +608,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
         );
       }
     } finally {
-      setState(() => _isLoading = false);
+      setState(() => _isExcelLoading = false);
     }
   }
 
@@ -693,6 +700,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                   children: [
                     // Rapor Türü Seçimi
                     DropdownButtonFormField<String>(
+                      isExpanded: true,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: AppColors.card,
@@ -707,6 +715,8 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                       hint: Text(
                         AppStrings.get('report_type', isTr ? 'tr' : 'en'),
                         style: TextStyle(color: AppColors.textHint),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                       items: [
                         DropdownMenuItem<String>(
@@ -714,6 +724,8 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                           child: Text(
                             AppStrings.get('report_type_sayim', isTr ? 'tr' : 'en'),
                             style: TextStyle(color: AppColors.textPrimary),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         ),
                         DropdownMenuItem<String>(
@@ -721,6 +733,8 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                           child: Text(
                             AppStrings.get('report_type_aylik', isTr ? 'tr' : 'en'),
                             style: TextStyle(color: AppColors.textPrimary),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         ),
                       ],
@@ -735,6 +749,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                     const SizedBox(height: 16),
                     // Ay Seçimi
                     DropdownButtonFormField<String>(
+                      isExpanded: true,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: _selectedReportType == null ? AppColors.card.withOpacity(0.5) : AppColors.card,
@@ -751,6 +766,8 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                           ? AppStrings.get('select_report_type_first', isTr ? 'tr' : 'en')
                           : AppStrings.get('select_month', isTr ? 'tr' : 'en'),
                         style: TextStyle(color: _selectedReportType == null ? AppColors.textHint.withOpacity(0.5) : AppColors.textHint),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                       items: availableMonths.map((mKey) {
                         final parts = mKey.split('-');
@@ -763,6 +780,8 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                           child: Text(
                             '$monthName $year',
                             style: TextStyle(color: AppColors.textPrimary),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         );
                       }).toList(),
@@ -777,12 +796,15 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                       disabledHint: Text(
                         AppStrings.get('select_report_type_first', isTr ? 'tr' : 'en'),
                         style: TextStyle(color: AppColors.textHint.withOpacity(0.5)),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                     if (_selectedReportType == 'sayim') ...[
                       const SizedBox(height: 16),
                       // Sayım Seçimi
                       DropdownButtonFormField<Sayim>(
+                        isExpanded: true,
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: _selectedMonthKey == null ? AppColors.card.withOpacity(0.5) : AppColors.card,
@@ -801,6 +823,8 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                           style: TextStyle(
                             color: _selectedMonthKey == null ? AppColors.textHint.withOpacity(0.5) : AppColors.textHint
                           ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                         items: filteredSayimlar.map((sayim) {
                           final dateStr = DateFormat('dd.MM.yyyy').format(sayim.date);
@@ -809,6 +833,8 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                             child: Text(
                               '${sayim.firmaAdi} ${sayim.note} ($dateStr)',
                               style: TextStyle(color: AppColors.textPrimary),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
                           );
                         }).toList(),
@@ -822,6 +848,8 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                         disabledHint: Text(
                           AppStrings.get('select_month_first', isTr ? 'tr' : 'en'),
                           style: TextStyle(color: AppColors.textHint.withOpacity(0.5)),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                       ),
                     ],
@@ -867,7 +895,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                 (_selectedReportType == 'aylik' && _selectedMonthKey != null)) ...[
               const Spacer(),
               ElevatedButton.icon(
-                onPressed: _isLoading ? null : _exportToExcel,
+                onPressed: _isExcelLoading ? null : _exportToExcel,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accentLight,
                   foregroundColor: Colors.white,
@@ -877,7 +905,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                   ),
                   elevation: 0,
                 ),
-                icon: _isLoading 
+                icon: _isExcelLoading 
                     ? const SizedBox(
                         width: 20, 
                         height: 20, 
@@ -892,7 +920,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
               if (_selectedReportType == 'sayim') ...[
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _exportToPng,
+                  onPressed: _isPngLoading ? null : _exportToPng,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.accentLight.withOpacity(0.8),
                     foregroundColor: Colors.white,
@@ -902,7 +930,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                     ),
                     elevation: 0,
                   ),
-                  icon: _isLoading 
+                  icon: _isPngLoading 
                       ? const SizedBox(
                           width: 20, 
                           height: 20, 
@@ -910,7 +938,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                         )
                       : const Icon(Icons.image_rounded),
                   label: Text(
-                    isTr ? 'PNG Olarak İndir' : 'Download PNG',
+                    isTr ? 'Ekran Görüntüsü Al' : 'Take Screenshot',
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
