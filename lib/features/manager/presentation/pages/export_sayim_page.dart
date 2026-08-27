@@ -127,7 +127,20 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(dateStrFormatted, style: const TextStyle(fontSize: 18, color: Colors.blue, fontWeight: FontWeight.bold)),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF003366),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(dateStrFormatted, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 24),
             
             Container(
@@ -202,12 +215,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
         targetSize: Size(600, calculatedHeight),
       );
 
-      String extraName = "";
-      if (words.isNotEmpty) {
-        extraName = "_${words.join('_')}";
-      }
-      final dateStr = DateFormat('dd-MM-yyyy').format(_selectedSayim!.date);
-      final String fileName = 'Sayim_Detay_${firmaAdi}${extraName}_$dateStr';
+      final String fileName = dateStrFormatted;
 
       final savedPath = await FileSaver.instance.saveFile(
         name: fileName,
