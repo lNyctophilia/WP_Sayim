@@ -62,7 +62,13 @@ service cloud.firestore {
       // Update/Delete is restricted to Owner or Creator.
       allow read: if isOwner() || isManager() || (request.auth != null && request.auth.uid in resource.data.invitedUserIds);
       allow create: if isOwner() || (isManager() && request.resource.data.createdBy == request.auth.uid);
-      allow update, delete: if isOwner() || (isManager() && resource.data.createdBy == request.auth.uid);
+      allow update: if isOwner() || (isManager() && resource.data.createdBy == request.auth.uid) ||
+        (
+          request.auth != null && 
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['invitedUserIds']) &&
+          request.resource.data.invitedUserIds == resource.data.invitedUserIds.removeAll([request.auth.uid])
+        );
+      allow delete: if isOwner() || (isManager() && resource.data.createdBy == request.auth.uid);
     }
 
     match /settings/{document} {
