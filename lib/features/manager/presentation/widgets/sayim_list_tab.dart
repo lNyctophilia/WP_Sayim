@@ -28,6 +28,7 @@ class _SayimListTabState extends State<SayimListTab> {
   late int _currentMonth;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  late Stream<List<Sayim>> _sayimlarStream;
 
   @override
   void initState() {
@@ -35,6 +36,7 @@ class _SayimListTabState extends State<SayimListTab> {
     final now = DateTime.now();
     _currentYear = now.year;
     _currentMonth = now.month;
+    _sayimlarStream = SayimService().getSayimlar();
   }
 
   @override
@@ -138,12 +140,11 @@ class _SayimListTabState extends State<SayimListTab> {
   @override
   Widget build(BuildContext context) {
     final isTr = widget.lang.currentLang == 'tr';
-    final sayimService = SayimService();
 
     return Stack(
       children: [
         StreamBuilder<List<Sayim>>(
-          stream: sayimService.getSayimlar(),
+          stream: _sayimlarStream,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(
@@ -180,7 +181,7 @@ class _SayimListTabState extends State<SayimListTab> {
               children: [
                 _buildMonthNavigator(_currentYear, _currentMonth),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                   child: TextField(
                     controller: _searchController,
                     onChanged: (value) {
