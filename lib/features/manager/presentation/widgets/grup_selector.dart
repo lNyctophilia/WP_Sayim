@@ -73,6 +73,8 @@ class _GrupSelectorState extends State<GrupSelector> {
   }
 
   void _showGroupBottomSheet(int index) {
+    String searchQuery = '';
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -84,7 +86,11 @@ class _GrupSelectorState extends State<GrupSelector> {
         return StatefulBuilder(
           builder: (context, setModalState) {
             final grup = _gruplar[index];
-            final selectedUsersForCount = widget.selectedUsers.where((u) => u.isSelected).toList();
+            final allSelected = widget.selectedUsers.where((u) => u.isSelected).toList();
+            final selectedUsersForCount = allSelected.where((u) {
+              if (searchQuery.isEmpty) return true;
+              return u.user.fullName.toLowerCase().contains(searchQuery.toLowerCase());
+            }).toList();
             
             return DraggableScrollableSheet(
               expand: false,
@@ -202,33 +208,60 @@ class _GrupSelectorState extends State<GrupSelector> {
                       ),
                       const SizedBox(height: 12),
                       
+                      TextField(
+                        decoration: InputDecoration(
+                          hintText: AppStrings.get('search', widget.isTr ? 'tr' : 'en') ?? 'Ara...',
+                          prefixIcon: Icon(Icons.search, color: AppColors.textSecondary),
+                          filled: true,
+                          fillColor: AppColors.surface,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                        ),
+                        style: TextStyle(color: AppColors.textPrimary),
+                        onChanged: (value) {
+                          setModalState(() {
+                            searchQuery = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      
                       // Users List
                       Expanded(
-                        child: selectedUsersForCount.isEmpty 
+                        child: allSelected.isEmpty 
                           ? Center(
                               child: Text(
                                 AppStrings.get('no_personnel_selected', widget.isTr ? 'tr' : 'en') ?? 'Önce personellerden kişi seçin.',
                                 style: TextStyle(color: AppColors.textHint),
                               ),
                             )
-                          : ListView.builder(
-                              controller: scrollController,
-                              itemCount: selectedUsersForCount.length,
-                              itemBuilder: (context, userIndex) {
-                                final userConfig = selectedUsersForCount[userIndex];
-                                final isSelectedForThisGroup = userConfig.grupId == grup.grupId;
-                                
-                                return _UserGroupCheckbox(
-                                  userConfig: userConfig,
-                                  grupId: grup.grupId,
-                                  fallbackGrupId: _gruplar.isNotEmpty ? _gruplar.first.grupId : 1,
-                                  isTr: widget.isTr,
-                                  onGroupChanged: (userId, newGrupId) {
-                                    widget.onUserGroupChanged(userId, newGrupId);
+                          : selectedUsersForCount.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    AppStrings.get('no_results', widget.isTr ? 'tr' : 'en') ?? 'Sonuç bulunamadı.',
+                                    style: TextStyle(color: AppColors.textHint),
+                                  ),
+                                )
+                              : ListView.builder(
+                                  controller: scrollController,
+                                  itemCount: selectedUsersForCount.length,
+                                  itemBuilder: (context, userIndex) {
+                                    final userConfig = selectedUsersForCount[userIndex];
+                                    
+                                    return _UserGroupCheckbox(
+                                      userConfig: userConfig,
+                                      grupId: grup.grupId,
+                                      fallbackGrupId: _gruplar.isNotEmpty ? _gruplar.first.grupId : 1,
+                                      isTr: widget.isTr,
+                                      onGroupChanged: (userId, newGrupId) {
+                                        widget.onUserGroupChanged(userId, newGrupId);
+                                      },
+                                    );
                                   },
-                                );
-                              },
-                            ),
+                                ),
                       ),
                     ],
                   ),
