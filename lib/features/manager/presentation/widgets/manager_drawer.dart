@@ -132,31 +132,6 @@ class ManagerDrawer extends StatelessWidget {
                 ),
                 
                 ListTile(
-                  leading: Icon(Icons.directions_bus_rounded, color: AppColors.textSecondary),
-                  title: Text(lang.tr('shuttle_planning'), style: TextStyle(color: AppColors.textPrimary)),
-                  subtitle: Text(lang.tr('shuttle_route_desc'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
-                  onTap: () {
-                    Navigator.pop(context); // Close drawer
-                    if (onPanelSelected != null) {
-                      onPanelSelected!('shuttle');
-                    } else {
-                      Navigator.pushReplacement(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder: (_, __, ___) => ShuttlePanelPage(
-                            currentUser: currentUser,
-                            lang: lang,
-                            storage: storage,
-                            themeService: themeService,
-                          ),
-                          transitionDuration: Duration.zero,
-                        ),
-                      );
-                    }
-                  },
-                ),
-                
-                ListTile(
                   leading: Icon(Icons.table_view_rounded, color: AppColors.textSecondary),
                   title: Text(lang.tr('export_excel'), style: TextStyle(color: AppColors.textPrimary)),
                   subtitle: Text(lang.tr('export_reports'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
@@ -171,6 +146,31 @@ class ManagerDrawer extends StatelessWidget {
                           pageBuilder: (_, __, ___) => ExportSayimPage(
                             lang: lang,
                             currentUser: currentUser,
+                            storage: storage,
+                            themeService: themeService,
+                          ),
+                          transitionDuration: Duration.zero,
+                        ),
+                      );
+                    }
+                  },
+                ),
+                
+                ListTile(
+                  leading: Icon(Icons.directions_bus_rounded, color: AppColors.textSecondary),
+                  title: Text(lang.tr('shuttle_planning'), style: TextStyle(color: AppColors.textPrimary)),
+                  subtitle: Text(lang.tr('shuttle_route_desc'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
+                  onTap: () {
+                    Navigator.pop(context); // Close drawer
+                    if (onPanelSelected != null) {
+                      onPanelSelected!('shuttle');
+                    } else {
+                      Navigator.pushReplacement(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (_, __, ___) => ShuttlePanelPage(
+                            currentUser: currentUser,
+                            lang: lang,
                             storage: storage,
                             themeService: themeService,
                           ),
