@@ -96,6 +96,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
       
       final selected = <SelectedUserConfig>[];
       for (var davet in widget.existingDavets) {
+        if (davet.isDeclined) continue;
         try {
           final u = users.firstWhere((usr) => usr.id == davet.userId);
           selected.add(SelectedUserConfig(
@@ -287,6 +288,8 @@ class _EditSayimPageState extends State<EditSayimPage> {
       for (var davet in widget.existingDavets) {
         final configIndex = _selectedUsers.indexWhere((c) => c.user.id == davet.userId);
         if (configIndex == -1) {
+          if (davet.isDeclined) continue;
+          
           if (updatedSayim.effectiveStatus == SayimStatus.open && davet.isAccepted) {
             try {
               final user = _allUsers.firstWhere((u) => u.id == davet.userId);

@@ -4,6 +4,8 @@ import '../../../../core/models/app_user.dart';
 import '../../../../core/models/sayim.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/sayim_service.dart';
+import '../../../../core/services/davet_service.dart';
+import '../../../../core/models/davet.dart';
 import '../pages/create_sayim_page.dart';
 import '../pages/sayim_detail_page.dart';
 
@@ -24,6 +26,8 @@ class SayimListTab extends StatefulWidget {
 class _SayimListTabState extends State<SayimListTab> {
   late int _currentYear;
   late int _currentMonth;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -31,6 +35,12 @@ class _SayimListTabState extends State<SayimListTab> {
     final now = DateTime.now();
     _currentYear = now.year;
     _currentMonth = now.month;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   void _previousMonth() {
@@ -158,11 +168,52 @@ class _SayimListTabState extends State<SayimListTab> {
                 .where((s) =>
                     s.date.year == _currentYear &&
                     s.date.month == _currentMonth)
+                .where((s) {
+                  if (_searchQuery.isEmpty) return true;
+                  final query = _searchQuery.toLowerCase();
+                  return s.firmaAdi.toLowerCase().contains(query) ||
+                         s.note.toLowerCase().contains(query);
+                })
                 .toList();
 
             return Column(
               children: [
                 _buildMonthNavigator(_currentYear, _currentMonth),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                    },
+                    style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: isTr ? 'Sayım Ara...' : 'Search count...',
+                      hintStyle: TextStyle(color: AppColors.textHint, fontSize: 14),
+                      prefixIcon: Icon(Icons.search_rounded, color: AppColors.textHint),
+                      filled: true,
+                      fillColor: AppColors.card,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(Icons.clear_rounded, color: AppColors.textHint),
+                              onPressed: () {
+                                setState(() {
+                                  _searchController.clear();
+                                  _searchQuery = '';
+                                });
+                              },
+                            )
+                          : null,
+                    ),
+                  ),
+                ),
                 Expanded(
                   child: sayimlar.isEmpty
                       ? Center(
@@ -227,6 +278,8 @@ class _SayimListTabState extends State<SayimListTab> {
 
   Widget _buildSayimCard(BuildContext context, Sayim sayim, bool isTr) {
     final bool isOpen = sayim.effectiveStatus == SayimStatus.open;
+    final davetService = DavetService();
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -246,78 +299,124 @@ class _SayimListTabState extends State<SayimListTab> {
           borderRadius: BorderRadius.circular(16),
         ),
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: StreamBuilder<List<Davet>>(
+          stream: davetService.getDavetlerBySayim(sayim.id),
+          builder: (context, snapshot) {
+            final davetler = snapshot.data ?? [];
+            final bool isLoading = snapshot.connectionState == ConnectionState.waiting;
+
+            final acceptedStaff = davetler
+                .where((d) =>
+                    d.status == DavetStatus.accepted &&
+                    d.role == DavetRole.staff)
+                .length;
+            final acceptedManager = davetler
+                .where((d) =>
+                    d.status == DavetStatus.accepted &&
+                    d.role == DavetRole.manager)
+                .length;
+            
+            final totalAccepted = acceptedStaff + acceptedManager;
+            final totalInvited = sayim.invitedUserIds.length;
+
+            final isAcceptedLess = totalAccepted < totalInvited;
+            final isTargetNotMet = (acceptedStaff < sayim.maxKisi) ||
+                (acceptedManager < sayim.maxYonetici);
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    (sayim.firmaAdi.isNotEmpty || sayim.note.isNotEmpty)
-                        ? '${sayim.firmaAdi} ${sayim.note}'.trim()
-                        : widget.lang.tr('unnamed_count'),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        (sayim.firmaAdi.isNotEmpty || sayim.note.isNotEmpty)
+                            ? '${sayim.firmaAdi} ${sayim.note}'.trim()
+                            : widget.lang.tr('unnamed_count'),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: (isOpen
+                                ? AppColors.success
+                                : AppColors.textHint)
+                            .withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        isOpen
+                            ? widget.lang.tr('status_open')
+                            : widget.lang.tr('status_closed'),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: isOpen
+                              ? AppColors.success
+                              : AppColors.textHint,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: (isOpen ? AppColors.success : AppColors.textHint)
-                        .withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    isOpen
-                        ? widget.lang.tr('status_open')
-                        : widget.lang.tr('status_closed'),
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: isOpen ? AppColors.success : AppColors.textHint,
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    Icon(Icons.calendar_today_rounded,
+                        size: 14, color: AppColors.textSecondary),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${sayim.date.day.toString().padLeft(2, '0')}.${sayim.date.month.toString().padLeft(2, '0')}.${sayim.date.year}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
-                  ),
+                    SizedBox(width: 12),
+                    Icon(Icons.group_rounded,
+                        size: 14, color: AppColors.textSecondary),
+                    const SizedBox(width: 4),
+                    Text(
+                      isLoading ? '-/$totalInvited' : '$totalAccepted/$totalInvited',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    if (!isLoading && isAcceptedLess) ...[
+                      SizedBox(width: 4),
+                      Icon(Icons.warning_amber_rounded,
+                          size: 16, color: AppColors.warning),
+                    ],
+                    SizedBox(width: 12),
+                    Icon(Icons.fact_check_outlined,
+                        size: 14, color: AppColors.textSecondary),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${sayim.maxKisi}+${sayim.maxYonetici}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    if (!isLoading && isTargetNotMet) ...[
+                      SizedBox(width: 4),
+                      Icon(Icons.warning_amber_rounded,
+                          size: 16, color: AppColors.warning),
+                    ],
+                  ],
                 ),
               ],
-            ),
-            SizedBox(height: 12),
-            Row(
-              children: [
-                Icon(Icons.calendar_today_rounded,
-                    size: 14, color: AppColors.textSecondary),
-                const SizedBox(width: 6),
-                Text(
-                  '${sayim.date.day.toString().padLeft(2, '0')}.${sayim.date.month.toString().padLeft(2, '0')}.${sayim.date.year}',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                SizedBox(width: 16),
-                Icon(Icons.group_rounded,
-                    size: 14, color: AppColors.textSecondary),
-                const SizedBox(width: 6),
-                Text(
-                  '${sayim.invitedUserIds.length}/${sayim.maxKisi + sayim.maxYonetici}',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                if (sayim.invitedUserIds.length <
-                    (sayim.maxKisi + sayim.maxYonetici)) ...[
-                  SizedBox(width: 6),
-                  Icon(Icons.warning_amber_rounded,
-                      size: 16, color: AppColors.warning),
-                ],
-              ],
-            ),
-          ],
+            );
+          }
         ),
       ),
     );

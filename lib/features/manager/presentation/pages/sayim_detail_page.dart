@@ -288,9 +288,9 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                 child: TabBarView(
                   controller: _tabController,
                   children: [
-                    _buildDavetList(accepted, DavetStatus.accepted, currentSayim),
-                    _buildDavetList(pending, DavetStatus.pending, currentSayim),
-                    _buildDavetList(declined, DavetStatus.declined, currentSayim),
+                    _buildDavetList(accepted, DavetStatus.accepted, currentSayim, currentPersonel, currentYonetici),
+                    _buildDavetList(pending, DavetStatus.pending, currentSayim, currentPersonel, currentYonetici),
+                    _buildDavetList(declined, DavetStatus.declined, currentSayim, currentPersonel, currentYonetici),
                   ],
                 ),
               ),
@@ -323,7 +323,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
     );
   }
 
-  Widget _buildDavetList(List<Davet> davetler, DavetStatus status, Sayim currentSayim) {
+  Widget _buildDavetList(List<Davet> davetler, DavetStatus status, Sayim currentSayim, int currentPersonel, int currentYonetici) {
     if (davetler.isEmpty) {
       return Center(
         child: Text(
@@ -595,6 +595,19 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                           color: AppColors.success, size: 20),
                       tooltip: AppStrings.get('re_invite', isTr ? 'tr' : 'en'),
                       onPressed: () async {
+                        if (davet.role == DavetRole.staff && currentPersonel >= currentSayim.maxKisi) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(AppStrings.getFormat('you_can_select_up_to_maxselection_people', isTr ? 'tr' : 'en', [currentSayim.maxKisi])), backgroundColor: AppColors.danger),
+                          );
+                          return;
+                        }
+                        if (davet.role == DavetRole.manager && currentYonetici >= currentSayim.maxYonetici) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(AppStrings.getFormat('you_can_select_up_to_maxselection_people', isTr ? 'tr' : 'en', [currentSayim.maxYonetici])), backgroundColor: AppColors.danger),
+                          );
+                          return;
+                        }
+
                         final confirm = await showDialog<bool>(
                           context: context,
                           builder: (context) => AlertDialog(

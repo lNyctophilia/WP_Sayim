@@ -645,7 +645,7 @@ exports.sendDavetGrupChangedNotification = onDocumentUpdated("davetler/{davetId}
   if (!oldData || !newData) return;
   if (oldData.grupId === newData.grupId) return; // Grup değişmemiş
   if (newData.isPast === true) return;
-  if (newData.status === "declined") return; // Reddeden kişiye bildirim atmayalım
+  if (newData.status !== "accepted") return; // Sadece kabul edenlere bildirim atalım
 
   const staffId = newData.userId;
   const sayimId = newData.sayimId;
@@ -706,7 +706,7 @@ exports.sendSayimTimeChangedNotification = onDocumentUpdated("sayimlar/{sayimId}
   try {
     const davetlerSnap = await admin.firestore().collection("davetler")
       .where("sayimId", "==", event.params.sayimId)
-      .where("status", "in", ["accepted", "pending"])
+      .where("status", "==", "accepted")
       .get();
 
     if (davetlerSnap.empty) return;

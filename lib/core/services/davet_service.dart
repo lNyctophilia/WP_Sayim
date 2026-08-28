@@ -113,7 +113,25 @@ class DavetService {
 
   /// Daveti reddet
   Future<void> declineDavet(String davetId) async {
-    await updateDavetStatus(davetId, DavetStatus.declined);
+    final doc = await _firestore.collection('davetler').doc(davetId).get();
+    if (!doc.exists) return;
+
+    final davet = Davet.fromFirestore(doc);
+    final batch = _firestore.batch();
+    
+    batch.update(doc.reference, {
+      'status': DavetStatus.declined.name,
+      'respondedAt': Timestamp.now(),
+    });
+
+    final sayimDoc = await _firestore.collection('sayimlar').doc(davet.sayimId).get();
+    if (sayimDoc.exists) {
+      final sayim = Sayim.fromFirestore(sayimDoc);
+      final updatedInvited = List<String>.from(sayim.invitedUserIds)..remove(davet.userId);
+      batch.update(sayimDoc.reference, {'invitedUserIds': updatedInvited});
+    }
+
+    await batch.commit();
   }
 
   /// Daveti siler (Yönetici daveti iptal ederse) ve takvimden de kaldırır
@@ -154,12 +172,27 @@ class DavetService {
   Future<void> resetDavet(String davetId) async {
     final doc = await _firestore.collection('davetler').doc(davetId).get();
     if (!doc.exists) return;
-    await doc.reference.update({
+    
+    final davet = Davet.fromFirestore(doc);
+    final batch = _firestore.batch();
+    
+    batch.update(doc.reference, {
       'status': DavetStatus.pending.name,
       'isAccepted': false,
       'isPending': true,
       'isDeclined': false,
     });
+
+    final sayimDoc = await _firestore.collection('sayimlar').doc(davet.sayimId).get();
+    if (sayimDoc.exists) {
+      final sayim = Sayim.fromFirestore(sayimDoc);
+      if (!sayim.invitedUserIds.contains(davet.userId)) {
+        final updatedInvited = List<String>.from(sayim.invitedUserIds)..add(davet.userId);
+        batch.update(sayimDoc.reference, {'invitedUserIds': updatedInvited});
+      }
+    }
+
+    await batch.commit();
   }
 
   /// Davetin detaylarını günceller ve ücret değişirse takvime (WorkDay) yansıtır
