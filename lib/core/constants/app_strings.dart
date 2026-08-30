@@ -258,6 +258,7 @@ class AppStrings {
     'password': {'tr': 'Şifre', 'en': 'Password'},
     'password_leave_empty': {'tr': 'Değiştirmek istemiyorsanız boş bırakın', 'en': 'Leave empty to keep unchanged'},
     'update': {'tr': 'Güncelle', 'en': 'Update'},
+    'city': {'tr': 'Şehir', 'en': 'City'},
 
     // Group Selector
     'time_groups_max': {'tr': 'Saat Grupları (Max 10)', 'en': 'Time Groups (Max 10)'},

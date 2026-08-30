@@ -360,32 +360,36 @@ class AuthService {
         .get();
     return snapshot.docs
         .map((doc) => AppUser.fromFirestore(doc))
-        .where((user) => !user.isOwner)
+        .where((user) => !user.isOwner && user.isApproved)
         .toList();
   }
 
   /// Sadece belirli roldeki kullanıcıları getir
   Future<List<AppUser>> getUsersByRole(UserRole role) async {
-    List<String> rolesToQuery = [role.name];
-    if (role == UserRole.manager) {
-      rolesToQuery = ['manager', 'managerA1', 'managerA2', 'managerA3'];
-    }
-
     final snapshot = await _firestore
         .collection('users')
-        .where('roles', arrayContainsAny: rolesToQuery)
         .where('active', isEqualTo: true)
         .get();
-    return snapshot.docs.map((doc) => AppUser.fromFirestore(doc)).toList();
+        
+    final allUsers = snapshot.docs.map((doc) => AppUser.fromFirestore(doc)).toList();
+    
+    if (role == UserRole.manager) {
+      return allUsers.where((u) => u.isManager).toList();
+    } else {
+      return allUsers.where((u) => u.roles.contains(role)).toList();
+    }
   }
 
   /// Bekleyen kullanıcı (onaylanmamış) sayısını gerçek zamanlı dinle
-  Stream<int> getPendingUsersCountStream() {
+  Stream<int> getPendingUsersCountStream(String city) {
     return _firestore
         .collection('users')
         .where('isApproved', isEqualTo: false)
         .where('isDeleted', isEqualTo: false)
         .snapshots()
-        .map((snapshot) => snapshot.docs.length);
+        .map((snapshot) => snapshot.docs.where((doc) {
+              final c = doc.data()['city'] as String? ?? 'Denizli';
+              return c == city;
+            }).length);
   }
 }

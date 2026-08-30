@@ -102,7 +102,7 @@ class AppUser {
       address: data['address'] as String?,
       latitude: (data['latitude'] as num?)?.toDouble(),
       longitude: (data['longitude'] as num?)?.toDouble(),
-      isApproved: data['isApproved'] as bool? ?? false,
+      isApproved: data['isApproved'] as bool? ?? true,
       email: data['email'] as String?,
       city: data['city'] as String? ?? 'Denizli',
     );

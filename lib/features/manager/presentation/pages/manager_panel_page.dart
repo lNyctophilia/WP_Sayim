@@ -112,7 +112,7 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
     final isTr = widget.lang.currentLang == 'tr';
 
     return StreamBuilder<int>(
-      stream: _authService.getPendingUsersCountStream(),
+      stream: _authService.getPendingUsersCountStream(widget.targetCity),
       builder: (context, snapshot) {
         final hasPending = (snapshot.data ?? 0) > 0;
 
