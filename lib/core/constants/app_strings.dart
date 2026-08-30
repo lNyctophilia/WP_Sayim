@@ -179,6 +179,11 @@ class AppStrings {
       'tr': 'Çıkış yapmak istediğinize emin misiniz?',
       'en': 'Are you sure you want to sign out?'
     },
+    'delete_account': {'tr': 'Hesabımı Sil', 'en': 'Delete Account'},
+    'delete_account_confirm': {
+      'tr': 'Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
+      'en': 'Are you sure you want to delete your account? This action cannot be undone.'
+    },
 
     // Manager Drawer & Tools
     'staff_panel': {'tr': 'Personel Paneli', 'en': 'Staff Panel'},

@@ -64,6 +64,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
           // ─── Hesap ─────────────────────────────────────
           _buildLogoutTile(),
+          _buildDeleteAccountTile(),
 
           const SizedBox(height: 24),
 
@@ -373,6 +374,111 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 (route) => false,
               );
+            }
+          }
+        },
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeleteAccountTile() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: AppColors.danger.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            Icons.person_remove_rounded,
+            color: AppColors.danger,
+            size: 22,
+          ),
+        ),
+        title: Text(
+          widget.lang.tr('delete_account'),
+          style: TextStyle(
+            fontSize: 15,
+            color: AppColors.danger,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        trailing: Icon(
+          Icons.chevron_right_rounded,
+          color: AppColors.textHint,
+        ),
+        onTap: () async {
+          final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: AppColors.card,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Text(
+                widget.lang.tr('delete_account'),
+                style: TextStyle(color: AppColors.textPrimary),
+              ),
+              content: Text(
+                widget.lang.tr('delete_account_confirm'),
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: Text(widget.lang.tr('cancel')),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+                  child: Text(widget.lang.tr('delete')),
+                ),
+              ],
+            ),
+          );
+
+          if (confirmed == true && mounted) {
+            final authService = AuthService();
+            final uid = authService.currentFirebaseUser?.uid;
+            
+            if (uid != null) {
+              try {
+                // Soft delete user
+                await authService.deleteUser(uid);
+                // Log out
+                await authService.logout();
+                
+                if (mounted) {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (_) => AppRouter(
+                        storage: widget.storage,
+                        lang: widget.lang,
+                        themeService: widget.themeService,
+                      ),
+                    ),
+                    (route) => false,
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Hata: $e'),
+                      backgroundColor: AppColors.danger,
+                    ),
+                  );
+                }
+              }
             }
           }
         },

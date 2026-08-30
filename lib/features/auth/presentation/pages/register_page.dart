@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -392,14 +393,16 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
 
           const SizedBox(height: 24),
           _buildCheckbox(
-            title: 'Gizlilik Politikası\'nı okudum ve kabul ediyorum.',
+            linkText: 'Gizlilik Politikası',
+            restText: '\'nı okudum ve kabul ediyorum.',
             value: _isPrivacyPolicyAccepted,
             onChanged: (val) => setState(() => _isPrivacyPolicyAccepted = val ?? false),
             url: 'https://sites.google.com/view/wpsayim/',
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           _buildCheckbox(
-            title: 'Kullanım Koşulları\'nı okudum ve kabul ediyorum.',
+            linkText: 'Kullanım Koşulları',
+            restText: '\'nı okudum ve kabul ediyorum.',
             value: _isTermsAccepted,
             onChanged: (val) => setState(() => _isTermsAccepted = val ?? false),
             url: 'https://sites.google.com/view/wpsayim/termsconditions',
@@ -410,46 +413,67 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   }
 
   Widget _buildCheckbox({
-    required String title,
+    required String linkText,
+    required String restText,
     required bool value,
     required ValueChanged<bool?> onChanged,
     required String url,
   }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 24,
-          height: 24,
-          child: Checkbox(
-            value: value,
-            onChanged: onChanged,
-            activeColor: AppColors.accentLight,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-            side: BorderSide(color: AppColors.textSecondary, width: 1.5),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: GestureDetector(
-            onTap: () async {
-              final uri = Uri.parse(url);
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri);
-              }
-            },
-            child: Text(
-              title,
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                color: AppColors.accentLight,
-                decoration: TextDecoration.underline,
-                fontWeight: FontWeight.w500,
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 24,
+            height: 24,
+            child: Checkbox(
+              value: value,
+              onChanged: onChanged,
+              activeColor: AppColors.accentLight,
+              checkColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              side: BorderSide(
+                color: value ? AppColors.accentLight : AppColors.textSecondary.withValues(alpha: 0.5), 
+                width: 1.5
               ),
             ),
           ),
-        ),
-      ],
+          const SizedBox(width: 12),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 2.0),
+              child: RichText(
+                text: TextSpan(
+                  style: GoogleFonts.inter(
+                    fontSize: 13.5,
+                    color: AppColors.textPrimary.withValues(alpha: 0.9),
+                    height: 1.4,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: linkText,
+                      style: TextStyle(
+                        color: AppColors.accentLight,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () async {
+                          final uri = Uri.parse(url);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri);
+                          }
+                        },
+                    ),
+                    TextSpan(text: restText),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
