@@ -56,10 +56,12 @@ class AuthService {
       final appUser = await getUserData(credential.user!.uid);
       if (appUser == null) {
         await logout();
+        await StorageService().setHasPendingRegistration(false);
         throw FirebaseAuthException(code: 'user-not-found');
       }
       if (appUser.isDeleted) {
         await logout();
+        await StorageService().setHasPendingRegistration(false);
         throw FirebaseAuthException(code: 'user-deleted');
       }
       if (!appUser.active) {
@@ -91,6 +93,9 @@ class AuthService {
       });
 
       lastLoginTime = DateTime.now();
+
+      // Kullanıcı başarıyla giriş yaptıysa onaylanmış demektir. Yerel kayıt kilidini kaldıralım.
+      await StorageService().setHasPendingRegistration(false);
 
       return appUser;
     } on FirebaseAuthException {
@@ -142,8 +147,25 @@ class AuthService {
   }) async {
     isRegistering.value = true;
     final authEmail = _toEmail(phone);
+    final String deviceId = StorageService().getDeviceId();
 
     try {
+      // 1. Cihaz kontrolü: Bu cihazdan bekleyen bir başvuru var mı?
+      final existingPending = await _firestore
+          .collection('users')
+          .where('deviceId', isEqualTo: deviceId)
+          .where('isApproved', isEqualTo: false)
+          .where('isDeleted', isEqualTo: false)
+          .limit(1)
+          .get();
+
+      if (existingPending.docs.isNotEmpty) {
+        throw FirebaseAuthException(
+          code: 'device-pending',
+          message: 'Bu cihazdan yapılmış onay bekleyen bir başvuru bulunmaktadır.',
+        );
+      }
+
       final credential = await _auth.createUserWithEmailAndPassword(
         email: authEmail,
         password: password,
@@ -170,6 +192,7 @@ class AuthService {
       );
 
       final userData = appUser.toFirestore();
+      userData['deviceId'] = deviceId;
       
       if (fcmToken != null) {
         userData['fcmToken'] = fcmToken;
@@ -179,6 +202,9 @@ class AuthService {
           .collection('users')
           .doc(newUserId)
           .set(userData);
+
+      // Başarılı kayıt sonrası yerel kilidi açıyoruz (UI için)
+      await StorageService().setHasPendingRegistration(true);
 
       // Kullanıcı onaylı olmadığı için hemen oturumu kapatıyoruz
       await _auth.signOut();

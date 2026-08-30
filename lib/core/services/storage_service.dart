@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 /// SharedPreferences tabanlı veri depolama servisi
 /// İş günü verileri Firestore üzerinden yönetilir (WorkDayRepository).
@@ -16,6 +17,8 @@ class StorageService {
   static const String _prefsLastPanel = 'last_active_panel';
   static const String _prefsTheme = 'app_theme_type';
   static const String _prefsCustomColor = 'custom_theme_color';
+  static const String _prefsDeviceId = 'device_id';
+  static const String _prefsHasPendingRegistration = 'has_pending_registration';
 
   late SharedPreferences _prefs;
 
@@ -111,5 +114,24 @@ class StorageService {
 
   Future<void> setLastManagerTabForCity(String city, int index) async {
     await _prefs.setInt('last_manager_tab_${city.toLowerCase()}', index);
+  }
+
+  // ─── Cihaz Yönetimi (Device ID & Pending) ─────────────────
+
+  /// Cihaz için kalıcı bir ID oluşturur veya getirir.
+  String getDeviceId() {
+    String? deviceId = _prefs.getString(_prefsDeviceId);
+    if (deviceId == null) {
+      deviceId = const Uuid().v4();
+      _prefs.setString(_prefsDeviceId, deviceId);
+    }
+    return deviceId;
+  }
+
+  bool hasPendingRegistration() =>
+      _prefs.getBool(_prefsHasPendingRegistration) ?? false;
+
+  Future<void> setHasPendingRegistration(bool value) async {
+    await _prefs.setBool(_prefsHasPendingRegistration, value);
   }
 }

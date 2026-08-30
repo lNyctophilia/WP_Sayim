@@ -6,6 +6,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../../core/services/storage_service.dart';
 import '../../../../core/utils/pwa_check.dart';
 import '../../../../core/widgets/map_location_picker.dart';
 import 'package:latlong2/latlong.dart';
@@ -41,6 +42,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   double? _selectedLng;
   bool _isPoliciesAccepted = false;
   String _selectedCity = 'Denizli';
+  bool _hasPending = false;
 
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
@@ -49,6 +51,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
+    _hasPending = StorageService().hasPendingRegistration();
     _requiresEmail = requiresEmailForNotifications();
     
     _animController = AnimationController(
@@ -201,44 +204,94 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
               opacity: _fadeAnim,
               child: SlideTransition(
                 position: _slideAnim,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      widget.lang.tr('register'),
-                      style: GoogleFonts.inter(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                        letterSpacing: -0.5,
-                      ),
+                child: _hasPending 
+                  ? _buildPendingState()
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          widget.lang.tr('register'),
+                          style: GoogleFonts.inter(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          widget.lang.tr('register_subtitle'),
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+
+                        _buildForm(),
+                        const SizedBox(height: 16),
+
+                        if (_errorMessage != null) _buildErrorMessage(),
+
+                        const SizedBox(height: 24),
+
+                        _buildRegisterButton(),
+                        const SizedBox(height: 32),
+                      ],
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      widget.lang.tr('register_subtitle'),
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 40),
-
-                    _buildForm(),
-                    const SizedBox(height: 16),
-
-                    if (_errorMessage != null) _buildErrorMessage(),
-
-                    const SizedBox(height: 24),
-
-                    _buildRegisterButton(),
-                    const SizedBox(height: 32),
-                  ],
-                ),
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildPendingState() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const SizedBox(height: 40),
+        Icon(Icons.hourglass_empty_rounded, size: 64, color: AppColors.accentLight),
+        const SizedBox(height: 24),
+        Text(
+          'Onay Bekleniyor',
+          style: GoogleFonts.inter(
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Cihazınızdan yapılmış ve henüz onaylanmamış bir başvuru bulunmaktadır. Yöneticiler başvurunuzu inceledikten sonra giriş yapabilirsiniz.',
+          style: GoogleFonts.inter(
+            fontSize: 15,
+            color: AppColors.textSecondary,
+            height: 1.5,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 40),
+        SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.surface,
+              foregroundColor: AppColors.textPrimary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              elevation: 0,
+            ),
+            child: Text(
+              'Giriş Sayfasına Dön',
+              style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
