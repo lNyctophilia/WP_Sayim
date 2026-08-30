@@ -11,12 +11,14 @@ class UserListTab extends StatefulWidget {
   final AppUser currentUser;
   final LanguageService lang;
   final UserRole targetRole;
+  final String targetCity;
 
   const UserListTab({
     super.key,
     required this.currentUser,
     required this.lang,
     required this.targetRole,
+    required this.targetCity,
   });
 
   @override
@@ -51,7 +53,8 @@ class _UserListTabState extends State<UserListTab>
   Future<void> _loadUsers() async {
     setState(() => _isLoading = true);
     try {
-      final users = await _authService.getUsersByRole(widget.targetRole);
+      final allUsers = await _authService.getUsersByRole(widget.targetRole);
+      final users = allUsers.where((u) => u.city == widget.targetCity).toList();
       if (mounted) {
         setState(() {
           _approvedUsers = users.where((u) => u.isApproved && !u.isOwner).toList();

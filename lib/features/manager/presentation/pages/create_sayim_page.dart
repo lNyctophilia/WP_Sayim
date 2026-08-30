@@ -17,11 +17,13 @@ import '../../../../core/utils/string_utils.dart';
 class CreateSayimPage extends StatefulWidget {
   final AppUser currentUser;
   final LanguageService lang;
+  final String targetCity;
 
   const CreateSayimPage({
     super.key,
     required this.currentUser,
     required this.lang,
+    required this.targetCity,
   });
 
   @override
@@ -255,6 +257,7 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
         gruplar: _gruplar,
         invitedUserIds: _selectedUsers.map((e) => e.user.id).toList(),
         sehirTipi: _sehirTipi,
+        city: widget.targetCity,
         globalMultiplier: _globalMultiplier,
         createdAt: DateTime.now(),
       );

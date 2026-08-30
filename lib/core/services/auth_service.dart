@@ -129,6 +129,7 @@ class AuthService {
     double? longitude,
     String? fcmToken,
     String? email,
+    String city = 'Denizli',
   }) async {
     isRegistering.value = true;
     final authEmail = _toEmail(phone);
@@ -156,6 +157,7 @@ class AuthService {
         isApproved: false, // Yönetici onayı bekleyecek
         createdAt: DateTime.now(),
         email: email, // Gerçek email, bildirim için
+        city: city,
       );
 
       final userData = appUser.toFirestore();
@@ -189,6 +191,7 @@ class AuthService {
     required List<UserRole> roles,
     required String createdByUid,
     double? defaultWage,
+    String city = 'Denizli',
   }) async {
     final email = _toEmail(username);
 
@@ -225,6 +228,7 @@ class AuthService {
         active: true,
         isApproved: true, // Yönetici oluşturduğu için direkt onaylı
         createdAt: DateTime.now(),
+        city: city,
       );
 
       await _firestore
@@ -313,6 +317,7 @@ class AuthService {
     double? latitude,
     double? longitude,
     String? email,
+    String? city,
   }) async {
     final Map<String, dynamic> updates = {};
     if (fullName != null && fullName.isNotEmpty) updates['fullName'] = fullName;
@@ -325,6 +330,7 @@ class AuthService {
     if (latitude != null) updates['latitude'] = latitude;
     if (longitude != null) updates['longitude'] = longitude;
     if (email != null) updates['email'] = email;
+    if (city != null && city.isNotEmpty) updates['city'] = city;
 
     if (updates.isNotEmpty) {
       await _firestore.collection('users').doc(uid).update(updates);

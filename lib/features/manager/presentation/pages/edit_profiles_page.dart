@@ -51,6 +51,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
   final _addressController = TextEditingController();
   final _emailController = TextEditingController();
   UserRole _selectedRole = UserRole.staff;
+  String _selectedCity = 'Denizli';
   
   double? _selectedLat;
   double? _selectedLng;
@@ -113,6 +114,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
           role = UserRole.managerA1;
         }
         _selectedRole = role;
+        _selectedCity = user.city;
         _selectedLat = user.latitude;
         _selectedLng = user.longitude;
         _errorMessage = null;
@@ -243,6 +245,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
         latitude: _selectedLat,
         longitude: _selectedLng,
         email: _emailController.text.trim(),
+        city: _selectedCity,
       );
 
       // Refresh user list
@@ -485,6 +488,33 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                                 ],
                                 onChanged: (val) {
                                   if (val != null) setState(() => _selectedRole = val);
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          _buildLabel(AppStrings.get('city', isTr ? 'tr' : 'en') ?? 'Şehir'),
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: AppColors.divider),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                isExpanded: true,
+                                value: _selectedCity,
+                                dropdownColor: AppColors.card,
+                                icon: Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
+                                items: [
+                                  DropdownMenuItem(value: 'Denizli', child: Text('Denizli', style: GoogleFonts.inter(color: AppColors.textPrimary))),
+                                  DropdownMenuItem(value: 'Muğla', child: Text('Muğla', style: GoogleFonts.inter(color: AppColors.textPrimary))),
+                                ],
+                                onChanged: (val) {
+                                  if (val != null) setState(() => _selectedCity = val);
                                 },
                               ),
                             ),

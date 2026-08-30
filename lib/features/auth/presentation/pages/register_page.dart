@@ -8,6 +8,7 @@ import '../../../../core/services/notification_service.dart';
 import '../../../../core/utils/pwa_check.dart';
 import '../../../../core/widgets/map_location_picker.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class RegisterPage extends StatefulWidget {
   final LanguageService lang;
@@ -37,6 +38,9 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   String? _errorMessage;
   double? _selectedLat;
   double? _selectedLng;
+  bool _isPrivacyPolicyAccepted = false;
+  bool _isTermsAccepted = false;
+  String _selectedCity = 'Denizli';
 
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
@@ -89,6 +93,13 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
 
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
+    
+    if (!_isPrivacyPolicyAccepted || !_isTermsAccepted) {
+      setState(() {
+        _errorMessage = 'Kayıt olabilmek için Gizlilik Politikası ve Kullanım Koşullarını kabul etmelisiniz.';
+      });
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -116,6 +127,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
         longitude: _selectedLng,
         fcmToken: token,
         email: _requiresEmail ? _emailController.text.trim() : null,
+        city: _selectedCity,
       );
 
       if (mounted) {
@@ -244,6 +256,29 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           ),
           const SizedBox(height: 14),
 
+          DropdownButtonFormField<String>(
+            value: _selectedCity,
+            decoration: InputDecoration(
+              prefixIcon: Icon(Icons.location_city_rounded, color: AppColors.textSecondary, size: 22),
+              filled: true,
+              fillColor: AppColors.surface,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            ),
+            dropdownColor: AppColors.card,
+            items: [
+              DropdownMenuItem(value: 'Denizli', child: Text('Denizli', style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 15))),
+              DropdownMenuItem(value: 'Muğla', child: Text('Muğla', style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 15))),
+            ],
+            onChanged: (val) {
+              if (val != null) setState(() => _selectedCity = val);
+            },
+          ),
+          const SizedBox(height: 14),
+
           _buildTextField(
             controller: _phoneController,
             hintText: widget.lang.tr('phone_number_hint'),
@@ -354,8 +389,67 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
               ),
             ),
           ],
+
+          const SizedBox(height: 24),
+          _buildCheckbox(
+            title: 'Gizlilik Politikası\'nı okudum ve kabul ediyorum.',
+            value: _isPrivacyPolicyAccepted,
+            onChanged: (val) => setState(() => _isPrivacyPolicyAccepted = val ?? false),
+            url: 'https://sites.google.com/view/wpsayim/',
+          ),
+          const SizedBox(height: 8),
+          _buildCheckbox(
+            title: 'Kullanım Koşulları\'nı okudum ve kabul ediyorum.',
+            value: _isTermsAccepted,
+            onChanged: (val) => setState(() => _isTermsAccepted = val ?? false),
+            url: 'https://sites.google.com/view/wpsayim/termsconditions',
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCheckbox({
+    required String title,
+    required bool value,
+    required ValueChanged<bool?> onChanged,
+    required String url,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 24,
+          height: 24,
+          child: Checkbox(
+            value: value,
+            onChanged: onChanged,
+            activeColor: AppColors.accentLight,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+            side: BorderSide(color: AppColors.textSecondary, width: 1.5),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: GestureDetector(
+            onTap: () async {
+              final uri = Uri.parse(url);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri);
+              }
+            },
+            child: Text(
+              title,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: AppColors.accentLight,
+                decoration: TextDecoration.underline,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

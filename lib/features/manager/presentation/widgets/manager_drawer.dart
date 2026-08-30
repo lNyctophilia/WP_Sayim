@@ -106,14 +106,14 @@ class ManagerDrawer extends StatelessWidget {
                 
                 ListTile(
                   leading: Icon(Icons.dashboard_rounded, color: AppColors.textSecondary),
-                  title: Text(lang.tr('manager_panel'), style: TextStyle(color: AppColors.textPrimary)),
+                  title: Text('${lang.tr('manager_panel')} (Denizli)', style: TextStyle(color: AppColors.textPrimary)),
                   subtitle: Text(lang.tr('manager_panel_desc'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
                   onTap: () {
                     Navigator.pop(context); // Close drawer
                     if (onPanelSelected != null) {
-                      onPanelSelected!('manager');
+                      onPanelSelected!('manager_denizli');
                     } else {
-                      storage.setLastPanel('manager');
+                      storage.setLastPanel('manager_denizli');
                       Navigator.pushReplacement(
                         context,
                         PageRouteBuilder(
@@ -122,6 +122,34 @@ class ManagerDrawer extends StatelessWidget {
                             storage: storage,
                             lang: lang,
                             themeService: themeService,
+                            targetCity: 'Denizli',
+                            onLogout: () {},
+                          ),
+                          transitionDuration: Duration.zero,
+                        ),
+                      );
+                    }
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.dashboard_rounded, color: AppColors.textSecondary),
+                  title: Text('${lang.tr('manager_panel')} (Muğla)', style: TextStyle(color: AppColors.textPrimary)),
+                  subtitle: Text(lang.tr('manager_panel_desc'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
+                  onTap: () {
+                    Navigator.pop(context); // Close drawer
+                    if (onPanelSelected != null) {
+                      onPanelSelected!('manager_mugla');
+                    } else {
+                      storage.setLastPanel('manager_mugla');
+                      Navigator.pushReplacement(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (_, __, ___) => ManagerPanelPage(
+                            currentUser: currentUser,
+                            storage: storage,
+                            lang: lang,
+                            themeService: themeService,
+                            targetCity: 'Muğla',
                             onLogout: () {},
                           ),
                           transitionDuration: Duration.zero,

@@ -12,11 +12,13 @@ import '../pages/sayim_detail_page.dart';
 class SayimListTab extends StatefulWidget {
   final AppUser currentUser;
   final LanguageService lang;
+  final String targetCity;
 
   const SayimListTab({
     super.key,
     required this.currentUser,
     required this.lang,
+    required this.targetCity,
   });
 
   @override
@@ -168,7 +170,8 @@ class _SayimListTabState extends State<SayimListTab> {
             final sayimlar = allSayimlar
                 .where((s) =>
                     s.date.year == _currentYear &&
-                    s.date.month == _currentMonth)
+                    s.date.month == _currentMonth &&
+                    s.city == widget.targetCity)
                 .where((s) {
                   if (_searchQuery.isEmpty) return true;
                   final query = _searchQuery.toLowerCase();
@@ -266,6 +269,7 @@ class _SayimListTabState extends State<SayimListTab> {
                   builder: (_) => CreateSayimPage(
                     currentUser: widget.currentUser,
                     lang: widget.lang,
+                    targetCity: widget.targetCity,
                   ),
                 ),
               );

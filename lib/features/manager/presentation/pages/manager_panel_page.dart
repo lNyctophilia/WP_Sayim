@@ -22,6 +22,7 @@ class ManagerPanelPage extends StatefulWidget {
   final ThemeService themeService;
   final VoidCallback onLogout;
   final bool isEmbedded;
+  final String targetCity;
 
   const ManagerPanelPage({
     super.key,
@@ -31,6 +32,7 @@ class ManagerPanelPage extends StatefulWidget {
     required this.themeService,
     required this.onLogout,
     this.isEmbedded = false,
+    this.targetCity = 'Denizli',
   });
 
   @override
@@ -187,16 +189,19 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
       SayimListTab(
         currentUser: widget.currentUser,
         lang: widget.lang,
+        targetCity: widget.targetCity,
       ),
       UserListTab(
         currentUser: widget.currentUser,
         lang: widget.lang,
         targetRole: UserRole.manager,
+        targetCity: widget.targetCity,
       ),
       UserListTab(
         currentUser: widget.currentUser,
         lang: widget.lang,
         targetRole: UserRole.staff,
+        targetCity: widget.targetCity,
       ),
     ];
 

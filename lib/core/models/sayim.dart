@@ -48,6 +48,7 @@ class Sayim {
   final bool isManualStatus;
   final DateTime createdAt;
   final String? startTime;
+  final String city;
 
   Sayim({
     required this.id,
@@ -67,6 +68,7 @@ class Sayim {
     this.isManualStatus = false,
     required this.createdAt,
     this.startTime,
+    this.city = 'Denizli',
   });
 
   Sayim copyWith({
@@ -87,6 +89,7 @@ class Sayim {
     bool? isManualStatus,
     DateTime? createdAt,
     String? startTime,
+    String? city,
   }) {
     return Sayim(
       id: id ?? this.id,
@@ -106,6 +109,7 @@ class Sayim {
       isManualStatus: isManualStatus ?? this.isManualStatus,
       createdAt: createdAt ?? this.createdAt,
       startTime: startTime ?? this.startTime,
+      city: city ?? this.city,
     );
   }
 
@@ -142,6 +146,7 @@ class Sayim {
       isManualStatus: data['isManualStatus'] as bool? ?? false,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       startTime: data['startTime'] as String?,
+      city: data['city'] as String? ?? 'Denizli',
     );
   }
 
@@ -211,6 +216,7 @@ class Sayim {
       'isManualStatus': isManualStatus,
       'createdAt': Timestamp.fromDate(createdAt),
       'startTime': startTime,
+      'city': city,
     };
   }
 

@@ -59,8 +59,8 @@ class ManagerShellPageState extends State<ManagerShellPage> {
       canPop: false,
       onPopInvokedWithResult: (bool didPop, dynamic result) {
         if (didPop) return;
-        if (_currentPanel != 'manager') {
-          switchPanel('manager');
+        if (_currentPanel != 'manager_denizli' && _currentPanel != 'manager_mugla') {
+          switchPanel('manager_denizli');
         } else {
           // Zaten ana paneldeysek uygulamadan çıkış yap veya arka plana at.
           // SystemNavigator.pop() çalışabilir, ancak Flutter Web'de hiçbir şey yapmaz.
@@ -144,6 +144,26 @@ class ManagerShellPageState extends State<ManagerShellPage> {
           );
         }
         break;
+      case 'manager_denizli':
+        return ManagerPanelPage(
+          currentUser: widget.currentUser,
+          storage: widget.storage,
+          lang: widget.lang,
+          themeService: widget.themeService,
+          targetCity: 'Denizli',
+          onLogout: widget.onLogout ?? () {},
+          isEmbedded: true,
+        );
+      case 'manager_mugla':
+        return ManagerPanelPage(
+          currentUser: widget.currentUser,
+          storage: widget.storage,
+          lang: widget.lang,
+          themeService: widget.themeService,
+          targetCity: 'Muğla',
+          onLogout: widget.onLogout ?? () {},
+          isEmbedded: true,
+        );
       case 'manager':
       default:
         return ManagerPanelPage(
@@ -151,6 +171,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
           storage: widget.storage,
           lang: widget.lang,
           themeService: widget.themeService,
+          targetCity: 'Denizli',
           onLogout: widget.onLogout ?? () {},
           isEmbedded: true,
         );
@@ -161,6 +182,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
       storage: widget.storage,
       lang: widget.lang,
       themeService: widget.themeService,
+      targetCity: 'Denizli',
       onLogout: widget.onLogout ?? () {},
       isEmbedded: true,
     );
