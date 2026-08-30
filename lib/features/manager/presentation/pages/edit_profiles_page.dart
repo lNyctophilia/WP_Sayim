@@ -83,7 +83,9 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
       
       final Map<String, AppUser> uniqueUsers = {};
       for (var u in [...snapshot, ...managers, ...owners]) {
-        uniqueUsers[u.id] = u;
+        if (u.isApproved) {
+          uniqueUsers[u.id] = u;
+        }
       }
       
       if (mounted) {

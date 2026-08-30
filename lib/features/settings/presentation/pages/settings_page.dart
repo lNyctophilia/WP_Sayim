@@ -12,6 +12,7 @@ import '../../../../core/theme/theme_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
+import '../../../../main.dart';
 
 /// Ayarlar Sayfası
 class SettingsPage extends StatefulWidget {
@@ -64,6 +65,20 @@ class _SettingsPageState extends State<SettingsPage> {
 
           // ─── Hesap ─────────────────────────────────────
           _buildLogoutTile(),
+
+          const SizedBox(height: 32),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+            child: Text(
+              (widget.lang.currentLang == 'tr' ? 'Tehlikeli İşlemler' : 'Danger Zone').toUpperCase(),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.danger.withValues(alpha: 0.7),
+                letterSpacing: 1.2,
+              ),
+            ),
+          ),
           _buildDeleteAccountTile(),
 
           const SizedBox(height: 24),
@@ -439,6 +454,7 @@ class _SettingsPageState extends State<SettingsPage> {
             
             if (uid != null) {
               try {
+                AuthService.isDeletingAccount = true;
                 // Soft delete user
                 await authService.deleteUser(uid);
                 
@@ -469,9 +485,15 @@ class _SettingsPageState extends State<SettingsPage> {
                   );
                 }
 
+                AuthService.isDeletingAccount = false;
                 // Log out
                 await authService.logout();
+                
+                if (mounted && (appNavigatorKey.currentState?.canPop() ?? false)) {
+                  appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+                }
               } catch (e) {
+                AuthService.isDeletingAccount = false;
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(

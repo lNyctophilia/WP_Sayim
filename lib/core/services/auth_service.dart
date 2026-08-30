@@ -37,6 +37,7 @@ class AuthService {
   static bool isLoggingIn = false;
   static final ValueNotifier<bool> isLoginValidationRunning = ValueNotifier<bool>(false);
   static final ValueNotifier<bool> isRegistering = ValueNotifier<bool>(false);
+  static bool isDeletingAccount = false;
   static DateTime? lastLoginTime;
   static String? currentSessionId;
 

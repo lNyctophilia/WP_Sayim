@@ -156,7 +156,7 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
                   if (_wasLoggedIn) {
                     _wasLoggedIn = false;
                     Future.microtask(() {
-                      if (appNavigatorKey.currentState?.canPop() ?? false) {
+                      if (!AuthService.isDeletingAccount && (appNavigatorKey.currentState?.canPop() ?? false)) {
                         appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
                       }
                     });
@@ -197,7 +197,7 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
                   // Sadece o zaman çıkış yap.
                   Future.microtask(() {
                     _authService.logout(true);
-                    if (_wasLoggedIn && (appNavigatorKey.currentState?.canPop() ?? false)) {
+                    if (_wasLoggedIn && !AuthService.isDeletingAccount && (appNavigatorKey.currentState?.canPop() ?? false)) {
                       appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
                     }
                   });
@@ -208,7 +208,7 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
                 if (appUser.isDeleted) {
                   Future.microtask(() {
                     _authService.logout(true);
-                    if (_wasLoggedIn && (appNavigatorKey.currentState?.canPop() ?? false)) {
+                    if (_wasLoggedIn && !AuthService.isDeletingAccount && (appNavigatorKey.currentState?.canPop() ?? false)) {
                       appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
                     }
                   });
@@ -223,7 +223,7 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
                 if (!appUser.active) {
                   Future.microtask(() {
                     _authService.logout(true);
-                    if (_wasLoggedIn && (appNavigatorKey.currentState?.canPop() ?? false)) {
+                    if (_wasLoggedIn && !AuthService.isDeletingAccount && (appNavigatorKey.currentState?.canPop() ?? false)) {
                       appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
                     }
                   });
@@ -238,7 +238,7 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
                 if (!appUser.isApproved) {
                   Future.microtask(() {
                     _authService.logout(true);
-                    if (_wasLoggedIn && (appNavigatorKey.currentState?.canPop() ?? false)) {
+                    if (_wasLoggedIn && !AuthService.isDeletingAccount && (appNavigatorKey.currentState?.canPop() ?? false)) {
                       appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
                     }
                   });
@@ -258,7 +258,7 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
                   // Farklı bir cihazda giriş yapılmış, bu cihazı oturumdan at (Kicked = true)
                   Future.microtask(() {
                     _authService.logout(true);
-                    if (_wasLoggedIn && (appNavigatorKey.currentState?.canPop() ?? false)) {
+                    if (_wasLoggedIn && !AuthService.isDeletingAccount && (appNavigatorKey.currentState?.canPop() ?? false)) {
                       appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
                     }
                   });
