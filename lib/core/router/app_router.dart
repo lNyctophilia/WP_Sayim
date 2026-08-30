@@ -309,6 +309,14 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
     final hasManagerOrAdmin = user.hasManagerPermission || user.hasAdminPermission;
 
     if (hasManagerOrAdmin) {
+      if (lastPanel == 'home') {
+        return HomePage(
+          storage: widget.storage,
+          lang: widget.lang,
+          themeService: widget.themeService,
+          currentUser: user,
+        );
+      }
       return ManagerShellPage(
         currentUser: user,
         storage: widget.storage,

@@ -91,13 +91,13 @@ service cloud.firestore {
       // Yönetici veya Admin yetkisi olanlar tüm sayımları okuyabilir. Davet edilenler de okuyabilir.
       allow read: if hasManagerPermission() || hasAdminPermission() || (request.auth != null && request.auth.uid in resource.data.invitedUserIds);
       allow create: if hasManagerPermission() && request.resource.data.createdBy == request.auth.uid;
-      allow update: if hasAdminPermission() || (hasManagerPermission() && resource.data.createdBy == request.auth.uid) ||
+      allow update: if hasAdminPermission() || hasManagerPermission() ||
         (
           request.auth != null && 
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['invitedUserIds']) &&
           request.resource.data.invitedUserIds == resource.data.invitedUserIds.removeAll([request.auth.uid])
         );
-      allow delete: if hasAdminPermission() || (hasManagerPermission() && resource.data.createdBy == request.auth.uid);
+      allow delete: if hasAdminPermission() || hasManagerPermission();
     }
 
     match /settings/{document} {

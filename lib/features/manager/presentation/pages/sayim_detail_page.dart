@@ -208,7 +208,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
               ),
             ),
             actions: [
-              if (widget.currentUser.isManager) ...[
+              if (widget.currentUser.hasManagerPermission || widget.currentUser.hasAdminPermission) ...[
                 if (currentSayim.effectiveStatus == SayimStatus.open)
                   IconButton(
                     icon: Icon(Icons.lock_outline_rounded, color: AppColors.warning, size: 20),
@@ -296,7 +296,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
               ),
             ],
           ),
-          floatingActionButton: widget.currentUser.isManager
+          floatingActionButton: (widget.currentUser.hasManagerPermission || widget.currentUser.hasAdminPermission)
             ? FloatingActionButton.extended(
                 backgroundColor: AppColors.accentLight,
                 foregroundColor: Colors.white,
@@ -333,7 +333,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
       );
     }
 
-    final isCreator = widget.currentUser.isManager;
+    final isCreator = widget.currentUser.hasManagerPermission || widget.currentUser.hasAdminPermission;
 
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
