@@ -45,6 +45,7 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
   final NotificationService _notificationService = NotificationService();
   String? _initializedUid;
   bool _isDialogShowing = false;
+  bool _wasLoggedIn = false;
   StreamSubscription<RemoteMessage>? _fcmSubscription;
 
   @override
@@ -152,11 +153,14 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
               builder: (context, isRegistering, child) {
                 // Kullanıcı giriş yapmamış veya doğrulama devam ediyor
                 if (!snapshot.hasData || snapshot.data == null || isValidationRunning || isRegistering) {
-                  Future.microtask(() {
-                    if (appNavigatorKey.currentState?.canPop() ?? false) {
-                      appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
-                    }
-                  });
+                  if (_wasLoggedIn) {
+                    _wasLoggedIn = false;
+                    Future.microtask(() {
+                      if (appNavigatorKey.currentState?.canPop() ?? false) {
+                        appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+                      }
+                    });
+                  }
                   return LoginPage(
                     lang: widget.lang,
                     onLoginSuccess: (_) {
@@ -193,7 +197,7 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
                   // Sadece o zaman çıkış yap.
                   Future.microtask(() {
                     _authService.logout(true);
-                    if (appNavigatorKey.currentState?.canPop() ?? false) {
+                    if (_wasLoggedIn && (appNavigatorKey.currentState?.canPop() ?? false)) {
                       appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
                     }
                   });
@@ -204,7 +208,7 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
                 if (appUser.isDeleted) {
                   Future.microtask(() {
                     _authService.logout(true);
-                    if (appNavigatorKey.currentState?.canPop() ?? false) {
+                    if (_wasLoggedIn && (appNavigatorKey.currentState?.canPop() ?? false)) {
                       appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
                     }
                   });
@@ -219,7 +223,7 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
                 if (!appUser.active) {
                   Future.microtask(() {
                     _authService.logout(true);
-                    if (appNavigatorKey.currentState?.canPop() ?? false) {
+                    if (_wasLoggedIn && (appNavigatorKey.currentState?.canPop() ?? false)) {
                       appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
                     }
                   });
@@ -234,7 +238,7 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
                 if (!appUser.isApproved) {
                   Future.microtask(() {
                     _authService.logout(true);
-                    if (appNavigatorKey.currentState?.canPop() ?? false) {
+                    if (_wasLoggedIn && (appNavigatorKey.currentState?.canPop() ?? false)) {
                       appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
                     }
                   });
@@ -254,7 +258,7 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
                   // Farklı bir cihazda giriş yapılmış, bu cihazı oturumdan at (Kicked = true)
                   Future.microtask(() {
                     _authService.logout(true);
-                    if (appNavigatorKey.currentState?.canPop() ?? false) {
+                    if (_wasLoggedIn && (appNavigatorKey.currentState?.canPop() ?? false)) {
                       appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
                     }
                   });
@@ -278,6 +282,10 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
                   _notificationService.initialize().then((_) {
                     _checkAndPromptNotificationPermission();
                   });
+                }
+
+                if (!_wasLoggedIn) {
+                  _wasLoggedIn = true;
                 }
 
                 // Rol bazlı yönlendirme

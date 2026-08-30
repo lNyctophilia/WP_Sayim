@@ -306,6 +306,14 @@ class AuthService {
     final username = data?['username'] ?? '';
     final newUsername = '${username}_deleted_${DateTime.now().millisecondsSinceEpoch}';
     
+    // Önce Firestore'u güncelle (Çünkü Auth hesabı silinirse Firestore güncellenemez - permission denied)
+    await _firestore.collection('users').doc(uid).update({
+      'active': false,
+      'isDeleted': true,
+      'username': newUsername,
+      'phone': newUsername, // Telefon numarasını da değiştir ki eşleşmesin
+    });
+
     // Eğer kullanıcının kendisi siliyorsa, Firebase Auth hesabını da tamamen sil
     // Böylece aynı telefon numarasıyla tekrar kayıt olabilir.
     if (_auth.currentUser?.uid == uid) {
@@ -313,13 +321,6 @@ class AuthService {
         await _auth.currentUser?.delete();
       } catch (_) {}
     }
-    
-    await _firestore.collection('users').doc(uid).update({
-      'active': false,
-      'isDeleted': true,
-      'username': newUsername,
-      'phone': newUsername, // Telefon numarasını da değiştir ki eşleşmesin
-    });
   }
 
   /// Admin/Owner yetkisiyle kullanıcı bilgilerini güncelle

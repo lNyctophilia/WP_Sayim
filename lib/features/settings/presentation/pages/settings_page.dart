@@ -441,6 +441,34 @@ class _SettingsPageState extends State<SettingsPage> {
               try {
                 // Soft delete user
                 await authService.deleteUser(uid);
+                
+                if (mounted) {
+                  await showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (ctx) => AlertDialog(
+                      backgroundColor: AppColors.card,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      title: Icon(Icons.check_circle_outline_rounded, color: AppColors.success, size: 48),
+                      content: Text(
+                        widget.lang.currentLang == 'tr' 
+                          ? 'Hesabınız başarıyla silindi.' 
+                          : 'Your account has been successfully deleted.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: AppColors.textPrimary),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: Text('OK', style: TextStyle(color: AppColors.accentLight)),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
                 // Log out
                 await authService.logout();
               } catch (e) {
