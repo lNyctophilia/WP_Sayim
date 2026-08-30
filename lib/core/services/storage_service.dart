@@ -104,4 +104,12 @@ class StorageService {
   Future<void> setLastManagerTab(int index) async {
     await _prefs.setInt('last_manager_tab', index);
   }
+
+  // City bazlı tab kaydı (Denizli / Muğla gibi)
+  int getLastManagerTabForCity(String city) =>
+      _prefs.getInt('last_manager_tab_${city.toLowerCase()}') ?? 0;
+
+  Future<void> setLastManagerTabForCity(String city, int index) async {
+    await _prefs.setInt('last_manager_tab_${city.toLowerCase()}', index);
+  }
 }

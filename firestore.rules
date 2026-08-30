@@ -54,6 +54,13 @@ service cloud.firestore {
         (
           request.auth.uid == userId && 
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fcmToken', 'sessionId', 'fcmError', 'sayimReminderEnabled', 'pushVersion', 'fcmTokenInvalidatedAt', 'fcmTokenInvalidReason'])
+        ) ||
+        (
+          // Kullanıcının kendi hesabını soft-delete yapmasına izin ver
+          request.auth.uid == userId &&
+          request.resource.data.isDeleted == true &&
+          request.resource.data.active == false &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isDeleted', 'active', 'username', 'phone'])
         );
     }
 

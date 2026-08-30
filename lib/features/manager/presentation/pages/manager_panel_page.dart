@@ -47,7 +47,8 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
   @override
   void initState() {
     super.initState();
-    final initialIndex = widget.storage.getLastManagerTab();
+    // Her şehir için ayrı tab indeksi
+    final initialIndex = widget.storage.getLastManagerTabForCity(widget.targetCity);
     _tabController = TabController(
       initialIndex: initialIndex < 3 ? initialIndex : 0,
       length: 3,
@@ -56,12 +57,13 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
     
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
-        widget.storage.setLastManagerTab(_tabController.index);
+        widget.storage.setLastManagerTabForCity(widget.targetCity, _tabController.index);
       }
     });
     
-    // Panel state'ini kaydet
-    widget.storage.setLastPanel('manager');
+    // Şehire göre doğru panel adını kaydet
+    final panelKey = widget.targetCity == 'Muğla' ? 'manager_mugla' : 'manager_denizli';
+    widget.storage.setLastPanel(panelKey);
   }
 
   @override
