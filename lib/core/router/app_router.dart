@@ -206,17 +206,17 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
 
                 // Silinmiş hesapsa (Soft delete)
                 if (appUser.isDeleted) {
-                  Future.microtask(() {
-                    _authService.logout(true);
-                    if (_wasLoggedIn && !AuthService.isDeletingAccount && (appNavigatorKey.currentState?.canPop() ?? false)) {
-                      appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
-                    }
-                  });
-                  return const Scaffold(
-                    body: Center(
-                      child: Text('Hesabınız silinmiş.'),
-                    ),
-                  );
+                  // isDeletingAccount=true ise settings page akışı yönetiyor,
+                  // burada logout yapma — popup gösterilmeden oturum kapanmasın.
+                  if (!AuthService.isDeletingAccount) {
+                    Future.microtask(() {
+                      _authService.logout(true);
+                      if (_wasLoggedIn && (appNavigatorKey.currentState?.canPop() ?? false)) {
+                        appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+                      }
+                    });
+                  }
+                  return _buildSplashScreen();
                 }
 
                 // Aktif olmayan hesapsa girişine izin verme

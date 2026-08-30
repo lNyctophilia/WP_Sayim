@@ -65,16 +65,15 @@ class _SettingsPageState extends State<SettingsPage> {
 
           // ─── Hesap ─────────────────────────────────────
           _buildLogoutTile(),
-
-          const SizedBox(height: 32),
+          
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
             child: Text(
-              (widget.lang.currentLang == 'tr' ? 'Tehlikeli İşlemler' : 'Danger Zone').toUpperCase(),
+              widget.lang.currentLang == 'tr' ? 'Hesap' : 'Account',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: AppColors.danger.withValues(alpha: 0.7),
+                color: AppColors.accentLight,
                 letterSpacing: 1.2,
               ),
             ),
@@ -455,7 +454,7 @@ class _SettingsPageState extends State<SettingsPage> {
             if (uid != null) {
               try {
                 AuthService.isDeletingAccount = true;
-                // Soft delete user
+                // Soft delete user (Firestore only)
                 await authService.deleteUser(uid);
                 
                 if (mounted) {
@@ -485,13 +484,17 @@ class _SettingsPageState extends State<SettingsPage> {
                   );
                 }
 
+                // Popup kapandıktan sonra: önce stack temizle, sonra logout
                 AuthService.isDeletingAccount = false;
-                // Log out
-                await authService.logout();
                 
-                if (mounted && (appNavigatorKey.currentState?.canPop() ?? false)) {
+                // Stack'taki tüm sayfaları kapat (Settings, vb.)
+                if (appNavigatorKey.currentState?.canPop() ?? false) {
                   appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
                 }
+                
+                // Son olarak logout — AppRouter authStateChanges üzerinden LoginPage'e geçer
+                await authService.logout();
+                
               } catch (e) {
                 AuthService.isDeletingAccount = false;
                 if (mounted) {
