@@ -171,7 +171,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = widget.lang.tr('user_create_error');
+          _errorMessage = '${widget.lang.tr('user_create_error')}: $e';
         });
       }
     } finally {

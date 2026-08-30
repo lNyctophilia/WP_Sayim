@@ -150,27 +150,6 @@ class AuthService {
     final String deviceId = StorageService().getDeviceId();
 
     try {
-      // 1. Cihaz kontrolü: Bu cihazdan bekleyen bir başvuru var mı?
-      // Index hatası almamak için sadece deviceId ile sorgulayıp kalanı yerelde filtreliyoruz.
-      final existingPending = await _firestore
-          .collection('users')
-          .where('deviceId', isEqualTo: deviceId)
-          .get();
-
-      final hasPending = existingPending.docs.any((doc) {
-        final data = doc.data();
-        final isAppr = data['isApproved'] as bool? ?? false;
-        final isDel = data['isDeleted'] as bool? ?? false;
-        return isAppr == false && isDel == false;
-      });
-
-      if (hasPending) {
-        throw FirebaseAuthException(
-          code: 'device-pending',
-          message: 'Bu cihazdan yapılmış onay bekleyen bir başvuru bulunmaktadır.',
-        );
-      }
-
       final credential = await _auth.createUserWithEmailAndPassword(
         email: authEmail,
         password: password,
