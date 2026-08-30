@@ -39,8 +39,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   String? _errorMessage;
   double? _selectedLat;
   double? _selectedLng;
-  bool _isPrivacyPolicyAccepted = false;
-  bool _isTermsAccepted = false;
+  bool _isPoliciesAccepted = false;
   String _selectedCity = 'Denizli';
 
   late AnimationController _animController;
@@ -95,7 +94,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
     
-    if (!_isPrivacyPolicyAccepted || !_isTermsAccepted) {
+    if (!_isPoliciesAccepted) {
       setState(() {
         _errorMessage = 'Kayıt olabilmek için Gizlilik Politikası ve Kullanım Koşullarını kabul etmelisiniz.';
       });
@@ -392,32 +391,18 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           ],
 
           const SizedBox(height: 24),
-          _buildCheckbox(
-            linkText: 'Gizlilik Politikası',
-            restText: '\'nı okudum ve kabul ediyorum.',
-            value: _isPrivacyPolicyAccepted,
-            onChanged: (val) => setState(() => _isPrivacyPolicyAccepted = val ?? false),
-            url: 'https://sites.google.com/view/wpsayim/',
-          ),
-          const SizedBox(height: 12),
-          _buildCheckbox(
-            linkText: 'Kullanım Koşulları',
-            restText: '\'nı okudum ve kabul ediyorum.',
-            value: _isTermsAccepted,
-            onChanged: (val) => setState(() => _isTermsAccepted = val ?? false),
-            url: 'https://sites.google.com/view/wpsayim/termsconditions',
+          _buildCombinedCheckbox(
+            value: _isPoliciesAccepted,
+            onChanged: (val) => setState(() => _isPoliciesAccepted = val ?? false),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCheckbox({
-    required String linkText,
-    required String restText,
+  Widget _buildCombinedCheckbox({
     required bool value,
     required ValueChanged<bool?> onChanged,
-    required String url,
   }) {
     return GestureDetector(
       onTap: () => onChanged(!value),
@@ -453,20 +438,35 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                   ),
                   children: [
                     TextSpan(
-                      text: linkText,
+                      text: 'Gizlilik Politikası',
                       style: TextStyle(
                         color: AppColors.accentLight,
                         fontWeight: FontWeight.w600,
                       ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () async {
-                          final uri = Uri.parse(url);
+                          final uri = Uri.parse('https://sites.google.com/view/wpsayim/');
                           if (await canLaunchUrl(uri)) {
                             await launchUrl(uri);
                           }
                         },
                     ),
-                    TextSpan(text: restText),
+                    TextSpan(text: '\'nı ve '),
+                    TextSpan(
+                      text: 'Kullanım Koşulları',
+                      style: TextStyle(
+                        color: AppColors.accentLight,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () async {
+                          final uri = Uri.parse('https://sites.google.com/view/wpsayim/termsconditions');
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri);
+                          }
+                        },
+                    ),
+                    TextSpan(text: '\'nı okudum ve kabul ediyorum.'),
                   ],
                 ),
               ),
