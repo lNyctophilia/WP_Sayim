@@ -362,19 +362,6 @@ class _SettingsPageState extends State<SettingsPage> {
           if (confirmed == true && mounted) {
             // First log out
             await AuthService().logout();
-            
-            if (mounted) {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(
-                  builder: (_) => AppRouter(
-                    storage: widget.storage,
-                    lang: widget.lang,
-                    themeService: widget.themeService,
-                  ),
-                ),
-                (route) => false,
-              );
-            }
           }
         },
         shape: RoundedRectangleBorder(
@@ -456,19 +443,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 await authService.deleteUser(uid);
                 // Log out
                 await authService.logout();
-                
-                if (mounted) {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (_) => AppRouter(
-                        storage: widget.storage,
-                        lang: widget.lang,
-                        themeService: widget.themeService,
-                      ),
-                    ),
-                    (route) => false,
-                  );
-                }
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(

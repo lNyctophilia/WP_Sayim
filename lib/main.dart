@@ -11,6 +11,8 @@ import 'core/theme/theme_service.dart';
 import 'core/constants/app_colors.dart';
 import 'core/router/app_router.dart';
 
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
+
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -91,6 +93,7 @@ class _DayTrackAppState extends State<DayTrackApp> {
         systemNavigationBarContrastEnforced: false,
       ),
       child: MaterialApp(
+        navigatorKey: appNavigatorKey,
         title: 'WP Sayım',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,

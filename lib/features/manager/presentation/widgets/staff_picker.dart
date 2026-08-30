@@ -41,6 +41,7 @@ class StaffPicker extends StatefulWidget {
   final int alreadySelectedPersonel;
   final int alreadySelectedYonetici;
   final List<String> busyUserIds;
+  final String? targetCity;
 
   const StaffPicker({
     super.key,
@@ -57,6 +58,7 @@ class StaffPicker extends StatefulWidget {
     this.alreadySelectedPersonel = 0,
     this.alreadySelectedYonetici = 0,
     this.busyUserIds = const [],
+    this.targetCity,
   });
 
   @override
@@ -138,7 +140,14 @@ class _StaffPickerState extends State<StaffPicker> {
 
   double _calculateWage(DavetRole role, double multiplier, [SehirTipi? overrideSehirTipi, AppUser? user]) {
     double baseWage = 0.0;
-    final sehirTipi = overrideSehirTipi ?? widget.sayimSehirTipi;
+    SehirTipi sehirTipi = overrideSehirTipi ?? widget.sayimSehirTipi;
+    
+    if (user != null && widget.targetCity != null && widget.targetCity!.isNotEmpty && sehirTipi == SehirTipi.ici) {
+      if (user.city.toLowerCase() != widget.targetCity!.toLowerCase()) {
+        sehirTipi = SehirTipi.disi;
+      }
+    }
+
     if (role == DavetRole.staff) {
       baseWage = sehirTipi == SehirTipi.ici
           ? _settings.staffSehirIciWage

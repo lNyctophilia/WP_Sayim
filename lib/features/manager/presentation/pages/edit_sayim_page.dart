@@ -659,6 +659,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
                       targetPersonel: int.tryParse(_maxKisiController.text) ?? 0,
                       targetYonetici: int.tryParse(_maxYoneticiController.text) ?? 0,
                       busyUserIds: _busyUserIds,
+                      targetCity: widget.sayim.city,
                       onSelectionChanged: (selected) {
                         setState(() {
                           _selectedUsers = selected;

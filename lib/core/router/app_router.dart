@@ -16,6 +16,7 @@ import '../utils/pwa_check.dart';
 import '../utils/bottom_toast.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
+import '../../main.dart';
 
 /// Ana yönlendirici widget — Auth durumuna göre Login veya Ana Ekranı gösterir
 ///
@@ -151,6 +152,11 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
               builder: (context, isRegistering, child) {
                 // Kullanıcı giriş yapmamış veya doğrulama devam ediyor
                 if (!snapshot.hasData || snapshot.data == null || isValidationRunning || isRegistering) {
+                  Future.microtask(() {
+                    if (appNavigatorKey.currentState?.canPop() ?? false) {
+                      appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+                    }
+                  });
                   return LoginPage(
                     lang: widget.lang,
                     onLoginSuccess: (_) {
@@ -185,14 +191,39 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
                 if (appUser == null) {
                   // Firestore'da kullanıcı verisi gerçekten yok (silinmiş)
                   // Sadece o zaman çıkış yap.
-                  Future.microtask(() => _authService.logout(true));
+                  Future.microtask(() {
+                    _authService.logout(true);
+                    if (appNavigatorKey.currentState?.canPop() ?? false) {
+                      appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+                    }
+                  });
                   return _buildSplashScreen();
+                }
+
+                // Silinmiş hesapsa (Soft delete)
+                if (appUser.isDeleted) {
+                  Future.microtask(() {
+                    _authService.logout(true);
+                    if (appNavigatorKey.currentState?.canPop() ?? false) {
+                      appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+                    }
+                  });
+                  return const Scaffold(
+                    body: Center(
+                      child: Text('Hesabınız silinmiş.'),
+                    ),
+                  );
                 }
 
                 // Aktif olmayan hesapsa girişine izin verme
                 if (!appUser.active) {
-                  Future.microtask(() => _authService.logout(true));
-                  return Scaffold(
+                  Future.microtask(() {
+                    _authService.logout(true);
+                    if (appNavigatorKey.currentState?.canPop() ?? false) {
+                      appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+                    }
+                  });
+                  return const Scaffold(
                     body: Center(
                       child: Text('Hesabınız askıya alınmış.'),
                     ),
@@ -201,7 +232,12 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
 
                 // Onaylanmamış hesapsa girişine izin verme
                 if (!appUser.isApproved) {
-                  Future.microtask(() => _authService.logout(true));
+                  Future.microtask(() {
+                    _authService.logout(true);
+                    if (appNavigatorKey.currentState?.canPop() ?? false) {
+                      appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+                    }
+                  });
                   return Scaffold(
                     body: Center(
                       child: Text('Hesabınız henüz onaylanmamış. Lütfen yöneticinin onaylamasını bekleyin.'),
@@ -216,7 +252,12 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
                 
                 if (!isCurrentSession && !isRecentlyLoggedIn && !AuthService.isLoggingIn && appUser.sessionId != null && localSessionId != null && appUser.sessionId != localSessionId) {
                   // Farklı bir cihazda giriş yapılmış, bu cihazı oturumdan at (Kicked = true)
-                  Future.microtask(() => _authService.logout(true));
+                  Future.microtask(() {
+                    _authService.logout(true);
+                    if (appNavigatorKey.currentState?.canPop() ?? false) {
+                      appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+                    }
+                  });
                   return Scaffold(
                     body: Center(
                       child: Padding(

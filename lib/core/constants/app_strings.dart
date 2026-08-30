@@ -161,6 +161,10 @@ class AppStrings {
       'tr': 'Bu hesap devre dışı bırakılmış',
       'en': 'This account has been disabled'
     },
+    'login_account_deleted': {
+      'tr': 'Bu hesap silinmiş',
+      'en': 'This account has been deleted'
+    },
     'login_too_many_attempts': {
       'tr': 'Çok fazla deneme. Lütfen biraz bekleyin.',
       'en': 'Too many attempts. Please wait a moment.'

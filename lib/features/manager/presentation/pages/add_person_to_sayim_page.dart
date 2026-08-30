@@ -205,6 +205,7 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
                     alreadySelectedPersonel: _alreadySelectedPersonel,
                     alreadySelectedYonetici: _alreadySelectedYonetici,
                     busyUserIds: _busyUserIds,
+                    targetCity: widget.sayim.city,
                     onSelectionChanged: (configs) {
                       setState(() {
                         _selectedConfigs = configs;

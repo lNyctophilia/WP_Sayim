@@ -53,7 +53,15 @@ class AuthService {
       );
 
       final appUser = await getUserData(credential.user!.uid);
-      if (appUser == null || appUser.isDeleted || !appUser.active) {
+      if (appUser == null) {
+        await logout();
+        throw FirebaseAuthException(code: 'user-not-found');
+      }
+      if (appUser.isDeleted) {
+        await logout();
+        throw FirebaseAuthException(code: 'user-deleted');
+      }
+      if (!appUser.active) {
         await logout();
         throw FirebaseAuthException(code: 'user-disabled');
       }
@@ -296,11 +304,21 @@ class AuthService {
     
     final data = doc.data();
     final username = data?['username'] ?? '';
+    final newUsername = '${username}_deleted_${DateTime.now().millisecondsSinceEpoch}';
+    
+    // Eğer kullanıcının kendisi siliyorsa, Firebase Auth hesabını da tamamen sil
+    // Böylece aynı telefon numarasıyla tekrar kayıt olabilir.
+    if (_auth.currentUser?.uid == uid) {
+      try {
+        await _auth.currentUser?.delete();
+      } catch (_) {}
+    }
     
     await _firestore.collection('users').doc(uid).update({
       'active': false,
       'isDeleted': true,
-      'username': '${username}_deleted_${DateTime.now().millisecondsSinceEpoch}',
+      'username': newUsername,
+      'phone': newUsername, // Telefon numarasını da değiştir ki eşleşmesin
     });
   }
 

@@ -604,6 +604,7 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
                       targetPersonel: int.tryParse(_maxKisiController.text) ?? 0,
                       targetYonetici: int.tryParse(_maxYoneticiController.text) ?? 0,
                       busyUserIds: _busyUserIds,
+                      targetCity: widget.targetCity,
                       onSelectionChanged: (selected) {
                         setState(() {
                           _selectedUsers = selected;

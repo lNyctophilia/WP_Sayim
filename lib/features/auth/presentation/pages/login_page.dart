@@ -175,6 +175,9 @@ class _LoginPageState extends State<LoginPage>
           case 'wrong-password':
             message = widget.lang.tr('login_invalid_credentials');
             break;
+          case 'user-deleted':
+            message = widget.lang.tr('login_account_deleted');
+            break;
           case 'user-disabled':
             message = widget.lang.tr('login_account_disabled');
             break;
