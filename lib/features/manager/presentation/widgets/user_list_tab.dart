@@ -45,6 +45,14 @@ class _UserListTabState extends State<UserListTab>
   }
 
   @override
+  void didUpdateWidget(UserListTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.targetCity != widget.targetCity || oldWidget.targetRole != widget.targetRole) {
+      _loadUsers();
+    }
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
