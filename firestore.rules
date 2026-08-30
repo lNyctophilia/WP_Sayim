@@ -6,8 +6,17 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
+    // Rol kontrolü
     function hasRole(role) {
       return request.auth != null && role in getUserData().roles;
+    }
+
+    // Yetki kontrolü (yeni permissions sistemi)
+    function hasPermission(perm) {
+      let data = getUserData();
+      return request.auth != null && 
+             data.keys().hasAll(['permissions']) && 
+             perm in data.permissions;
     }
     
     function isOwner() {
@@ -18,22 +27,33 @@ service cloud.firestore {
       return hasRole('manager') || hasRole('managerA1') || hasRole('managerA2') || hasRole('managerA3');
     }
 
+    // Yetki bazlı kontroller
+    function hasManagerPermission() {
+      return isOwner() || isManager() || hasPermission('manager');
+    }
+
+    function hasAdminPermission() {
+      return isOwner() || hasPermission('admin');
+    }
+
     function hasProtectedRole(rolesList) {
       return 'owner' in rolesList || 'manager' in rolesList || 'managerA1' in rolesList || 'managerA2' in rolesList || 'managerA3' in rolesList;
     }
 
     match /users/{userId} {
-      // Staff can read their own profile, owner and manager can read all
-      allow read: if isOwner() || isManager() || request.auth.uid == userId;
-      // SADECE Owner herkesi silebilir. Manager'lar ise SADECE personeli (içinde owner/manager rolü OLMAYANLARI) silebilir.
-      allow delete: if isOwner() || (
-        isManager() && 
+      // Personel kendi profilini, yönetici/admin yetkisi olanlar herkesi okuyabilir
+      allow read: if hasAdminPermission() || hasManagerPermission() || request.auth.uid == userId;
+      
+      // SADECE admin yetkisi olanlar herkesi silebilir. Yönetici yetkisi olanlar SADECE personeli silebilir.
+      allow delete: if hasAdminPermission() || (
+        hasManagerPermission() && 
         !hasProtectedRole(resource.data.roles)
       );
       
-      // Kayıt olma (create) kuralı: Manager'lar sadece 'staff' oluşturabilir. 
-      allow create: if isOwner() || (
-        isManager() && 
+      // Kayıt olma (create) kuralı: Admin yetkisi olanlar herkesi oluşturabilir.
+      // Yönetici yetkisi olanlar sadece 'staff' oluşturabilir.
+      allow create: if hasAdminPermission() || (
+        hasManagerPermission() && 
         !hasProtectedRole(request.resource.data.roles)
       ) || (
         request.auth != null && 
@@ -43,13 +63,16 @@ service cloud.firestore {
         request.resource.data.roles[0] == 'staff'
       );
       
-      // Owner herkesi güncelleyebilir.
-      // Manager'lar ise diğer Manager/Owner'ları güncelleyemez ve kimseye Manager/Owner rolü veremez.
-      allow update: if isOwner() || 
+      // Admin yetkisi olanlar herkesi güncelleyebilir (permissions dahil).
+      // Yönetici yetkisi olanlar ise diğer Manager/Owner'ları güncelleyemez ve kimseye korumalı rol veremez.
+      // Normal kullanıcılar sadece kendi izin verilen alanlarını güncelleyebilir.
+      allow update: if hasAdminPermission() || 
         (
-          isManager() && 
+          hasManagerPermission() && 
           !hasProtectedRole(resource.data.roles) &&
-          !hasProtectedRole(request.resource.data.roles)
+          !hasProtectedRole(request.resource.data.roles) &&
+          // Yönetici yetkisi olanlar permissions alanını değiştiremez
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['permissions'])
         ) || 
         (
           request.auth.uid == userId && 
@@ -65,37 +88,36 @@ service cloud.firestore {
     }
 
     match /sayimlar/{sayimId} {
-      // Owners and Managers can read all sayims. Staff can read if invited.
-      // Update/Delete is restricted to Owner or Creator.
-      allow read: if isOwner() || isManager() || (request.auth != null && request.auth.uid in resource.data.invitedUserIds);
-      allow create: if isOwner() || (isManager() && request.resource.data.createdBy == request.auth.uid);
-      allow update: if isOwner() || (isManager() && resource.data.createdBy == request.auth.uid) ||
+      // Yönetici veya Admin yetkisi olanlar tüm sayımları okuyabilir. Davet edilenler de okuyabilir.
+      allow read: if hasManagerPermission() || hasAdminPermission() || (request.auth != null && request.auth.uid in resource.data.invitedUserIds);
+      allow create: if hasManagerPermission() && request.resource.data.createdBy == request.auth.uid;
+      allow update: if hasAdminPermission() || (hasManagerPermission() && resource.data.createdBy == request.auth.uid) ||
         (
           request.auth != null && 
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['invitedUserIds']) &&
           request.resource.data.invitedUserIds == resource.data.invitedUserIds.removeAll([request.auth.uid])
         );
-      allow delete: if isOwner() || (isManager() && resource.data.createdBy == request.auth.uid);
+      allow delete: if hasAdminPermission() || (hasManagerPermission() && resource.data.createdBy == request.auth.uid);
     }
 
     match /settings/{document} {
       allow read: if request.auth != null;
-      allow write: if isOwner();
+      // Sadece admin yetkisi olanlar ayarları değiştirebilir
+      allow write: if hasAdminPermission();
     }
 
     match /davetler/{davetId} {
-      // Staff can read their own invites
-      // Owner can read all. Managers can read all (to see invites of their sayims)
-      allow read: if isOwner() || isManager() || (request.auth != null && resource.data.userId == request.auth.uid);
-      // Staff can update their own invite status
-      allow update: if isOwner() || isManager() || (request.auth != null && resource.data.userId == request.auth.uid);
-      // Only managers/owners can create/delete
-      allow create, delete: if isOwner() || isManager();
+      // Personel kendi davetlerini okuyabilir. Yönetici/Admin hepsini görebilir.
+      allow read: if hasManagerPermission() || hasAdminPermission() || (request.auth != null && resource.data.userId == request.auth.uid);
+      // Personel kendi davet durumunu güncelleyebilir
+      allow update: if hasManagerPermission() || hasAdminPermission() || (request.auth != null && resource.data.userId == request.auth.uid);
+      // Davet oluşturma/silme yönetici yetkisi gerektirir
+      allow create, delete: if hasManagerPermission() || hasAdminPermission();
     }
 
     match /personel_takvimi/{userId}/gunler/{tarih} {
-      // Owner/Manager can read/write. Staff can read/write their own.
-      allow read, write: if isOwner() || isManager() || request.auth.uid == userId;
+      // Yönetici/Admin tüm takvimleri okuyup yazabilir. Personel kendi takvimini.
+      allow read, write: if hasManagerPermission() || hasAdminPermission() || request.auth.uid == userId;
     }
 
     match /fcm_tokens/{userId} {

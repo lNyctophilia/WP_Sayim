@@ -25,7 +25,7 @@ class CustomTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasDrawer = currentUser != null && (currentUser!.isOwner || currentUser!.isManager);
+    final hasDrawer = currentUser != null && (currentUser!.hasManagerPermission || currentUser!.hasAdminPermission);
     final davetService = DavetService();
     
     return Container(

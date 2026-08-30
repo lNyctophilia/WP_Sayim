@@ -112,7 +112,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
           isEmbedded: true,
         );
       case 'edit_profiles':
-        if (widget.currentUser.isOwner) {
+        if (widget.currentUser.hasAdminPermission) {
           return EditProfilesPage(
             currentUser: widget.currentUser,
             storage: widget.storage,
@@ -123,7 +123,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
         }
         break;
       case 'create_past':
-        if (widget.currentUser.isOwner) {
+        if (widget.currentUser.hasAdminPermission) {
           return CreatePastSayimPage(
             currentUser: widget.currentUser,
             storage: widget.storage,
@@ -134,7 +134,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
         }
         break;
       case 'global_settings':
-        if (widget.currentUser.isOwner) {
+        if (widget.currentUser.hasAdminPermission) {
           return GlobalSettingsPage(
             currentUser: widget.currentUser,
             storage: widget.storage,

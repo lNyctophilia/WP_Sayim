@@ -51,6 +51,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
   final _addressController = TextEditingController();
   final _emailController = TextEditingController();
   UserRole _selectedRole = UserRole.staff;
+  List<UserPermission> _selectedPermissions = [UserPermission.staff];
   String _selectedCity = 'Denizli';
   
   double? _selectedLat;
@@ -117,6 +118,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
         }
         _selectedRole = role;
         _selectedCity = user.city;
+        _selectedPermissions = List<UserPermission>.from(user.permissions);
         _selectedLat = user.latitude;
         _selectedLng = user.longitude;
         _errorMessage = null;
@@ -242,6 +244,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
         username: username,
         password: _passwordController.text.isNotEmpty ? _passwordController.text : null,
         roles: [_selectedRole],
+        permissions: _selectedPermissions,
         phone: _phoneController.text.trim().isNotEmpty ? _phoneController.text.trim() : null,
         address: _addressController.text.trim().isNotEmpty ? _addressController.text.trim() : null,
         latitude: _selectedLat,
@@ -496,6 +499,43 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                           ),
                           const SizedBox(height: 16),
 
+                          // --- Yetkiler (Permissions) ---
+                          _buildLabel(AppStrings.get('permissions', isTr ? 'tr' : 'en')),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: AppColors.divider),
+                            ),
+                            child: Column(
+                              children: [
+                                _buildPermissionCheckbox(
+                                  label: AppStrings.get('perm_staff', isTr ? 'tr' : 'en'),
+                                  description: AppStrings.get('perm_staff_desc', isTr ? 'tr' : 'en'),
+                                  icon: Icons.calendar_month_rounded,
+                                  permission: UserPermission.staff,
+                                ),
+                                Divider(height: 1, color: AppColors.divider),
+                                _buildPermissionCheckbox(
+                                  label: AppStrings.get('perm_manager', isTr ? 'tr' : 'en'),
+                                  description: AppStrings.get('perm_manager_desc', isTr ? 'tr' : 'en'),
+                                  icon: Icons.admin_panel_settings_outlined,
+                                  permission: UserPermission.manager,
+                                ),
+                                Divider(height: 1, color: AppColors.divider),
+                                _buildPermissionCheckbox(
+                                  label: AppStrings.get('perm_admin', isTr ? 'tr' : 'en'),
+                                  description: AppStrings.get('perm_admin_desc', isTr ? 'tr' : 'en'),
+                                  icon: Icons.shield_outlined,
+                                  permission: UserPermission.admin,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
                           _buildLabel(AppStrings.get('city', isTr ? 'tr' : 'en') ?? 'Şehir'),
                           const SizedBox(height: 6),
                           Container(
@@ -586,6 +626,88 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
           themeService: widget.themeService,
         ),
         body: SafeArea(child: content),
+      ),
+    );
+  }
+
+  Widget _buildPermissionCheckbox({
+    required String label,
+    required String description,
+    required IconData icon,
+    required UserPermission permission,
+  }) {
+    final isChecked = _selectedPermissions.contains(permission);
+    return InkWell(
+      onTap: () {
+        setState(() {
+          if (isChecked) {
+            _selectedPermissions.remove(permission);
+          } else {
+            _selectedPermissions.add(permission);
+          }
+        });
+      },
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: isChecked
+                    ? AppColors.accentLight.withOpacity(0.15)
+                    : AppColors.card,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                icon,
+                color: isChecked ? AppColors.accentLight : AppColors.textSecondary,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    description,
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Checkbox(
+              value: isChecked,
+              onChanged: (val) {
+                setState(() {
+                  if (val == true) {
+                    if (!_selectedPermissions.contains(permission)) {
+                      _selectedPermissions.add(permission);
+                    }
+                  } else {
+                    _selectedPermissions.remove(permission);
+                  }
+                });
+              },
+              activeColor: AppColors.accentLight,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+            ),
+          ],
+        ),
       ),
     );
   }

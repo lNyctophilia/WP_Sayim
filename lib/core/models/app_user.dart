@@ -22,6 +22,12 @@ extension UserRoleExtension on UserRole {
   }
 }
 
+/// Kullanıcı yetkileri (rolden bağımsız erişim kontrolü)
+/// - staff   : Sayıma eklenebilir, iş takvimi görünür, davet alabilir
+/// - manager : Yönetici paneline erişim (sayım oluşturma, personel yönetimi vb.)
+/// - admin   : Sistem araçlarına erişim (profil düzenleme, geçmiş sayım, ücret ayarları)
+enum UserPermission { staff, manager, admin }
+
 /// Firestore `users/{userId}` koleksiyonuna karşılık gelen model
 class AppUser {
   final String id;
@@ -29,6 +35,7 @@ class AppUser {
   final String fullName;
   final String? password;
   final List<UserRole> roles;
+  final List<UserPermission> permissions;
   final double? defaultWage;
   final String? createdBy;
   final bool active;
@@ -50,6 +57,7 @@ class AppUser {
     required this.fullName,
     this.password,
     required this.roles,
+    this.permissions = const [UserPermission.staff],
     this.defaultWage,
     this.createdBy,
     this.active = true,
@@ -66,19 +74,39 @@ class AppUser {
     this.city = 'Denizli',
   });
 
-  /// En yüksek yetki seviyesi
+  /// Rol bazlı kontroller (maaş hesaplaması için)
   bool get isOwner => roles.contains(UserRole.owner);
-  bool get isManager => 
-      roles.contains(UserRole.manager) || 
+  bool get isManager =>
+      roles.contains(UserRole.manager) ||
       roles.contains(UserRole.managerA1) ||
       roles.contains(UserRole.managerA2) ||
       roles.contains(UserRole.managerA3) ||
       isOwner;
   bool get isStaff => roles.contains(UserRole.staff);
 
+  /// Yetki kontrolleri (erişim kontrolü için kullanılır — rolden bağımsız)
+  bool get hasStaffPermission => permissions.contains(UserPermission.staff);
+  bool get hasManagerPermission => permissions.contains(UserPermission.manager);
+  bool get hasAdminPermission => permissions.contains(UserPermission.admin);
+
   /// Firestore'dan oku
   factory AppUser.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+
+    // permissions alanı yoksa (eski kayıtlar) staff yetkisi ver
+    final rawPerms = data['permissions'] as List<dynamic>?;
+    final List<UserPermission> parsedPermissions;
+    if (rawPerms != null) {
+      parsedPermissions = rawPerms
+          .map((p) => UserPermission.values.firstWhere(
+                (e) => e.name == p,
+                orElse: () => UserPermission.staff,
+              ))
+          .toList();
+    } else {
+      parsedPermissions = [UserPermission.staff];
+    }
+
     return AppUser(
       id: doc.id,
       username: data['username'] as String? ?? '',
@@ -91,6 +119,7 @@ class AppUser {
                   ))
               .toList() ??
           [UserRole.staff],
+      permissions: parsedPermissions,
       defaultWage: (data['defaultWage'] as num?)?.toDouble(),
       createdBy: data['createdBy'] as String?,
       active: data['active'] as bool? ?? true,
@@ -114,6 +143,7 @@ class AppUser {
       'username': username,
       'fullName': fullName,
       'roles': roles.map((r) => r.name).toList(),
+      'permissions': permissions.map((p) => p.name).toList(),
       'defaultWage': defaultWage,
       'createdBy': createdBy,
       'active': active,
@@ -137,6 +167,7 @@ class AppUser {
     String? fullName,
     String? password,
     List<UserRole>? roles,
+    List<UserPermission>? permissions,
     double? defaultWage,
     String? createdBy,
     bool? active,
@@ -158,6 +189,7 @@ class AppUser {
       fullName: fullName ?? this.fullName,
       password: password ?? this.password,
       roles: roles ?? this.roles,
+      permissions: permissions ?? this.permissions,
       defaultWage: defaultWage ?? this.defaultWage,
       createdBy: createdBy ?? this.createdBy,
       active: active ?? this.active,

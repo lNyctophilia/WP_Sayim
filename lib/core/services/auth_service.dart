@@ -325,6 +325,7 @@ class AuthService {
     String? username,
     String? password,
     List<UserRole>? roles,
+    List<UserPermission>? permissions,
     String? phone,
     String? address,
     bool? isApproved,
@@ -338,6 +339,7 @@ class AuthService {
     if (username != null && username.isNotEmpty) updates['username'] = username;
     if (password != null && password.isNotEmpty) updates['password'] = password;
     if (roles != null && roles.isNotEmpty) updates['roles'] = roles.map((r) => r.name).toList();
+    if (permissions != null) updates['permissions'] = permissions.map((p) => p.name).toList();
     if (phone != null) updates['phone'] = phone;
     if (address != null) updates['address'] = address;
     if (isApproved != null) updates['isApproved'] = isApproved;

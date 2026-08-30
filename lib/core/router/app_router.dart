@@ -300,12 +300,15 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
     );
   }
 
-  /// Kullanıcının rolüne göre uygun ana ekranı döndür
+  /// Kullanıcının yetkisine göre uygun ana ekranı döndür
   Widget _buildHomeForRole(AppUser user) {
     final lastPanel = widget.storage.getLastPanel();
 
-    // Adminler (Owner) doğrudan Yönetici Panellerinde başlar, iş takvimleri yoktur.
-    if (user.isOwner) {
+    // Yönetici veya Admin yetkisi olan kullanıcılar ManagerShellPage'e yönlendirilir.
+    // Sadece personel yetkisi olan ya da hiçbir özel yetkisi olmayanlar HomePage'e gider.
+    final hasManagerOrAdmin = user.hasManagerPermission || user.hasAdminPermission;
+
+    if (hasManagerOrAdmin) {
       return ManagerShellPage(
         currentUser: user,
         storage: widget.storage,
@@ -314,19 +317,6 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
         initialPanel: lastPanel.isEmpty ? 'manager' : lastPanel,
         onLogout: () {},
       );
-    }
-
-    if (user.isManager) {
-      if (lastPanel != 'home') {
-        return ManagerShellPage(
-          currentUser: user,
-          storage: widget.storage,
-          lang: widget.lang,
-          themeService: widget.themeService,
-          initialPanel: lastPanel.isEmpty ? 'manager' : lastPanel,
-          onLogout: () {},
-        );
-      }
     }
 
     return HomePage(

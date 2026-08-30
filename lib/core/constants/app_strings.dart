@@ -205,6 +205,15 @@ class AppStrings {
     'add_past_count': {'tr': 'Geçmiş Sayım Ekle', 'en': 'Add Past Count'},
     'global_wage_settings': {'tr': 'Genel Ücret Ayarları', 'en': 'Global Wage Settings'},
 
+    // Yetki sistemi
+    'permissions': {'tr': 'Yetkiler', 'en': 'Permissions'},
+    'perm_staff': {'tr': 'Personel', 'en': 'Staff'},
+    'perm_manager': {'tr': 'Yönetici', 'en': 'Manager'},
+    'perm_admin': {'tr': 'Admin', 'en': 'Admin'},
+    'perm_staff_desc': {'tr': 'Sayıma eklenebilir, iş takvimi var', 'en': 'Can be added to counts, has work calendar'},
+    'perm_manager_desc': {'tr': 'Yönetici paneline erişim', 'en': 'Access to manager panel'},
+    'perm_admin_desc': {'tr': 'Sistem araçlarına erişim (profil düzenleme vb.)', 'en': 'Access to system tools (profile editing, etc.)'},
+
     // User Management
     'register': {'tr': 'Kayıt Ol', 'en': 'Register'},
     'register_subtitle': {'tr': 'Yeni bir hesap oluşturun', 'en': 'Create a new account'},

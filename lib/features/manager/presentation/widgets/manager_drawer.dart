@@ -76,7 +76,7 @@ class ManagerDrawer extends StatelessWidget {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                if (!currentUser.isOwner) ...[
+                if (currentUser.hasStaffPermission && (currentUser.hasManagerPermission || currentUser.hasAdminPermission)) ...[
                   _buildSectionTitle(lang.tr('staff_panel')),
                   
                   ListTile(
@@ -102,114 +102,116 @@ class ManagerDrawer extends StatelessWidget {
                   
                   Divider(color: AppColors.divider),
                 ],
-                _buildSectionTitle(lang.tr('manager_tools')),
-                
-                ListTile(
-                  leading: Icon(Icons.dashboard_rounded, color: AppColors.textSecondary),
-                  title: Text('${lang.tr('manager_panel')} (Denizli)', style: TextStyle(color: AppColors.textPrimary)),
-                  subtitle: Text(lang.tr('manager_panel_desc'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
-                  onTap: () {
-                    Navigator.pop(context); // Close drawer
-                    if (onPanelSelected != null) {
-                      onPanelSelected!('manager_denizli');
-                    } else {
-                      storage.setLastPanel('manager_denizli');
-                      Navigator.pushReplacement(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder: (_, __, ___) => ManagerPanelPage(
-                            currentUser: currentUser,
-                            storage: storage,
-                            lang: lang,
-                            themeService: themeService,
-                            targetCity: 'Denizli',
-                            onLogout: () {},
+                if (currentUser.hasManagerPermission) ...[
+                  _buildSectionTitle(lang.tr('manager_tools')),
+                  
+                  ListTile(
+                    leading: Icon(Icons.dashboard_rounded, color: AppColors.textSecondary),
+                    title: Text('${lang.tr('manager_panel')} (Denizli)', style: TextStyle(color: AppColors.textPrimary)),
+                    subtitle: Text(lang.tr('manager_panel_desc'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      if (onPanelSelected != null) {
+                        onPanelSelected!('manager_denizli');
+                      } else {
+                        storage.setLastPanel('manager_denizli');
+                        Navigator.pushReplacement(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (_, __, ___) => ManagerPanelPage(
+                              currentUser: currentUser,
+                              storage: storage,
+                              lang: lang,
+                              themeService: themeService,
+                              targetCity: 'Denizli',
+                              onLogout: () {},
+                            ),
+                            transitionDuration: Duration.zero,
                           ),
-                          transitionDuration: Duration.zero,
-                        ),
-                      );
-                    }
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.dashboard_rounded, color: AppColors.textSecondary),
-                  title: Text('${lang.tr('manager_panel')} (Muğla)', style: TextStyle(color: AppColors.textPrimary)),
-                  subtitle: Text(lang.tr('manager_panel_desc'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
-                  onTap: () {
-                    Navigator.pop(context); // Close drawer
-                    if (onPanelSelected != null) {
-                      onPanelSelected!('manager_mugla');
-                    } else {
-                      storage.setLastPanel('manager_mugla');
-                      Navigator.pushReplacement(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder: (_, __, ___) => ManagerPanelPage(
-                            currentUser: currentUser,
-                            storage: storage,
-                            lang: lang,
-                            themeService: themeService,
-                            targetCity: 'Muğla',
-                            onLogout: () {},
+                        );
+                      }
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.dashboard_rounded, color: AppColors.textSecondary),
+                    title: Text('${lang.tr('manager_panel')} (Muğla)', style: TextStyle(color: AppColors.textPrimary)),
+                    subtitle: Text(lang.tr('manager_panel_desc'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      if (onPanelSelected != null) {
+                        onPanelSelected!('manager_mugla');
+                      } else {
+                        storage.setLastPanel('manager_mugla');
+                        Navigator.pushReplacement(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (_, __, ___) => ManagerPanelPage(
+                              currentUser: currentUser,
+                              storage: storage,
+                              lang: lang,
+                              themeService: themeService,
+                              targetCity: 'Muğla',
+                              onLogout: () {},
+                            ),
+                            transitionDuration: Duration.zero,
                           ),
-                          transitionDuration: Duration.zero,
-                        ),
-                      );
-                    }
-                  },
-                ),
-                
-                ListTile(
-                  leading: Icon(Icons.table_view_rounded, color: AppColors.textSecondary),
-                  title: Text(lang.tr('export_excel'), style: TextStyle(color: AppColors.textPrimary)),
-                  subtitle: Text(lang.tr('export_reports'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
-                  onTap: () {
-                    Navigator.pop(context); // Close drawer
-                    if (onPanelSelected != null) {
-                      onPanelSelected!('export');
-                    } else {
-                      Navigator.pushReplacement(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder: (_, __, ___) => ExportSayimPage(
-                            lang: lang,
-                            currentUser: currentUser,
-                            storage: storage,
-                            themeService: themeService,
+                        );
+                      }
+                    },
+                  ),
+                  
+                  ListTile(
+                    leading: Icon(Icons.table_view_rounded, color: AppColors.textSecondary),
+                    title: Text(lang.tr('export_excel'), style: TextStyle(color: AppColors.textPrimary)),
+                    subtitle: Text(lang.tr('export_reports'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      if (onPanelSelected != null) {
+                        onPanelSelected!('export');
+                      } else {
+                        Navigator.pushReplacement(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (_, __, ___) => ExportSayimPage(
+                              lang: lang,
+                              currentUser: currentUser,
+                              storage: storage,
+                              themeService: themeService,
+                            ),
+                            transitionDuration: Duration.zero,
                           ),
-                          transitionDuration: Duration.zero,
-                        ),
-                      );
-                    }
-                  },
-                ),
-                
-                ListTile(
-                  leading: Icon(Icons.directions_bus_rounded, color: AppColors.textSecondary),
-                  title: Text(lang.tr('shuttle_planning'), style: TextStyle(color: AppColors.textPrimary)),
-                  subtitle: Text(lang.tr('shuttle_route_desc'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
-                  onTap: () {
-                    Navigator.pop(context); // Close drawer
-                    if (onPanelSelected != null) {
-                      onPanelSelected!('shuttle');
-                    } else {
-                      Navigator.pushReplacement(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder: (_, __, ___) => ShuttlePanelPage(
-                            currentUser: currentUser,
-                            lang: lang,
-                            storage: storage,
-                            themeService: themeService,
+                        );
+                      }
+                    },
+                  ),
+                  
+                  ListTile(
+                    leading: Icon(Icons.directions_bus_rounded, color: AppColors.textSecondary),
+                    title: Text(lang.tr('shuttle_planning'), style: TextStyle(color: AppColors.textPrimary)),
+                    subtitle: Text(lang.tr('shuttle_route_desc'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      if (onPanelSelected != null) {
+                        onPanelSelected!('shuttle');
+                      } else {
+                        Navigator.pushReplacement(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (_, __, ___) => ShuttlePanelPage(
+                              currentUser: currentUser,
+                              lang: lang,
+                              storage: storage,
+                              themeService: themeService,
+                            ),
+                            transitionDuration: Duration.zero,
                           ),
-                          transitionDuration: Duration.zero,
-                        ),
-                      );
-                    }
-                  },
-                ),
+                        );
+                      }
+                    },
+                  ),
+                ],
                 
-                if (currentUser.isOwner) ...[
+                if (currentUser.hasAdminPermission) ...[
                   Divider(color: AppColors.divider),
                   _buildSectionTitle(lang.tr('system_tools')),
 
