@@ -420,7 +420,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      drawer: widget.currentUser != null && (widget.currentUser!.isOwner || widget.currentUser!.isManager)
+      drawer: widget.currentUser != null && (widget.currentUser!.hasManagerPermission || widget.currentUser!.hasAdminPermission)
           ? ManagerDrawer(
               currentUser: widget.currentUser!,
               lang: widget.lang,
