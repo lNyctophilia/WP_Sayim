@@ -613,7 +613,7 @@ class _SettingsPageState extends State<SettingsPage> {
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
-            Icons.help_outline_rounded,
+            Icons.help_rounded,
             color: AppColors.accentLight,
             size: 22,
           ),
