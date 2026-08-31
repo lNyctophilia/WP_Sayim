@@ -454,7 +454,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       final sayimlar = await _sayimService.getSayimlar().first;
       final filteredSayimlar = sayimlar.where((s) {
         final key = "${s.date.year}-${s.date.month.toString().padLeft(2, '0')}";
-        return key == _selectedMonthKey;
+        return key == _selectedMonthKey && s.city == _selectedCity;
       }).toList();
 
       if (filteredSayimlar.isEmpty) {
