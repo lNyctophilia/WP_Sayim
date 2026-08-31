@@ -46,6 +46,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
 
   Sayim? _selectedSayim;
   String? _selectedMonthKey;
+  String? _selectedCity;
   String? _selectedReportType;
   bool _isExcelLoading = false;
   bool _isPngLoading = false;
@@ -442,7 +443,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
   }
 
   Future<void> _exportAylikRapor() async {
-    if (_selectedMonthKey == null) return;
+    if (_selectedMonthKey == null || _selectedCity == null) return;
     
     setState(() => _isExcelLoading = true);
     final isTr = widget.lang.currentLang == 'tr';
@@ -466,10 +467,12 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       int totalSayim = filteredSayimlar.length;
       
       final Map<String, AppUser> userMap = {};
-      final allUsers = await _authService.getAllUsers();
-      for (var u in allUsers) {
-        userMap[u.id] = u;
-        userWorkCount[u.id] = 0; // Tüm personeli sıfır olarak ekle
+      final allUsersRaw = await _authService.getAllUsers();
+      for (var u in allUsersRaw) {
+        if (u.city == _selectedCity) {
+          userMap[u.id] = u;
+          userWorkCount[u.id] = 0; // Tüm personeli sıfır olarak ekle
+        }
       }
 
       for (var sayim in filteredSayimlar) {
@@ -479,8 +482,11 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
         for (var d in acceptedDavetler) {
           if (!userMap.containsKey(d.userId)) {
             final u = await _authService.getUserData(d.userId);
-            if (u != null) {
+            if (u != null && u.city == _selectedCity) {
               userMap[u.id] = u;
+              userWorkCount[u.id] = 0;
+            } else {
+              continue; // Farklı il veya kullanıcı yok, rapora dahil etme
             }
           }
           userWorkCount[d.userId] = (userWorkCount[d.userId] ?? 0) + 1;
@@ -784,6 +790,43 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                         ),
                       ),
                     ),
+                    if (_selectedReportType == 'aylik') ...[
+                      const SizedBox(height: 16),
+                      // İl Seçimi
+                      InkWell(
+                        onTap: _selectedMonthKey == null
+                            ? null
+                            : () => _showCitySheet(context, isTr),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: _selectedMonthKey == null ? AppColors.card.withOpacity(0.5) : AppColors.card,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  _selectedMonthKey == null
+                                      ? AppStrings.get('select_month_first', isTr ? 'tr' : 'en')
+                                      : (_selectedCity ?? (isTr ? 'İl Seçin' : 'Select City')),
+                                  style: TextStyle(
+                                    color: _selectedMonthKey == null || _selectedCity == null
+                                        ? AppColors.textHint.withOpacity(_selectedMonthKey == null ? 0.5 : 1.0)
+                                        : AppColors.textPrimary,
+                                    fontSize: 16,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                     if (_selectedReportType == 'sayim') ...[
                       const SizedBox(height: 16),
                       // Sayım Seçimi
@@ -933,7 +976,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
         ),
       ),
       if ((_selectedReportType == 'sayim' && _selectedSayim != null) ||
-          (_selectedReportType == 'aylik' && _selectedMonthKey != null)) 
+          (_selectedReportType == 'aylik' && _selectedMonthKey != null && _selectedCity != null)) 
         Padding(
           padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0, bottom: 24.0),
           child: Column(
@@ -1125,6 +1168,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                                   _selectedReportType = type['value'];
                                   _selectedMonthKey = null;
                                   _selectedSayim = null;
+                                  _selectedCity = null;
                                 });
                                 Navigator.pop(context);
                               },
@@ -1223,6 +1267,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
                                 setState(() {
                                   _selectedMonthKey = m['key'];
                                   _selectedSayim = null;
+                                  _selectedCity = null;
                                 });
                                 Navigator.pop(context);
                               },
@@ -1236,6 +1281,40 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
               }
             );
           }
+        );
+      }
+    );
+  }
+
+  Future<void> _showCitySheet(BuildContext context, bool isTr) async {
+    final cities = ['Denizli', 'Muğla'];
+    
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                isTr ? 'İl Seçin' : 'Select City',
+                style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            ...cities.map((c) => ListTile(
+              title: Text(c, style: TextStyle(color: AppColors.textPrimary)),
+              onTap: () {
+                setState(() {
+                  _selectedCity = c;
+                });
+                Navigator.pop(context);
+              },
+            )),
+            const SizedBox(height: 16),
+          ],
         );
       }
     );
