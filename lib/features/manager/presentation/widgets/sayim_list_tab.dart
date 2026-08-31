@@ -311,22 +311,25 @@ class _SayimListTabState extends State<SayimListTab> {
             final bool isLoading = snapshot.connectionState == ConnectionState.waiting;
 
             final acceptedStaff = davetler
-                .where((d) =>
-                    d.status == DavetStatus.accepted &&
-                    d.role == DavetRole.staff)
+                .where((d) => d.isAccepted && d.role == DavetRole.staff)
                 .length;
             final acceptedManager = davetler
-                .where((d) =>
-                    d.status == DavetStatus.accepted &&
-                    d.role == DavetRole.manager)
+                .where((d) => d.isAccepted && d.role == DavetRole.manager)
+                .length;
+                
+            final activeStaff = davetler
+                .where((d) => (d.isAccepted || d.isPending) && d.role == DavetRole.staff)
+                .length;
+            final activeManager = davetler
+                .where((d) => (d.isAccepted || d.isPending) && d.role == DavetRole.manager)
                 .length;
             
             final totalAccepted = acceptedStaff + acceptedManager;
             final totalInvited = sayim.invitedUserIds.length;
 
             final isAcceptedLess = totalAccepted < totalInvited;
-            final isTargetNotMet = (acceptedStaff < sayim.maxKisi) ||
-                (acceptedManager < sayim.maxYonetici);
+            final isTargetNotMet = (activeStaff < sayim.maxKisi) ||
+                (activeManager < sayim.maxYonetici);
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
