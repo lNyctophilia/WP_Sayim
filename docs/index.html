@@ -19,13 +19,13 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="WP Sayım Yönetim Uygulaması">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0A1128">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="WP Sayım">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
   <!-- Explicit Apple Touch Icons for older iOS support (like iOS 15) -->
@@ -53,7 +53,8 @@
     body {
       background-color: var(--pwa-bg-color); /* Uygulamanın ana arka plan rengi */
       margin: 0;
-      padding: 0;
+      /* iOS PWA: black-translucent status bar — safe-area-inset-top pushes content below notch */
+      padding: env(safe-area-inset-top) 0 0 0;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -174,6 +175,11 @@
       if (metaThemeColor) {
         metaThemeColor.setAttribute('content', backgroundColor);
       }
+
+      // iOS PWA: black-translucent → status bar alanı şeffaf olduğundan
+      // body arka plan rengi status bar'a yansır. Dinamik tema rengi için güncelliyoruz.
+      document.body.style.backgroundColor = backgroundColor;
+      document.documentElement.style.setProperty('--pwa-bg-color', backgroundColor);
       
       // Sayfa yenilendiğinde tekrar uygulamak için kaydet
       try {
@@ -187,6 +193,9 @@
       if (savedBgColor) {
         const meta = document.querySelector('meta[name="theme-color"]');
         if (meta) meta.setAttribute('content', savedBgColor);
+        // iOS PWA: CSS değişkenini de güncelle (body henüz yüklenmemiş olabilir,
+        // CSS var() aracılığıyla renk doğru uygulanır)
+        document.documentElement.style.setProperty('--pwa-bg-color', savedBgColor);
       }
     })();
   </script>

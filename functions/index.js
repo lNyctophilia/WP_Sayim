@@ -584,11 +584,8 @@ exports.sendTestNotification = onDocumentCreated("test_notifications/{docId}", a
     return;
   }
 
-  console.log("sendTestNotification: Waiting 5 seconds for user:", data.userId);
-  // Wait 5 seconds so the user can put the app in the background to test push notifications
-  await new Promise(resolve => setTimeout(resolve, 5000));
-
-  console.log("sendTestNotification: Wait finished. Fetching user:", data.userId);
+  // Delay kaldırıldı: Flutter UI zaten countdown gösteriyor, CF hemen göndersin.
+  console.log("sendTestNotification: Fetching user (no delay):", data.userId);
   const userDoc = await admin.firestore().collection("users").doc(data.userId).get();
   if (!userDoc.exists) {
     console.log("sendTestNotification: User doc does not exist:", data.userId);
@@ -622,17 +619,81 @@ exports.sendTestNotification = onDocumentCreated("test_notifications/{docId}", a
     });
     console.log("sendTestNotification: Added to 'notifications' collection.");
   } else {
-    // E-postası olmayan kullanıcıya normal push notification gönder
-    await sendNotificationAndLog({
+    // iOS PWA uyumluluğu için doğrudan mesaj gönder.
+    // sendNotificationAndLog() içindeki webpush.requireInteraction:true iOS Safari'de bildirimi düşürüyor.
+    if (fcmToken) {
+      const message = {
+        token: fcmToken,
+        notification: {
+          title: "Test Bildirimi",
+          body: "Uygulama kapalıyken (veya arka plandayken) de bildirim alabiliyorsunuz. Harika!"
+        },
+        apns: {
+          headers: {
+            "apns-priority": "10",
+            "apns-push-type": "alert"
+          }
+        },
+        android: {
+          priority: "high",
+          notification: {
+            channelId: "sayim_notifications",
+            tag: `test_${event.params.docId}`
+          }
+        },
+        webpush: {
+          headers: { Urgency: "high" },
+          notification: {
+            title: "Test Bildirimi",
+            body: "Uygulama kapalıyken (veya arka plandayken) de bildirim alabiliyorsunuz. Harika!",
+            icon: "/icons/Icon-192.png",
+            badge: "/icons/Icon-192.png"
+            // requireInteraction kaldırıldı: iOS Safari desteklemiyor, bildirimi düşürüyor
+          },
+          fcmOptions: { link: "https://lnyctophilia.github.io/WP_Sayim/" }
+        },
+        data: { type: "test" }
+      };
+
+      try {
+        await admin.messaging().send(message);
+        console.log("sendTestNotification: Push sent successfully to:", data.userId);
+      } catch (pushErr) {
+        console.error("sendTestNotification: Push error:", pushErr);
+
+        // Geçersiz token ise Firestore'dan temizle
+        const invalidTokenCodes = [
+          'messaging/registration-token-not-registered',
+          'messaging/invalid-registration-token',
+          'messaging/third-party-auth-error',
+          'messaging/mismatched-credential'
+        ];
+        if (pushErr.code && invalidTokenCodes.includes(pushErr.code)) {
+          console.log(`[TOKEN CLEANUP] Geçersiz token siliniyor. userId: ${data.userId}, hata: ${pushErr.code}`);
+          try {
+            await admin.firestore().collection("users").doc(data.userId).update({
+              fcmToken: admin.firestore.FieldValue.delete(),
+              fcmTokenInvalidatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              fcmTokenInvalidReason: pushErr.code
+            });
+          } catch (cleanupErr) {
+            console.error("[TOKEN CLEANUP] Token silinirken hata:", cleanupErr);
+          }
+        }
+      }
+    } else {
+      console.log("sendTestNotification: No fcmToken found for user:", data.userId);
+    }
+
+    // Uygulama içi bildirim kaydı
+    await admin.firestore().collection("notifications").add({
       userId: data.userId,
       title: "Test Bildirimi",
       body: "Uygulama kapalıyken (veya arka plandayken) de bildirim alabiliyorsunuz. Harika!",
       type: "test",
       relatedId: event.params.docId,
-      dataPayload: {
-        type: "test"
-      },
-      tag: `test_${event.params.docId}`
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      isRead: false
     });
   }
 });

@@ -744,7 +744,7 @@ class _NotificationHelpSheetState extends State<_NotificationHelpSheet> {
 
   void _startTest() async {
     setState(() {
-      _countdown = 10;
+      _countdown = 5;
     });
 
     // Send notification trigger immediately
@@ -938,8 +938,8 @@ class _NotificationHelpSheetState extends State<_NotificationHelpSheet> {
                     const SizedBox(height: 4),
                     Text(
                       widget.lang.currentLang == 'tr'
-                          ? 'Alttaki butona bastıktan 10 saniye sonra bildirim atıcak. Bu süre içinde uygulamadan tamamen çıkıp bildirimleri test edebilirsiniz.'
-                          : 'A notification will be sent 10 seconds after pressing the button below. You can completely exit the app during this time to test notifications.',
+                          ? 'Alttaki butona bastıktan birkaç saniye içinde bildirim gelecek. Bu süre içinde uygulamadan tamamen çıkıp bildirimleri test edebilirsiniz.'
+                          : 'A notification will be sent within a few seconds after pressing the button below. You can completely exit the app during this time to test notifications.',
                       style: TextStyle(
                         fontSize: 14,
                         color: AppColors.textSecondary,

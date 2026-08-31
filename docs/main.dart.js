@@ -36472,7 +36472,7 @@ if(b.$1(r))return r}return null},
 bui(a,b){var s,r,q
 for(s=A.n(a),r=new A.jm(J.bA(a.a),a.b,s.i("jm<1,2>")),s=s.y[1];r.t();){q=r.a
 if(b.$1(q==null?s.a(q):q))return!1}return!0},
-brd(){var s,r,q,p=A.c6("[^\\d\\.\\-:]",!0,!1),o=A.du("Pzt_31.08.2026-_1:28:29,99",p,"")
+brd(){var s,r,q,p=A.c6("[^\\d\\.\\-:]",!0,!1),o=A.du("Pzt_31.08.2026-_5:11:10,46",p,"")
 p=A.c6("^\\-+|\\-+$",!0,!1)
 o=A.du(o,p,"")
 s=A.b(o.split("-"),t.s)
@@ -67015,7 +67015,7 @@ p=p==="tr"?"Test Et":"Test"
 p=A.o(p,h,h,h,h,A.z(h,h,$.a5(),h,h,h,h,h,h,h,h,16,h,h,B.O,h,h,!0,h,h,h,h,h,h,h,h),h,h,h)
 n=i.a.c.b
 n===$&&A.a()
-n=n==="tr"?"Alttaki butona bast\u0131ktan 10 saniye sonra bildirim at\u0131cak. Bu s\xfcre i\xe7inde uygulamadan tamamen \xe7\u0131k\u0131p bildirimleri test edebilirsiniz.":"A notification will be sent 10 seconds after pressing the button below. You can completely exit the app during this time to test notifications."
+n=n==="tr"?"Alttaki butona bast\u0131ktan birka\xe7 saniye i\xe7inde bildirim gelecek. Bu s\xfcre i\xe7inde uygulamadan tamamen \xe7\u0131k\u0131p bildirimleri test edebilirsiniz.":"A notification will be sent within a few seconds after pressing the button below. You can completely exit the app during this time to test notifications."
 n=A.o(n,h,h,h,h,A.z(h,h,$.ao(),h,h,h,h,h,h,h,h,14,h,h,h,h,h,!0,h,h,h,h,h,h,h,h),h,h,h)
 m=i.d>0?h:i.gaG2()
 l=A.f_(h,h,$.ac(),$.dT(),$.b8(),h,h,h,h,B.l,h,h,B.wx,h,new A.bt(A.a3(10),B.o),h,h,h,h,h)
@@ -67028,7 +67028,7 @@ k=j}else{k=i.a.c.b
 k===$&&A.a()
 k=k==="tr"?"Test Et":"Test"}return A.aP(h,A.aC(A.b([c,b,B.bw,q,B.bw,r,B.bw,A.aU(A.b([s,B.bB,A.aW(A.aC(A.b([p,B.eD,n,B.af,A.bd(A.ib(A.o(k,h,h,h,h,A.z(h,h,h,h,h,h,h,h,h,h,h,16,h,h,B.P,h,h,!0,h,h,h,h,h,h,h,h),h,h,h),m,l),h,1/0)],o),B.K,B.h,B.j,0,B.q),1)],o),B.K,B.h,B.j,0,h)],o),B.K,B.h,B.ab,0,B.q),B.n,h,h,new A.aI(d,h,h,B.Sp,h,h,B.v),h,h,h,new A.a6(20,20,20,e.r.d+20),h,h,h)}}
 A.aWY.prototype={
-$0(){this.a.d=10},
+$0(){this.a.d=5},
 $S:0}
 A.aWZ.prototype={
 $1(a){var s=this.a
