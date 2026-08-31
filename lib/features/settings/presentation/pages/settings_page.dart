@@ -613,7 +613,7 @@ class _SettingsPageState extends State<SettingsPage> {
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
-            Icons.play_circle_fill_rounded,
+            Icons.help_outline_rounded,
             color: AppColors.accentLight,
             size: 22,
           ),
@@ -842,7 +842,7 @@ class _NotificationHelpSheetState extends State<_NotificationHelpSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.lang.currentLang == 'tr' ? 'Videoyu İzle' : 'Watch the Video',
+                      widget.lang.currentLang == 'tr' ? 'Yöneticinize Danışın' : 'Consult Your Manager',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -852,46 +852,11 @@ class _NotificationHelpSheetState extends State<_NotificationHelpSheet> {
                     const SizedBox(height: 4),
                     Text(
                       widget.lang.currentLang == 'tr' 
-                          ? 'İlk olarak videoyu izle ve uygun adımları yap.' 
-                          : 'First watch the video and follow the appropriate steps.',
+                          ? 'Bildirim ayarlarınızla ilgili sorun yaşıyorsanız, cihaz ayarlarınızı kontrol edebilir veya yöneticinizle iletişime geçebilirsiniz.' 
+                          : 'If you are experiencing issues with notification settings, you can check your device settings or contact your manager.',
                       style: TextStyle(
                         fontSize: 14,
                         color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        final url = AppConfig.settingsVideoUrl;
-                        if (url.isEmpty) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  widget.lang.currentLang == 'tr' 
-                                      ? 'Şu anlık link yoktur, eklendiğinde buradan yönlendirileceksiniz.' 
-                                      : 'No link available currently. You will be redirected once added.'
-                                ),
-                                backgroundColor: AppColors.textSecondary,
-                              ),
-                            );
-                          }
-                          return;
-                        }
-                        final uri = Uri.parse(url);
-                        if (await canLaunchUrl(uri)) {
-                          await launchUrl(uri, mode: LaunchMode.externalApplication);
-                        }
-                      },
-                      icon: const Icon(Icons.play_circle_fill_rounded, size: 20),
-                      label: Text(widget.lang.currentLang == 'tr' ? 'Videoyu İzle' : 'Watch the Video'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accentLight,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
                       ),
                     ),
                   ],

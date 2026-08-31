@@ -457,10 +457,6 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
         return key == _selectedMonthKey && s.city == _selectedCity;
       }).toList();
 
-      if (filteredSayimlar.isEmpty) {
-        throw Exception(AppStrings.get('no_counts_found', isTr ? 'tr' : 'en'));
-      }
-
       // 2. Fetch davets for all counts
       final Map<String, int> userWorkCount = {};
       int totalPersonelCalistirma = 0;
