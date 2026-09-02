@@ -464,7 +464,7 @@ class _UserListTabState extends State<UserListTab>
             ),
           ],
         ),
-        trailing: (user.id != widget.currentUser.id && canEdit)
+        trailing: canEdit
             ? IconButton(
                 icon: Icon(Icons.delete_outline_rounded, color: AppColors.danger.withValues(alpha: 0.7), size: 20),
                 onPressed: () => _deleteUser(user),
