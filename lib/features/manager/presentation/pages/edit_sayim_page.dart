@@ -97,8 +97,20 @@ class _EditSayimPageState extends State<EditSayimPage> {
       final selected = <SelectedUserConfig>[];
       for (var davet in widget.existingDavets) {
         if (davet.isDeclined) continue;
+        
+        AppUser? u;
         try {
-          final u = users.firstWhere((usr) => usr.id == davet.userId);
+          u = users.firstWhere((usr) => usr.id == davet.userId);
+        } catch (_) {
+          // If user is deleted or deactivated, they won't be in the active users list.
+          // We fetch them manually so they remain in the count.
+          u = await _authService.getUserData(davet.userId);
+          if (u != null) {
+            users.add(u); 
+          }
+        }
+
+        if (u != null) {
           selected.add(SelectedUserConfig(
             user: u,
             role: davet.role,
@@ -107,7 +119,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
             multiplier: davet.multiplier,
             isSelected: true,
           ));
-        } catch (_) {}
+        }
       }
 
       setState(() {
