@@ -638,7 +638,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
             themeService: widget.themeService,
           ),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 32, bottom: 12),
           child: Row(
             children: [
               Icon(Icons.table_view_rounded, color: AppColors.accentLight),

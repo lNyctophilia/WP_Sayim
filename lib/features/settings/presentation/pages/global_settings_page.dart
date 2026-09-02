@@ -156,7 +156,7 @@ class _GlobalSettingsPageState extends State<GlobalSettingsPage> {
             themeService: widget.themeService,
           ),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 32, bottom: 12),
           child: Row(
             children: [
               Icon(Icons.settings_rounded, color: AppColors.accentLight),

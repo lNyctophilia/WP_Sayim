@@ -312,7 +312,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
           if (!widget.isEmbedded)
             CustomTopBar(currentUser: widget.currentUser, lang: widget.lang, storage: widget.storage, themeService: widget.themeService),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 32, bottom: 12),
             child: Row(
               children: [
                 Icon(Icons.directions_bus_rounded, color: AppColors.accentLight),
