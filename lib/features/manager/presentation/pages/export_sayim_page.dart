@@ -138,7 +138,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text('${_selectedSayim!.firmaAdi} - ${_selectedSayim!.city} - ${_selectedSayim!.note}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                    child: Text('${_selectedSayim!.firmaAdi} - ${_selectedSayim!.note}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
                   Text(dateStrFormatted, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                 ],
