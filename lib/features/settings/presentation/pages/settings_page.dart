@@ -386,133 +386,159 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildDeleteAccountTile() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(10),
+    final authService = AuthService();
+    final uid = authService.currentFirebaseUser?.uid;
+    
+    if (uid == null) return const SizedBox.shrink();
+
+    return StreamBuilder<AppUser?>(
+      stream: authService.getUserDataStream(uid),
+      builder: (context, snapshot) {
+        final user = snapshot.data;
+        final isSoftDeleted = user?.isSoftDeleted ?? false;
+        
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           decoration: BoxDecoration(
-            color: AppColors.danger.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(10),
+            color: AppColors.card,
+            borderRadius: BorderRadius.circular(14),
           ),
-          child: Icon(
-            Icons.person_remove_rounded,
-            color: AppColors.danger,
-            size: 22,
-          ),
-        ),
-        title: Text(
-          widget.lang.tr('delete_account'),
-          style: TextStyle(
-            fontSize: 15,
-            color: AppColors.danger,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        trailing: Icon(
-          Icons.chevron_right_rounded,
-          color: AppColors.textHint,
-        ),
-        onTap: () async {
-          final confirmed = await showDialog<bool>(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              backgroundColor: AppColors.card,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+          child: ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isSoftDeleted 
+                    ? AppColors.divider.withValues(alpha: 0.15)
+                    : AppColors.danger.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
               ),
-              title: Text(
-                widget.lang.tr('delete_account'),
-                style: TextStyle(color: AppColors.textPrimary),
+              child: Icon(
+                Icons.person_remove_rounded,
+                color: isSoftDeleted ? AppColors.textHint : AppColors.danger,
+                size: 22,
               ),
-              content: Text(
-                widget.lang.tr('delete_account_confirm'),
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: Text(widget.lang.tr('cancel')),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx, true),
-                  style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-                  child: Text(widget.lang.tr('delete')),
-                ),
-              ],
             ),
-          );
+            title: Text(
+              widget.lang.tr('delete_account'),
+              style: TextStyle(
+                fontSize: 15,
+                color: isSoftDeleted ? AppColors.textHint : AppColors.danger,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            subtitle: isSoftDeleted
+                ? Text(
+                    widget.lang.currentLang == 'tr'
+                        ? 'Hesabınız yönetici tarafından silinmiştir. Ayın 16\'sında hesabınız kalıcı olarak kapatılacaktır.'
+                        : 'Your account has been deleted by a manager. It will be permanently closed on the 16th.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.danger.withValues(alpha: 0.7),
+                    ),
+                  )
+                : null,
+            trailing: Icon(
+              Icons.chevron_right_rounded,
+              color: isSoftDeleted ? AppColors.textHint.withValues(alpha: 0.3) : AppColors.textHint,
+            ),
+            onTap: isSoftDeleted ? null : () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  backgroundColor: AppColors.card,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  title: Text(
+                    widget.lang.tr('delete_account'),
+                    style: TextStyle(color: AppColors.textPrimary),
+                  ),
+                  content: Text(
+                    widget.lang.tr('delete_account_confirm'),
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: Text(widget.lang.tr('cancel')),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+                      child: Text(widget.lang.tr('delete')),
+                    ),
+                  ],
+                ),
+              );
 
-          if (confirmed == true && mounted) {
-            final authService = AuthService();
-            final uid = authService.currentFirebaseUser?.uid;
-            
-            if (uid != null) {
-              try {
-                AuthService.isDeletingAccount = true;
-                // Soft delete user (Firestore only)
-                await authService.deleteUser(uid);
+              if (confirmed == true && mounted) {
+                final deleteAuthService = AuthService();
+                final deleteUid = deleteAuthService.currentFirebaseUser?.uid;
                 
-                if (mounted) {
-                  await showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (ctx) => AlertDialog(
-                      backgroundColor: AppColors.card,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      title: Icon(Icons.check_circle_outline_rounded, color: AppColors.success, size: 48),
-                      content: Text(
-                        widget.lang.currentLang == 'tr' 
-                          ? 'Hesabınız başarıyla silindi.' 
-                          : 'Your account has been successfully deleted.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: AppColors.textPrimary),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          child: Text('OK', style: TextStyle(color: AppColors.accentLight)),
+                if (deleteUid != null) {
+                  try {
+                    AuthService.isDeletingAccount = true;
+                    // Soft delete user (Firestore only)
+                    await deleteAuthService.deleteUser(deleteUid);
+                    
+                    if (mounted) {
+                      await showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: AppColors.card,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          title: Icon(Icons.check_circle_outline_rounded, color: AppColors.success, size: 48),
+                          content: Text(
+                            widget.lang.currentLang == 'tr' 
+                              ? 'Hesabınız başarıyla silindi.' 
+                              : 'Your account has been successfully deleted.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: AppColors.textPrimary),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: Text('OK', style: TextStyle(color: AppColors.accentLight)),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  );
-                }
+                      );
+                    }
 
-                // Popup kapandıktan sonra: önce stack temizle, sonra logout
-                AuthService.isDeletingAccount = false;
-                
-                // Stack'taki tüm sayfaları kapat (Settings, vb.)
-                if (appNavigatorKey.currentState?.canPop() ?? false) {
-                  appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
-                }
-                
-                // Son olarak logout — AppRouter authStateChanges üzerinden LoginPage'e geçer
-                await authService.logout();
-                
-              } catch (e) {
-                AuthService.isDeletingAccount = false;
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Hata: $e'),
-                      backgroundColor: AppColors.danger,
-                    ),
-                  );
+                    // Popup kapandıktan sonra: önce stack temizle, sonra logout
+                    AuthService.isDeletingAccount = false;
+                    
+                    // Stack'taki tüm sayfaları kapat (Settings, vb.)
+                    if (appNavigatorKey.currentState?.canPop() ?? false) {
+                      appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+                    }
+                    
+                    // Son olarak logout — AppRouter authStateChanges üzerinden LoginPage'e geçer
+                    await deleteAuthService.logout();
+                    
+                  } catch (e) {
+                    AuthService.isDeletingAccount = false;
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Hata: $e'),
+                          backgroundColor: AppColors.danger,
+                        ),
+                      );
+                    }
+                  }
                 }
               }
-            }
-          }
-        },
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
-      ),
+            },
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+        );
+      },
     );
   }
 

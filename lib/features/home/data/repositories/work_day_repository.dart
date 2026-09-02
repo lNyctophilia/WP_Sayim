@@ -58,6 +58,20 @@ class WorkDayRepository {
     });
   }
 
+  /// Kullanıcının en son çalıştığı (kayıtlı) iş gününü getirir
+  Future<WorkDay?> getLatestWorkDay() async {
+    final snapshot = await _firestore
+        .collection('personel_takvimi')
+        .doc(userId)
+        .collection('gunler')
+        .orderBy(FieldPath.documentId, descending: true)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) return null;
+    return WorkDay.fromJson(snapshot.docs.first.data());
+  }
+
   /// İş günü kaydet (yeni veya güncelle)
   Future<void> saveWorkDay(WorkDay workDay) async {
     // Sadece tarihi (YYYY-MM-DD) ID olarak kullanıyoruz ki her gün için tek kayıt olsun

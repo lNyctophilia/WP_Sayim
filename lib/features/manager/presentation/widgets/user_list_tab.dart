@@ -120,7 +120,9 @@ class _UserListTabState extends State<UserListTab>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(user.fullName, style: TextStyle(color: AppColors.textPrimary, fontSize: 16)),
         content: Text(
-          widget.lang.tr('delete_user_confirm'),
+          widget.lang.currentLang == 'tr' 
+              ? 'Bu kişi tüm listelerden kaldırılacak. Hesabı ayın 16\'sında kalıcı olarak silinecektir.'
+              : 'This person will be removed from all lists. Their account will be permanently deleted on the 16th.',
           style: TextStyle(color: AppColors.textSecondary),
         ),
         actions: [

@@ -372,17 +372,16 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                           children: [
                             Flexible(
                               child: Text(
-                                userSnapshot.data?.isDeleted == true ? '$userName (${AppStrings.get('deleted', isTr ? 'tr' : 'en')})' : userName,
+                                userName,
                                 style: TextStyle(
-                                    color: userSnapshot.data?.isDeleted == true ? AppColors.danger : AppColors.textPrimary,
+                                    color: AppColors.textPrimary,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 15,
-                                    decoration: userSnapshot.data?.isDeleted == true ? TextDecoration.lineThrough : null,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            if (userSnapshot.hasData && userSnapshot.data != null && !userSnapshot.data!.isDeleted) ...[
+                            if (userSnapshot.hasData && userSnapshot.data != null) ...[
                               const SizedBox(width: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

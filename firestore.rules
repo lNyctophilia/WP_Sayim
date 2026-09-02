@@ -76,7 +76,8 @@ service cloud.firestore {
         ) || 
         (
           request.auth.uid == userId && 
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fcmToken', 'sessionId', 'fcmError', 'sayimReminderEnabled', 'pushVersion', 'fcmTokenInvalidatedAt', 'fcmTokenInvalidReason'])
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fcmToken', 'sessionId', 'fcmError', 'sayimReminderEnabled', 'pushVersion', 'fcmTokenInvalidatedAt', 'fcmTokenInvalidReason']) &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['softDeletedAt'])
         ) ||
         (
           // Kullanıcının kendi hesabını soft-delete yapmasına izin ver

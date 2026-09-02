@@ -13,6 +13,7 @@ import 'export_sayim_page.dart';
 import 'edit_profiles_page.dart';
 import 'create_past_sayim_page.dart';
 import '../../../settings/presentation/pages/global_settings_page.dart';
+import 'deleted_users_calendar_page.dart';
 
 class ManagerShellPage extends StatefulWidget {
   final AppUser currentUser;
@@ -136,6 +137,17 @@ class ManagerShellPageState extends State<ManagerShellPage> {
       case 'global_settings':
         if (widget.currentUser.hasAdminPermission) {
           return GlobalSettingsPage(
+            currentUser: widget.currentUser,
+            storage: widget.storage,
+            lang: widget.lang,
+            themeService: widget.themeService,
+            isEmbedded: true,
+          );
+        }
+        break;
+      case 'deleted_calendars':
+        if (widget.currentUser.hasAdminPermission) {
+          return DeletedUsersCalendarPage(
             currentUser: widget.currentUser,
             storage: widget.storage,
             lang: widget.lang,

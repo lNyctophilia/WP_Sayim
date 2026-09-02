@@ -14,11 +14,15 @@ import '../../../home/presentation/widgets/summary_card.dart';
 class UserCalendarPage extends StatefulWidget {
   final AppUser selectedUser;
   final LanguageService lang;
+  final int? initialYear;
+  final int? initialMonth;
 
   const UserCalendarPage({
     super.key,
     required this.selectedUser,
     required this.lang,
+    this.initialYear,
+    this.initialMonth,
   });
 
   @override
@@ -48,8 +52,8 @@ class _UserCalendarPageState extends State<UserCalendarPage> with TickerProvider
   void initState() {
     super.initState();
     _repository = WorkDayRepository(userId: widget.selectedUser.id);
-    _currentYear = DateTime.now().year;
-    _currentMonth = DateTime.now().month;
+    _currentYear = widget.initialYear ?? DateTime.now().year;
+    _currentMonth = widget.initialMonth ?? DateTime.now().month;
     _monthlyData = MonthlyData.empty(_currentYear, _currentMonth);
     _loadData();
   }

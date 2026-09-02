@@ -11,6 +11,7 @@ import '../pages/edit_profiles_page.dart';
 import '../pages/create_past_sayim_page.dart';
 import '../pages/export_sayim_page.dart';
 import '../pages/shuttle_panel_page.dart';
+import '../pages/deleted_users_calendar_page.dart';
 
 class ManagerDrawer extends StatelessWidget {
   final AppUser currentUser;
@@ -251,6 +252,30 @@ class ManagerDrawer extends StatelessWidget {
                           context,
                           PageRouteBuilder(
                             pageBuilder: (_, __, ___) => CreatePastSayimPage(
+                              currentUser: currentUser,
+                              lang: lang,
+                              storage: storage,
+                              themeService: themeService,
+                            ),
+                            transitionDuration: Duration.zero,
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                  
+                  ListTile(
+                    leading: Icon(Icons.calendar_view_month_rounded, color: AppColors.textSecondary),
+                    title: Text(lang.tr('deleted_account_calendars') ?? 'Silinen Hesap Takvimleri', style: TextStyle(color: AppColors.textPrimary)),
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      if (onPanelSelected != null) {
+                        onPanelSelected!('deleted_calendars');
+                      } else {
+                        Navigator.pushReplacement(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (_, __, ___) => DeletedUsersCalendarPage(
                               currentUser: currentUser,
                               lang: lang,
                               storage: storage,

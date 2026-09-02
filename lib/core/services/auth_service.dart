@@ -308,8 +308,18 @@ class AuthService {
     await _firestore.collection('users').doc(uid).update({'active': true});
   }
 
-  /// Kullanıcıyı veritabanından silinmiş olarak işaretle (Soft Delete)
+  /// Kullanıcıyı soft-delete olarak işaretle (listelerden çıkar ama giriş yapabilir)
   Future<void> deleteUser(String uid) async {
+    final doc = await _firestore.collection('users').doc(uid).get();
+    if (!doc.exists) return;
+    
+    await _firestore.collection('users').doc(uid).update({
+      'softDeletedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Kullanıcıyı kalıcı olarak sil (Hard Delete — giriş engellenir)
+  Future<void> hardDeleteUser(String uid) async {
     final doc = await _firestore.collection('users').doc(uid).get();
     if (!doc.exists) return;
     
@@ -318,13 +328,11 @@ class AuthService {
     final newUsername = '${username}_deleted_${DateTime.now().millisecondsSinceEpoch}';
     
     // Firestore'u güncelle — isDeleted:true olunca login bloke edilir.
-    // Not: Firebase Auth delete() requires recent-login (RecentLoginRequired hatası verir),
-    // bu yüzden Auth hesabını burada silmiyoruz. Soft-delete yeterlidir.
     await _firestore.collection('users').doc(uid).update({
       'active': false,
       'isDeleted': true,
       'username': newUsername,
-      'phone': newUsername, // Telefon numarasını da değiştir ki eşleşmesin
+      'phone': newUsername,
     });
   }
 
@@ -386,7 +394,7 @@ class AuthService {
         .get();
     return snapshot.docs
         .map((doc) => AppUser.fromFirestore(doc))
-        .where((user) => !user.isOwner && user.isApproved)
+        .where((user) => !user.isOwner && user.isApproved && !user.isSoftDeleted)
         .toList();
   }
 
@@ -397,13 +405,25 @@ class AuthService {
         .where('active', isEqualTo: true)
         .get();
         
-    final allUsers = snapshot.docs.map((doc) => AppUser.fromFirestore(doc)).toList();
+    final allUsers = snapshot.docs
+        .map((doc) => AppUser.fromFirestore(doc))
+        .where((u) => !u.isSoftDeleted)
+        .toList();
     
     if (role == UserRole.manager) {
       return allUsers.where((u) => u.isManager).toList();
     } else {
       return allUsers.where((u) => u.roles.contains(role)).toList();
     }
+  }
+
+  /// Silinmiş kullanıcıları (soft-delete veya hard-delete) getir
+  Future<List<AppUser>> getDeletedUsers() async {
+    final snapshot = await _firestore.collection('users').get();
+    return snapshot.docs
+        .map((doc) => AppUser.fromFirestore(doc))
+        .where((user) => user.isDeleted || user.isSoftDeleted)
+        .toList();
   }
 
   /// Bekleyen kullanıcı (onaylanmamış) sayısını gerçek zamanlı dinle

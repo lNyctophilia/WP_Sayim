@@ -40,6 +40,7 @@ class AppUser {
   final String? createdBy;
   final bool active;
   final bool isDeleted;
+  final DateTime? softDeletedAt;
   final DateTime createdAt;
   final String? sessionId;
   final bool sayimReminderEnabled;
@@ -62,6 +63,7 @@ class AppUser {
     this.createdBy,
     this.active = true,
     this.isDeleted = false,
+    this.softDeletedAt,
     required this.createdAt,
     this.sessionId,
     this.sayimReminderEnabled = true,
@@ -83,6 +85,9 @@ class AppUser {
       roles.contains(UserRole.managerA3) ||
       isOwner;
   bool get isStaff => roles.contains(UserRole.staff);
+
+  /// Soft-delete edilmiş ama henüz hard-delete olmamış
+  bool get isSoftDeleted => softDeletedAt != null && !isDeleted;
 
   /// Yetki kontrolleri (erişim kontrolü için kullanılır — rolden bağımsız)
   bool get hasStaffPermission => permissions.contains(UserPermission.staff);
@@ -124,6 +129,7 @@ class AppUser {
       createdBy: data['createdBy'] as String?,
       active: data['active'] as bool? ?? true,
       isDeleted: data['isDeleted'] as bool? ?? false,
+      softDeletedAt: (data['softDeletedAt'] as Timestamp?)?.toDate(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       sessionId: data['sessionId'] as String?,
       sayimReminderEnabled: data['sayimReminderEnabled'] as bool? ?? true,
@@ -148,6 +154,7 @@ class AppUser {
       'createdBy': createdBy,
       'active': active,
       'isDeleted': isDeleted,
+      if (softDeletedAt != null) 'softDeletedAt': Timestamp.fromDate(softDeletedAt!),
       'createdAt': Timestamp.fromDate(createdAt),
       if (sessionId != null) 'sessionId': sessionId,
       'sayimReminderEnabled': sayimReminderEnabled,
@@ -172,6 +179,7 @@ class AppUser {
     String? createdBy,
     bool? active,
     bool? isDeleted,
+    DateTime? softDeletedAt,
     DateTime? createdAt,
     String? sessionId,
     bool? sayimReminderEnabled,
@@ -194,6 +202,7 @@ class AppUser {
       createdBy: createdBy ?? this.createdBy,
       active: active ?? this.active,
       isDeleted: isDeleted ?? this.isDeleted,
+      softDeletedAt: softDeletedAt ?? this.softDeletedAt,
       createdAt: createdAt ?? this.createdAt,
       sessionId: sessionId ?? this.sessionId,
       sayimReminderEnabled: sayimReminderEnabled ?? this.sayimReminderEnabled,

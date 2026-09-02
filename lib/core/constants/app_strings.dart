@@ -204,6 +204,12 @@ class AppStrings {
     'edit_profiles': {'tr': 'Profilleri Düzenle', 'en': 'Edit Profiles'},
     'add_past_count': {'tr': 'Geçmiş Sayım Ekle', 'en': 'Add Past Count'},
     'global_wage_settings': {'tr': 'Genel Ücret Ayarları', 'en': 'Global Wage Settings'},
+    'deleted_account_calendars': {'tr': 'Silinen Hesap Takvimleri', 'en': 'Deleted Account Calendars'},
+    'view_deleted_calendars_desc': {
+      'tr': 'Silinen hesapların geçmişteki iş takvimlerini ve rotalarını görüntüleyebilirsiniz.',
+      'en': 'You can view the past work calendars and routes of deleted accounts.'
+    },
+    'select_deleted_user': {'tr': 'Silinen Kullanıcı Seç', 'en': 'Select Deleted User'},
 
     // Yetki sistemi
     'permissions': {'tr': 'Yetkiler', 'en': 'Permissions'},

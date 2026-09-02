@@ -796,3 +796,105 @@ exports.sendSayimTimeChangedNotification = onDocumentUpdated("sayimlar/{sayimId}
     console.error("Error processing sendSayimTimeChangedNotification:", error);
   }
 });
+
+/**
+ * Her ayın 16'sında saat 04:00 (Europe/Istanbul) çalışır.
+ * softDeletedAt != null && isDeleted == false olan kullanıcıları kontrol eder.
+ * 
+ * Mantık:
+ * - softDeletedAt'tan bu yana personel_takvimi'nde çalışma kaydı var mı?
+ * - Varsa: softDeletedAt ayından sonraki ayın 16'sı geldi mi? (yani en az 1 ay geçti mi?)
+ * - Yoksa: softDeletedAt ayının 16'sı geldi mi?
+ * - Her iki durumda da tarih geçtiyse → hard delete (isDeleted: true, active: false, username/phone rename)
+ */
+exports.hardDeleteSoftDeletedUsers = onSchedule(
+  {
+    schedule: "0 4 16 * *",
+    timeZone: "Europe/Istanbul",
+    region: "europe-west1",
+  },
+  async () => {
+    const db = admin.firestore();
+    const now = new Date();
+    
+    console.log(`[HardDelete] Running hard-delete check at ${now.toISOString()}`);
+
+    // softDeletedAt var ve isDeleted hala false olan kullanıcıları çek
+    const usersSnap = await db.collection("users")
+      .where("isDeleted", "==", false)
+      .get();
+
+    // Client-side filter: softDeletedAt != null olanları al
+    const softDeletedUsers = usersSnap.docs.filter(doc => {
+      const data = doc.data();
+      return data.softDeletedAt != null && data.softDeletedAt !== undefined;
+    });
+
+    if (softDeletedUsers.length === 0) {
+      console.log("[HardDelete] No soft-deleted users found. Exiting.");
+      return;
+    }
+
+    console.log(`[HardDelete] Found ${softDeletedUsers.length} soft-deleted user(s) to evaluate.`);
+
+    let deletedCount = 0;
+    let skippedCount = 0;
+
+    for (const userDoc of softDeletedUsers) {
+      const userData = userDoc.data();
+      const userId = userDoc.id;
+      const softDeletedAt = userData.softDeletedAt.toDate();
+      const username = userData.username || "";
+
+      try {
+        // personel_takvimi/{userId}/gunler altında softDeletedAt'tan sonraki kayıtları ara
+        const workSnapshot = await db
+          .collection("personel_takvimi")
+          .doc(userId)
+          .collection("gunler")
+          .where("tarih", ">=", admin.firestore.Timestamp.fromDate(softDeletedAt))
+          .limit(1)
+          .get();
+
+        const hasWorkedAfterDeletion = !workSnapshot.empty;
+
+        // Silme tarihini hesapla
+        let deleteTargetDate;
+        
+        if (hasWorkedAfterDeletion) {
+          // Çalışmış → softDeletedAt'ın bulunduğu aydan sonraki ayın 16'sı
+          deleteTargetDate = new Date(softDeletedAt.getFullYear(), softDeletedAt.getMonth() + 1, 16, 0, 0, 0);
+        } else {
+          // Çalışmamış → softDeletedAt'ın bulunduğu ayın 16'sı
+          deleteTargetDate = new Date(softDeletedAt.getFullYear(), softDeletedAt.getMonth(), 16, 0, 0, 0);
+          
+          // Eğer softDeletedAt günü 16'dan büyükse (yani ayın 16'sı geçmiş), sonraki aya taşı
+          if (softDeletedAt.getDate() > 16) {
+            deleteTargetDate = new Date(softDeletedAt.getFullYear(), softDeletedAt.getMonth() + 1, 16, 0, 0, 0);
+          }
+        }
+
+        if (now >= deleteTargetDate) {
+          // Hard delete uygula
+          const newUsername = `${username}_deleted_${Date.now()}`;
+          await db.collection("users").doc(userId).update({
+            active: false,
+            isDeleted: true,
+            username: newUsername,
+            phone: newUsername,
+          });
+          
+          console.log(`[HardDelete] Hard-deleted user ${userId} (${username}). Target was ${deleteTargetDate.toISOString()}, worked=${hasWorkedAfterDeletion}`);
+          deletedCount++;
+        } else {
+          console.log(`[HardDelete] Skipped user ${userId} (${username}). Target ${deleteTargetDate.toISOString()} not yet reached. worked=${hasWorkedAfterDeletion}`);
+          skippedCount++;
+        }
+      } catch (err) {
+        console.error(`[HardDelete] Error processing user ${userId}:`, err);
+      }
+    }
+
+    console.log(`[HardDelete] Done. Deleted: ${deletedCount}, Skipped: ${skippedCount}`);
+  }
+);
