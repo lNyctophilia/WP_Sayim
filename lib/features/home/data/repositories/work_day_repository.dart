@@ -64,7 +64,7 @@ class WorkDayRepository {
         .collection('personel_takvimi')
         .doc(userId)
         .collection('gunler')
-        .orderBy(FieldPath.documentId, descending: true)
+        .orderBy('date', descending: true)
         .limit(1)
         .get();
 

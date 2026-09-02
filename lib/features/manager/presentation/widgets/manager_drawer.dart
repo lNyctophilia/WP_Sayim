@@ -265,7 +265,7 @@ class ManagerDrawer extends StatelessWidget {
                   ),
                   
                   ListTile(
-                    leading: Icon(Icons.calendar_view_month_rounded, color: AppColors.textSecondary),
+                    leading: Icon(Icons.calendar_month_rounded, color: AppColors.textSecondary),
                     title: Text(lang.tr('deleted_account_calendars') ?? 'Silinen Hesap Takvimleri', style: TextStyle(color: AppColors.textPrimary)),
                     onTap: () {
                       Navigator.pop(context); // Close drawer

@@ -51,9 +51,19 @@ class _DeletedUsersCalendarPageState extends State<DeletedUsersCalendarPage> {
     setState(() => _isLoading = true);
     try {
       final users = await _authService.getDeletedUsers();
+      final usersWithHistory = <AppUser>[];
+      
+      await Future.wait(users.map((user) async {
+        final repository = WorkDayRepository(userId: user.id);
+        final latestWorkDay = await repository.getLatestWorkDay();
+        if (latestWorkDay != null) {
+          usersWithHistory.add(user);
+        }
+      }));
+
       if (mounted) {
         setState(() {
-          _deletedUsers = users;
+          _deletedUsers = usersWithHistory;
           _isLoading = false;
         });
       }
@@ -76,6 +86,16 @@ class _DeletedUsersCalendarPageState extends State<DeletedUsersCalendarPage> {
       if (latestWorkDay != null) {
         initialYear = latestWorkDay.date.year;
         initialMonth = latestWorkDay.date.month;
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(widget.lang.currentLang == 'tr' ? 'Bu kişinin kayıtlı iş günü bulunamadı.' : 'No work days found for this user.'),
+              backgroundColor: AppColors.danger,
+            ),
+          );
+        }
+        return;
       }
 
       if (mounted) {
@@ -92,7 +112,14 @@ class _DeletedUsersCalendarPageState extends State<DeletedUsersCalendarPage> {
         );
       }
     } catch (e) {
-      // Handle error if necessary
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(widget.lang.currentLang == 'tr' ? 'Hata oluştu: $e' : 'An error occurred: $e'),
+            backgroundColor: AppColors.danger,
+          ),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => _isNavigating = false);
@@ -171,7 +198,7 @@ class _DeletedUsersCalendarPageState extends State<DeletedUsersCalendarPage> {
                               child: Text(user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : '?', style: TextStyle(color: AppColors.danger)),
                             ),
                             title: Text(user.fullName, style: TextStyle(color: AppColors.textPrimary)),
-                            subtitle: Text('@${user.username}', style: TextStyle(color: AppColors.textSecondary)),
+                            subtitle: Text('@${user.username.split('_').first}', style: TextStyle(color: AppColors.textSecondary)),
                             onTap: () {
                               Navigator.pop(context);
                               _onUserSelected(user);
@@ -207,7 +234,7 @@ class _DeletedUsersCalendarPageState extends State<DeletedUsersCalendarPage> {
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              Icon(Icons.calendar_view_month_rounded, color: AppColors.accentLight),
+              Icon(Icons.calendar_month_rounded, color: AppColors.accentLight),
               const SizedBox(width: 8),
               Text(
                 AppStrings.get('deleted_account_calendars', isTr ? 'tr' : 'en') ?? (isTr ? 'Silinen Hesap Takvimleri' : 'Deleted Account Calendars'),
@@ -228,12 +255,6 @@ class _DeletedUsersCalendarPageState extends State<DeletedUsersCalendarPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        AppStrings.get('view_deleted_calendars_desc', isTr ? 'tr' : 'en') ?? 
-                        (isTr ? 'Silinen hesapların geçmişteki iş takvimlerini ve rotalarını görüntüleyebilirsiniz.' : 'You can view the past work calendars and routes of deleted accounts.'),
-                        style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary),
-                      ),
-                      const SizedBox(height: 24),
                       Text(
                         AppStrings.get('select_deleted_user', isTr ? 'tr' : 'en') ?? (isTr ? 'Silinen Kullanıcı Seç' : 'Select Deleted User'),
                         style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
