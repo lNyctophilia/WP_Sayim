@@ -111,19 +111,21 @@ class CustomTopBar extends StatelessWidget {
                           Positioned(
                             top: -2,
                             right: -2,
-                            child: Container(
-                              padding: EdgeInsets.all(5),
-                              decoration: BoxDecoration(
-                                color: AppColors.danger,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Text(
-                                pendingCount > 9 ? '9+' : pendingCount.toString(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  height: 1,
+                            child: IgnorePointer(
+                              child: Container(
+                                padding: EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: AppColors.danger,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  pendingCount > 9 ? '9+' : pendingCount.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1,
+                                  ),
                                 ),
                               ),
                             ),

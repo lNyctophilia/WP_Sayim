@@ -138,8 +138,9 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(dateStrFormatted, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                    child: Text('${_selectedSayim!.firmaAdi} - ${_selectedSayim!.city} - ${_selectedSayim!.note}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
+                  Text(dateStrFormatted, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                 ],
               ),
             ),
@@ -452,15 +453,15 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
     try {
       // 1. Get all counts for the month
       final sayimlar = await _sayimService.getSayimlar().first;
-      final filteredSayimlar = sayimlar.where((s) {
+      final monthSayimlar = sayimlar.where((s) {
         final key = "${s.date.year}-${s.date.month.toString().padLeft(2, '0')}";
-        return key == _selectedMonthKey && s.city == _selectedCity;
+        return key == _selectedMonthKey;
       }).toList();
 
       // 2. Fetch davets for all counts
       final Map<String, int> userWorkCount = {};
       int totalPersonelCalistirma = 0;
-      int totalSayim = filteredSayimlar.length;
+      int totalSayim = monthSayimlar.where((s) => s.city == _selectedCity).length;
       
       final Map<String, AppUser> userMap = {};
       final allUsersRaw = await _authService.getAllUsers();
@@ -471,7 +472,7 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
         }
       }
 
-      for (var sayim in filteredSayimlar) {
+      for (var sayim in monthSayimlar) {
         final davetler = await _davetService.getDavetlerBySayimFuture(sayim.id);
         final acceptedDavetler = davetler.where((d) => d.status == DavetStatus.accepted).toList();
         
