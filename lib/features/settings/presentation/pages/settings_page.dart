@@ -374,7 +374,10 @@ class _SettingsPageState extends State<SettingsPage> {
           );
 
           if (confirmed == true && mounted) {
-            // First log out
+            // Önce tüm sayfaları kapat (SettingsPage vs.)
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            await Future.delayed(const Duration(milliseconds: 100));
+            // Sonra çıkış yap
             await AuthService().logout();
           }
         },

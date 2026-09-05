@@ -171,6 +171,41 @@ class _ShuttleRouteMapPageState extends State<ShuttleRouteMapPage> {
     );
   }
 
+  Future<void> _openRouteInGoogleMaps() async {
+    if (widget.optimizedWaypoints.isEmpty) return;
+
+    final origin = widget.optimizedWaypoints.first;
+    final destination = widget.optimizedWaypoints.last;
+    
+    final waypoints = widget.optimizedWaypoints
+        .sublist(1, widget.optimizedWaypoints.length - 1)
+        .map((wp) => '${wp['lat']},${wp['lon']}')
+        .join('%7C');
+
+    final originStr = '${origin['lat']},${origin['lon']}';
+    final destStr = '${destination['lat']},${destination['lon']}';
+
+    String urlStr = 'https://www.google.com/maps/dir/?api=1&origin=$originStr&destination=$destStr&travelmode=driving';
+    if (waypoints.isNotEmpty) {
+      urlStr += '&waypoints=$waypoints';
+    }
+
+    final url = Uri.parse(urlStr);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(widget.lang.currentLang == 'tr' 
+                ? 'Google Haritalar açılamadı' 
+                : 'Could not open Google Maps'),
+          ),
+        );
+      }
+    }
+  }
+
   void _showWaypointDetails(Map<String, dynamic> waypoint) {
     showModalBottomSheet(
       context: context,
@@ -414,6 +449,7 @@ class _ShuttleRouteMapPageState extends State<ShuttleRouteMapPage> {
               bottom: 24,
               right: 16,
               child: FloatingActionButton(
+                heroTag: 'recenter_btn',
                 backgroundColor: AppColors.card,
                 onPressed: () {
                   setState(() {
@@ -424,6 +460,23 @@ class _ShuttleRouteMapPageState extends State<ShuttleRouteMapPage> {
                   }
                 },
                 child: Icon(Icons.my_location, color: AppColors.accentLight),
+              ),
+            ),
+            
+          // Google Maps Button
+          if (widget.optimizedWaypoints.length <= 11)
+            Positioned(
+              bottom: 24,
+              left: 16,
+              child: FloatingActionButton.extended(
+                heroTag: 'google_maps_btn',
+                backgroundColor: Colors.blue,
+                onPressed: _openRouteInGoogleMaps,
+                icon: const Icon(Icons.map, color: Colors.white),
+                label: Text(
+                  isTr ? 'Google Haritalar\'da Aç' : 'Open in Maps',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
         ],

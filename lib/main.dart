@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'firebase_options.dart';
 import 'core/services/language_service.dart';
 import 'core/services/storage_service.dart';
@@ -28,6 +29,21 @@ void main() async {
   // Arka plan mesaj handler — Web'de Service Worker kullanılır, burada sadece mobile
   if (!kIsWeb) {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    // Yüksek öncelikli Android bildirim kanalını oluştur
+    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'sayim_notifications', // id (functions içindeki channelId ile aynı olmalı)
+      'Sayım Bildirimleri', // title
+      description: 'Uygulama içi uyarılar ve sayım bildirimleri', // description
+      importance: Importance.high,
+      playSound: true,
+    );
+
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
   }
 
   // Durum çubuğu yönetimi ThemeService tarafından yapılıyor
