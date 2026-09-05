@@ -2,16 +2,16 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class RouteOptimizer {
-  /// OSRM Table API kullanarak noktalar arası gerçek sürüş sürelerini çeker
-  /// ve Brute-Force (N<=9) veya NN+2-opt (N>9) kullanarak en iyi sıralamayı bulur.
+  /// OSRM Table API kullanarak noktalar arası GERÇEK SÜRÜŞ MESAFELERİNİ çeker
+  /// ve Brute-Force (N<=10) veya NN+2-opt (N>10) kullanarak MESAFESİ (KİLOMETRESİ) en kısa sıralamayı bulur.
   static Future<List<Map<String, dynamic>>> optimizeWithMatrix(List<Map<String, dynamic>> points) async {
     if (points.length <= 3) return points;
 
     // 1. Koordinatları OSRM formatına çevir (lon,lat;lon,lat...)
     String coords = points.map((p) => '${p['lon']},${p['lat']}').join(';');
     
-    // 2. Table API'den süre matrisini çek
-    final url = Uri.parse('https://router.project-osrm.org/table/v1/driving/$coords');
+    // 2. Table API'den MESAFE matrisini çek (annotations=distance)
+    final url = Uri.parse('https://router.project-osrm.org/table/v1/driving/$coords?annotations=distance');
     final response = await http.get(url, headers: {'User-Agent': 'DaytrackApp/1.0'});
 
     if (response.statusCode != 200) {
@@ -23,14 +23,15 @@ class RouteOptimizer {
       throw Exception('OSRM returned non-Ok code: ${data['code']}');
     }
 
-    // durations matrix: i'den j'ye gitme süresi (saniye)
-    List<dynamic> durationsRaw = data['durations'];
+    // distances matrix: i'den j'ye gitme mesafesi (metre)
+    // Not: annotations=distance kullandığımız için 'distances' dizisi döner.
+    List<dynamic> distancesRaw = data['distances'];
     List<List<double>> matrix = [];
     
-    for (int i = 0; i < durationsRaw.length; i++) {
+    for (int i = 0; i < distancesRaw.length; i++) {
       List<double> row = [];
-      for (int j = 0; j < durationsRaw[i].length; j++) {
-        var val = durationsRaw[i][j];
+      for (int j = 0; j < distancesRaw[i].length; j++) {
+        var val = distancesRaw[i][j];
         if (val == null) {
           row.add(double.infinity);
         } else {
@@ -40,7 +41,7 @@ class RouteOptimizer {
       matrix.add(row);
     }
 
-    // 3. TSP Çözümü
+    // 3. TSP Çözümü (En Kısa Mesafe)
     // 0: Start, N-1: End. Biz 1 ile N-2 arasındaki (stops) elemanların sırasını bulacağız.
     final int n = points.length;
     List<int> stopIndices = List.generate(n - 2, (index) => index + 1);
@@ -50,13 +51,13 @@ class RouteOptimizer {
     // Durak sayısı 8 veya daha az ise (Toplam 10 nokta), Brute Force kesin çözüm.
     // 8! = 40,320 iterasyon. Dart'ta mili-saniyeler sürer.
     if (stopIndices.length <= 8) {
-      double minDuration = double.infinity;
+      double minDistance = double.infinity;
       
       void permute(List<int> arr, int k) {
         if (k == arr.length) {
-          double currentDur = _calculateDuration(matrix, [0, ...arr, n - 1]);
-          if (currentDur < minDuration) {
-            minDuration = currentDur;
+          double currentDist = _calculateTotal(matrix, [0, ...arr, n - 1]);
+          if (currentDist < minDistance) {
+            minDistance = currentDist;
             bestOrder = List.from(arr);
           }
           return;
@@ -82,14 +83,14 @@ class RouteOptimizer {
       int currentPoint = 0; // Start at 0
 
       while (unvisited.isNotEmpty) {
-        double minDur = double.infinity;
+        double minVal = double.infinity;
         int nearestIdx = -1;
         int nearestVal = -1;
 
         for (int i = 0; i < unvisited.length; i++) {
-          double dur = matrix[currentPoint][unvisited[i]];
-          if (dur < minDur) {
-            minDur = dur;
+          double dist = matrix[currentPoint][unvisited[i]];
+          if (dist < minVal) {
+            minVal = dist;
             nearestIdx = i;
             nearestVal = unvisited[i];
           }
@@ -108,10 +109,10 @@ class RouteOptimizer {
         for (int i = 1; i < path.length - 2; i++) {
           for (int k = i + 1; k < path.length - 1; k++) {
             List<int> newPath = _twoOptSwap(path, i, k);
-            double oldDur = _calculateDuration(matrix, path);
-            double newDur = _calculateDuration(matrix, newPath);
+            double oldDist = _calculateTotal(matrix, path);
+            double newDist = _calculateTotal(matrix, newPath);
 
-            if (newDur < oldDur) {
+            if (newDist < oldDist) {
               path = newPath;
               improved = true;
             }
@@ -132,7 +133,7 @@ class RouteOptimizer {
     return optimizedPoints;
   }
 
-  static double _calculateDuration(List<List<double>> matrix, List<int> path) {
+  static double _calculateTotal(List<List<double>> matrix, List<int> path) {
     double total = 0.0;
     for (int i = 0; i < path.length - 1; i++) {
       total += matrix[path[i]][path[i+1]];

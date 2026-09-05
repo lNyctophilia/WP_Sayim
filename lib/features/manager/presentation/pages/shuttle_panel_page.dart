@@ -239,7 +239,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
         {'lat': endLoc['latitude'], 'lon': endLoc['longitude'], 'name': 'End'},
       ];
 
-      // 4. Optimize the route order locally using real driving durations (Matrix API + TSP)
+      // 4. Optimize the route order locally using REAL DRIVING DISTANCES (Matrix API + TSP)
       List<Map<String, dynamic>> optimizedPoints = await RouteOptimizer.optimizeWithMatrix(allPoints);
 
       // 5. Fetch Route Geometry from OSRM based on the absolute best order

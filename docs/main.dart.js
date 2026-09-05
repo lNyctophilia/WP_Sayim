@@ -9709,14 +9709,14 @@ if(b8.length<=3){q=b8
 s=1
 break}p=t.N
 s=3
-return A.i(A.b8k(A.eR("https://router.project-osrm.org/table/v1/driving/"+new A.X(b8,new A.aAe(),A.T(b8).i("X<1,m>")).aD(0,";"),0,null),A.a9(["User-Agent","DaytrackApp/1.0"],p,p)),$async$aAd)
+return A.i(A.b8k(A.eR("https://router.project-osrm.org/table/v1/driving/"+new A.X(b8,new A.aAe(),A.T(b8).i("X<1,m>")).aD(0,";")+"?annotations=distance",0,null),A.a9(["User-Agent","DaytrackApp/1.0"],p,p)),$async$aAd)
 case 3:o=c0
 p=o.b
 if(p!==200)throw A.f(A.cd("OSRM table error: "+p))
 n=B.ce.eC(A.aeE(A.ael(o.e)).eC(o.w))
 p=J.aD(n)
 if(!J.c(p.h(n,"code"),"Ok"))throw A.f(A.cd("OSRM returned non-Ok code: "+A.j(p.h(n,"code"))))
-m=p.h(n,"durations")
+m=p.h(n,"distances")
 l=A.b([],t.zg)
 for(p=J.aD(m),k=t.n,j=0;j<p.gF(m);++j){i=A.b([],k)
 for(h=0;h<J.c7(p.h(m,j));++h){g=J.cr(p.h(m,j),h)
@@ -36632,7 +36632,7 @@ if(b.$1(r))return r}return null},
 bv_(a,b){var s,r,q
 for(s=A.o(a),r=new A.jq(J.bA(a.a),a.b,s.i("jq<1,2>")),s=s.y[1];r.t();){q=r.a
 if(b.$1(q==null?s.a(q):q))return!1}return!0},
-brU(){var s,r,q,p=A.c8("[^\\d\\.\\-:]",!0,!1),o=A.du("Cmt_05.09.2026-_6:28:39,79",p,"")
+brU(){var s,r,q,p=A.c8("[^\\d\\.\\-:]",!0,!1),o=A.du("Cmt_05.09.2026-_6:44:35,50",p,"")
 p=A.c8("^\\-+|\\-+$",!0,!1)
 o=A.du(o,p,"")
 s=A.b(o.split("-"),t.s)
