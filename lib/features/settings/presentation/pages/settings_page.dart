@@ -374,10 +374,7 @@ class _SettingsPageState extends State<SettingsPage> {
           );
 
           if (confirmed == true && mounted) {
-            // Önce tüm sayfaları kapat (SettingsPage vs.)
-            Navigator.of(context).popUntil((route) => route.isFirst);
-            await Future.delayed(const Duration(milliseconds: 100));
-            // Sonra çıkış yap
+            // AppRouter on authStateChanges will automatically pop all pushed routes and show LoginPage.
             await AuthService().logout();
           }
         },

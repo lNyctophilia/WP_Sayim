@@ -16,6 +16,7 @@ import '../../../../features/home/presentation/widgets/custom_top_bar.dart';
 import 'manager_panel_page.dart';
 import 'shuttle_route_map_page.dart';
 import '../../../../core/theme/theme_service.dart';
+import '../../../../core/utils/route_optimizer.dart';
 
 class ShuttlePanelPage extends StatefulWidget {
   final AppUser currentUser;
@@ -231,22 +232,25 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
     }
 
     try {
-      // 3. Build coordinate list for OSRM: Start, ...staffs, End
+      // 3. Build coordinate list for RouteOptimizer: Start, ...staffs, End
       List<Map<String, dynamic>> allPoints = [
         {'lat': startLoc['latitude'], 'lon': startLoc['longitude'], 'name': 'Start'},
         ...validStaff.map((s) => {'lat': s.latitude!, 'lon': s.longitude!, 'name': s.fullName, 'id': s.id}),
         {'lat': endLoc['latitude'], 'lon': endLoc['longitude'], 'name': 'End'},
       ];
 
+      // 4. Optimize the route order locally (Haversine + Nearest Neighbor + 2-opt)
+      List<Map<String, dynamic>> optimizedPoints = RouteOptimizer.optimize(allPoints);
+
+      // 5. Fetch Route Geometry from OSRM based on the fixed order
       // OSRM format: lon,lat;lon,lat...
-      String coords = allPoints.map((p) => '${p['lon']},${p['lat']}').join(';');
+      String coords = optimizedPoints.map((p) => '${p['lon']},${p['lat']}').join(';');
       
-      // 4. Fetch Trip Optimization
-      final url = Uri.parse('https://router.project-osrm.org/trip/v1/driving/$coords?source=first&destination=last&roundtrip=false&overview=simplified');
+      final url = Uri.parse('https://router.project-osrm.org/route/v1/driving/$coords?overview=simplified');
       final response = await http.get(url, headers: {'User-Agent': 'DaytrackApp/1.0'});
 
       if (response.statusCode != 200) {
-        throw Exception('OSRM trip error: ${response.statusCode}');
+        throw Exception('OSRM route error: ${response.statusCode}');
       }
 
       final data = json.decode(response.body);
@@ -255,16 +259,7 @@ class _ShuttlePanelPageState extends State<ShuttlePanelPage> {
         throw Exception('OSRM returned non-Ok code: ${data['code']}');
       }
 
-      final waypoints = data['waypoints'] as List<dynamic>;
-      final encodedPolyline = data['trips'][0]['geometry'] as String;
-      
-      // Create a list to hold the correctly ordered points
-      List<Map<String, dynamic>> optimizedPoints = List.filled(allPoints.length, {});
-      
-      for (int i = 0; i < waypoints.length; i++) {
-        int optIndex = waypoints[i]['waypoint_index'];
-        optimizedPoints[optIndex] = allPoints[i];
-      }
+      final encodedPolyline = data['routes'][0]['geometry'] as String;
 
       // Navigate to custom map page
       if (mounted) {
