@@ -1,114 +1,153 @@
-import 'dart:math';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class RouteOptimizer {
-  /// Sabit dünya yarıçapı (km cinsinden)
-  static const double earthRadiusKm = 6371.0;
+  /// OSRM Table API kullanarak noktalar arası gerçek sürüş sürelerini çeker
+  /// ve Brute-Force (N<=9) veya NN+2-opt (N>9) kullanarak en iyi sıralamayı bulur.
+  static Future<List<Map<String, dynamic>>> optimizeWithMatrix(List<Map<String, dynamic>> points) async {
+    if (points.length <= 3) return points;
 
-  /// İki koordinat (enlem, boylam) arasındaki kuş uçuşu (Haversine) mesafeyi km olarak hesaplar.
-  static double _haversineDistance(double lat1, double lon1, double lat2, double lon2) {
-    final dLat = _degreesToRadians(lat2 - lat1);
-    final dLon = _degreesToRadians(lon2 - lon1);
+    // 1. Koordinatları OSRM formatına çevir (lon,lat;lon,lat...)
+    String coords = points.map((p) => '${p['lon']},${p['lat']}').join(';');
+    
+    // 2. Table API'den süre matrisini çek
+    final url = Uri.parse('https://router.project-osrm.org/table/v1/driving/$coords');
+    final response = await http.get(url, headers: {'User-Agent': 'DaytrackApp/1.0'});
 
-    final a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(_degreesToRadians(lat1)) * cos(_degreesToRadians(lat2)) *
-        sin(dLon / 2) * sin(dLon / 2);
-        
-    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
-    return earthRadiusKm * c;
+    if (response.statusCode != 200) {
+      throw Exception('OSRM table error: ${response.statusCode}');
+    }
+
+    final data = json.decode(response.body);
+    if (data['code'] != 'Ok') {
+      throw Exception('OSRM returned non-Ok code: ${data['code']}');
+    }
+
+    // durations matrix: i'den j'ye gitme süresi (saniye)
+    List<dynamic> durationsRaw = data['durations'];
+    List<List<double>> matrix = [];
+    
+    for (int i = 0; i < durationsRaw.length; i++) {
+      List<double> row = [];
+      for (int j = 0; j < durationsRaw[i].length; j++) {
+        var val = durationsRaw[i][j];
+        if (val == null) {
+          row.add(double.infinity);
+        } else {
+          row.add((val as num).toDouble());
+        }
+      }
+      matrix.add(row);
+    }
+
+    // 3. TSP Çözümü
+    // 0: Start, N-1: End. Biz 1 ile N-2 arasındaki (stops) elemanların sırasını bulacağız.
+    final int n = points.length;
+    List<int> stopIndices = List.generate(n - 2, (index) => index + 1);
+    
+    List<int> bestOrder = [];
+
+    // Durak sayısı 8 veya daha az ise (Toplam 10 nokta), Brute Force kesin çözüm.
+    // 8! = 40,320 iterasyon. Dart'ta mili-saniyeler sürer.
+    if (stopIndices.length <= 8) {
+      double minDuration = double.infinity;
+      
+      void permute(List<int> arr, int k) {
+        if (k == arr.length) {
+          double currentDur = _calculateDuration(matrix, [0, ...arr, n - 1]);
+          if (currentDur < minDuration) {
+            minDuration = currentDur;
+            bestOrder = List.from(arr);
+          }
+          return;
+        }
+        for (int i = k; i < arr.length; i++) {
+          int temp = arr[i];
+          arr[i] = arr[k];
+          arr[k] = temp;
+          
+          permute(arr, k + 1);
+          
+          temp = arr[i];
+          arr[i] = arr[k];
+          arr[k] = temp;
+        }
+      }
+      
+      permute(stopIndices, 0);
+    } else {
+      // 8'den fazlaysa Nearest Neighbor + 2-opt
+      List<int> currentOrder = [];
+      List<int> unvisited = List.from(stopIndices);
+      int currentPoint = 0; // Start at 0
+
+      while (unvisited.isNotEmpty) {
+        double minDur = double.infinity;
+        int nearestIdx = -1;
+        int nearestVal = -1;
+
+        for (int i = 0; i < unvisited.length; i++) {
+          double dur = matrix[currentPoint][unvisited[i]];
+          if (dur < minDur) {
+            minDur = dur;
+            nearestIdx = i;
+            nearestVal = unvisited[i];
+          }
+        }
+
+        currentOrder.add(nearestVal);
+        currentPoint = nearestVal;
+        unvisited.removeAt(nearestIdx);
+      }
+
+      List<int> path = [0, ...currentOrder, n - 1];
+      
+      bool improved = true;
+      while (improved) {
+        improved = false;
+        for (int i = 1; i < path.length - 2; i++) {
+          for (int k = i + 1; k < path.length - 1; k++) {
+            List<int> newPath = _twoOptSwap(path, i, k);
+            double oldDur = _calculateDuration(matrix, path);
+            double newDur = _calculateDuration(matrix, newPath);
+
+            if (newDur < oldDur) {
+              path = newPath;
+              improved = true;
+            }
+          }
+        }
+      }
+      // Extract middle part
+      bestOrder = path.sublist(1, path.length - 1);
+    }
+
+    // 4. En iyi sırayı oluştur ve geri dön
+    List<Map<String, dynamic>> optimizedPoints = [points.first];
+    for (int idx in bestOrder) {
+      optimizedPoints.add(points[idx]);
+    }
+    optimizedPoints.add(points.last);
+
+    return optimizedPoints;
   }
 
-  static double _degreesToRadians(double degrees) {
-    return degrees * pi / 180.0;
-  }
-
-  /// Noktalar arası mesafe kullanarak toplam tur mesafesini hesaplar.
-  static double _calculateTotalDistance(List<Map<String, dynamic>> path) {
+  static double _calculateDuration(List<List<double>> matrix, List<int> path) {
     double total = 0.0;
     for (int i = 0; i < path.length - 1; i++) {
-      total += _haversineDistance(
-        path[i]['lat'], path[i]['lon'],
-        path[i+1]['lat'], path[i+1]['lon']
-      );
+      total += matrix[path[i]][path[i+1]];
     }
     return total;
   }
 
-  /// Başlangıç ve bitiş noktası sabit olmak şartıyla aradaki noktaları
-  /// en kısa mesafeye göre sıralar.
-  /// Start ve End noktalarının Listede her zaman ilk ve son eleman olması beklenir.
-  static List<Map<String, dynamic>> optimize(List<Map<String, dynamic>> points) {
-    if (points.length <= 3) return points;
-
-    final startPoint = points.first;
-    final endPoint = points.last;
-    List<Map<String, dynamic>> stops = points.sublist(1, points.length - 1);
-
-    // 1. Adım: Nearest Neighbor Algorithm (En Yakın Komşu)
-    List<Map<String, dynamic>> orderedStops = [];
-    List<Map<String, dynamic>> unvisitedStops = List.from(stops);
-    
-    Map<String, dynamic> currentPoint = startPoint;
-    
-    while (unvisitedStops.isNotEmpty) {
-      double minDistance = double.infinity;
-      int nearestIndex = -1;
-
-      for (int i = 0; i < unvisitedStops.length; i++) {
-        final dist = _haversineDistance(
-          currentPoint['lat'], currentPoint['lon'],
-          unvisitedStops[i]['lat'], unvisitedStops[i]['lon']
-        );
-        if (dist < minDistance) {
-          minDistance = dist;
-          nearestIndex = i;
-        }
-      }
-
-      currentPoint = unvisitedStops[nearestIndex];
-      orderedStops.add(currentPoint);
-      unvisitedStops.removeAt(nearestIndex);
-    }
-
-    // Başlangıç, sıralanmış duraklar ve bitişten oluşan rotayı oluştur.
-    List<Map<String, dynamic>> currentPath = [startPoint, ...orderedStops, endPoint];
-
-    // 2. Adım: 2-opt Local Search Algorithm (Sadeleştirme)
-    // Rota üzerinde herhangi iki bağı (edge) koparıp çapraz bağlayarak mesafe kısalıyor mu diye bakar.
-    bool improved = true;
-    while (improved) {
-      improved = false;
-      for (int i = 1; i < currentPath.length - 2; i++) {
-        for (int k = i + 1; k < currentPath.length - 1; k++) {
-          final newPath = _twoOptSwap(currentPath, i, k);
-          final oldDist = _calculateTotalDistance(currentPath);
-          final newDist = _calculateTotalDistance(newPath);
-
-          if (newDist < oldDist) {
-            currentPath = newPath;
-            improved = true;
-          }
-        }
-      }
-    }
-
-    return currentPath;
-  }
-
-  /// 2-opt Swap metodu
-  static List<Map<String, dynamic>> _twoOptSwap(
-    List<Map<String, dynamic>> path, int i, int k
-  ) {
-    List<Map<String, dynamic>> newPath = [];
-    // 1. take route[0] to route[i-1] and add them in order to new_route
+  static List<int> _twoOptSwap(List<int> path, int i, int k) {
+    List<int> newPath = [];
     newPath.addAll(path.sublist(0, i));
     
-    // 2. take route[i] to route[k] and add them in reverse order to new_route
-    List<Map<String, dynamic>> reversedSegment = path.sublist(i, k + 1).reversed.toList();
+    List<int> reversedSegment = path.sublist(i, k + 1).reversed.toList();
     newPath.addAll(reversedSegment);
     
-    // 3. take route[k+1] to end and add them in order to new_route
     newPath.addAll(path.sublist(k + 1));
-    
     return newPath;
   }
 }

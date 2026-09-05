@@ -120,7 +120,7 @@ class AuthService {
   Future<void> logout([bool isKicked = false]) async {
     try {
       if (!isKicked) {
-        await NotificationService().clearToken().timeout(const Duration(seconds: 2));
+        await NotificationService().clearToken();
       }
     } catch (e) {
       // Token silinirken hata olsa bile çıkışa devam et

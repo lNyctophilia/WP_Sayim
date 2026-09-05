@@ -374,8 +374,12 @@ class _SettingsPageState extends State<SettingsPage> {
           );
 
           if (confirmed == true && mounted) {
-            // AppRouter on authStateChanges will automatically pop all pushed routes and show LoginPage.
+            // First log out
             await AuthService().logout();
+            // Navigation stack'i temizle — AppRouter root'ta LoginPage gösterecek
+            if (appNavigatorKey.currentState?.canPop() ?? false) {
+              appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+            }
           }
         },
         shape: RoundedRectangleBorder(
