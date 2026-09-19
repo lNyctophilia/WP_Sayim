@@ -458,9 +458,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           backgroundColor: AppColors.card,
                           child: SingleChildScrollView(
                             physics: const AlwaysScrollableScrollPhysics(),
-                            child: _isAnimating
-                                ? _buildAnimatedContent()
-                                : _buildStaticContent(),
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.translucent,
+                              onHorizontalDragEnd: (details) {
+                                if (details.primaryVelocity! > 0) {
+                                  _previousMonth();
+                                } else if (details.primaryVelocity! < 0) {
+                                  _nextMonth();
+                                }
+                              },
+                              child: _isAnimating
+                                  ? _buildAnimatedContent()
+                                  : _buildStaticContent(),
+                            ),
                           ),
                         ),
                       ),
