@@ -170,7 +170,7 @@ class _StaffPickerState extends State<StaffPicker> {
   void _initConfigs({bool preserveSelection = false, StaffPicker? oldWidget}) {
     final oldConfigs = preserveSelection ? _configs : (widget.initialSelections ?? <SelectedUserConfig>[]);
     
-    final validUsers = widget.users.where((u) => !widget.busyUserIds.contains(u.id)).toList();
+    final validUsers = widget.users.toList();
 
     _configs = validUsers.map((u) {
       final old = (preserveSelection || widget.initialSelections != null)
