@@ -237,6 +237,14 @@ class SayimService {
             .collection('gunler')
             .doc(docId);
         batch.delete(workDayRef);
+        
+        // Geriye dönük uyumluluk: Eski formatta (sadece tarih) kalmış olan WorkDay'leri de temizle
+        final oldWorkDayRef = _firestore
+            .collection('personel_takvimi')
+            .doc(userId)
+            .collection('gunler')
+            .doc(dateString);
+        batch.delete(oldWorkDayRef);
       }
     }
 
