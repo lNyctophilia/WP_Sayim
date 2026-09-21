@@ -6,11 +6,27 @@ class MonthlyData {
   final int month;
   final List<WorkDay> workDays;
 
-  const MonthlyData({
+  MonthlyData({
     required this.year,
     required this.month,
-    required this.workDays,
-  });
+    required List<WorkDay> workDays,
+  }) : workDays = _deduplicate(workDays);
+
+  static List<WorkDay> _deduplicate(List<WorkDay> days) {
+    final Map<String, WorkDay> map = {};
+    final List<WorkDay> noIdDays = [];
+    
+    for (var day in days) {
+      if (day.sayimId != null && day.sayimId!.isNotEmpty) {
+        // Aynı sayimId'ye sahip kayıt varsa üzerine yazar (çiftleri teke indirir)
+        map[day.sayimId!] = day;
+      } else {
+        noIdDays.add(day);
+      }
+    }
+    
+    return [...map.values, ...noIdDays];
+  }
 
   int get totalDays => workDays.length;
 

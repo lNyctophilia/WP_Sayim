@@ -176,7 +176,7 @@ class _DayCell extends StatelessWidget {
                   return Container(
                     width: 5,
                     height: 5,
-                    margin: const EdgeInsets.only(top: 2, right: 2),
+                    margin: const EdgeInsets.only(top: 2, left: 1.5, right: 1.5),
                     decoration: BoxDecoration(
                       color: wd.isCityCenter
                           ? AppColors.cityInner

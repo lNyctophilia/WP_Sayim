@@ -152,6 +152,14 @@ class SayimService {
           batch.delete(oldWorkDayRef);
         }
 
+        // Geriye dönük uyumluluk: Eski formatta kalmış hayalet kaydı (sadece tarih) temizle
+        final oldWorkDayRefCompat = _firestore
+            .collection('personel_takvimi')
+            .doc(userId)
+            .collection('gunler')
+            .doc(oldDateString);
+        batch.delete(oldWorkDayRefCompat);
+
         final workDay = {
           'date': sayim.date.toIso8601String(),
           'isCityCenter': sayim.sehirTipi == SehirTipi.ici,

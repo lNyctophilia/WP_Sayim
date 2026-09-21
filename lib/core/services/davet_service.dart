@@ -130,6 +130,15 @@ class DavetService {
       final sayim = Sayim.fromFirestore(sayimDoc);
       final updatedInvited = List<String>.from(sayim.invitedUserIds)..remove(davet.userId);
       batch.update(sayimDoc.reference, {'invitedUserIds': updatedInvited});
+      
+      final dateString = "${sayim.date.year}-${sayim.date.month.toString().padLeft(2, '0')}-${sayim.date.day.toString().padLeft(2, '0')}";
+      final docId = "${dateString}_${sayim.id}";
+      final workDayRef = _firestore
+          .collection('personel_takvimi')
+          .doc(davet.userId)
+          .collection('gunler')
+          .doc(docId);
+      batch.delete(workDayRef);
     }
 
     await batch.commit();
