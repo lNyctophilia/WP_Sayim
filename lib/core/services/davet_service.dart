@@ -100,11 +100,12 @@ class DavetService {
     });
 
     final dateString = "${workDay.date.year}-${workDay.date.month.toString().padLeft(2, '0')}-${workDay.date.day.toString().padLeft(2, '0')}";
+    final docId = "${dateString}_${sayim.id}";
     final workDayRef = _firestore
         .collection('personel_takvimi')
         .doc(davet.userId)
         .collection('gunler')
-        .doc(dateString);
+        .doc(docId);
         
     batch.set(workDayRef, workDay.toJson(), SetOptions(merge: true));
 
@@ -156,11 +157,12 @@ class DavetService {
       if (sayimDoc.exists) {
         final sayim = Sayim.fromFirestore(sayimDoc);
         final dateString = "${sayim.date.year}-${sayim.date.month.toString().padLeft(2, '0')}-${sayim.date.day.toString().padLeft(2, '0')}";
+        final docId = "${dateString}_${sayim.id}";
         final workDayRef = _firestore
             .collection('personel_takvimi')
             .doc(davet.userId)
             .collection('gunler')
-            .doc(dateString);
+            .doc(docId);
         batch.delete(workDayRef);
       }
     }
@@ -215,11 +217,12 @@ class DavetService {
       if (sayimDoc.exists) {
         final sayim = Sayim.fromFirestore(sayimDoc);
         final dateString = "${sayim.date.year}-${sayim.date.month.toString().padLeft(2, '0')}-${sayim.date.day.toString().padLeft(2, '0')}";
+        final docId = "${dateString}_${sayim.id}";
         final workDayRef = _firestore
             .collection('personel_takvimi')
             .doc(davet.userId)
             .collection('gunler')
-            .doc(dateString);
+            .doc(docId);
             
         final updateData = <String, dynamic>{};
         if (davet.ucret != newUcret) {
