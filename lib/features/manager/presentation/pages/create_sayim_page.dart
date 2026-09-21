@@ -266,6 +266,8 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
 
       // 2. Davetleri oluştur
       for (var config in _selectedUsers) {
+        final isSelfInvite = config.user.id == widget.currentUser.id;
+        
         final davet = Davet(
           id: '', // Firestore auto-id
           sayimId: sayimId,
@@ -275,23 +277,26 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
           sehirIciDisi: _sehirTipi, // Sayımın şehrini kullanıyoruz
           ucret: config.ucret,
           multiplier: config.multiplier,
+          status: isSelfInvite ? DavetStatus.accepted : DavetStatus.pending,
           createdAt: DateTime.now(),
         );
         final createdDavetId = await _davetService.createDavet(davet);
 
         // E-posta gönderimi tetikleniyor (sadece mail adresi olanlar için)
-        final isTr = widget.lang.currentLang == 'tr';
-        final sayimTarihi = '${sayim.date.day.toString().padLeft(2, '0')}.${sayim.date.month.toString().padLeft(2, '0')}.${sayim.date.year}';
-        final grupSaati = sayim.gruplar.firstWhere((g) => g.grupId == config.grupId, orElse: () => const SayimGrup(grupId: 1, saat: '')).saat;
-        
-        await _notificationService.sendEmailNotification(
-          targetUserId: config.user.id,
-          subject: AppStrings.get('new_sayim_invitation', isTr ? 'tr' : 'en') ?? 'Yeni Sayım Daveti',
-          textContent: 'Merhaba ${config.user.fullName},\n\nYeni bir sayım için davet edildiniz!\n\nTarih: $sayimTarihi\nSaat: $grupSaati\nToplanma Yeri: ${sayim.toplanmaYeri}\n\nLütfen uygulamaya girerek daveti yanıtlayın.',
-        );
+        if (!isSelfInvite) {
+          final isTr = widget.lang.currentLang == 'tr';
+          final sayimTarihi = '${sayim.date.day.toString().padLeft(2, '0')}.${sayim.date.month.toString().padLeft(2, '0')}.${sayim.date.year}';
+          final grupSaati = sayim.gruplar.firstWhere((g) => g.grupId == config.grupId, orElse: () => const SayimGrup(grupId: 1, saat: '')).saat;
+          
+          await _notificationService.sendEmailNotification(
+            targetUserId: config.user.id,
+            subject: AppStrings.get('new_sayim_invitation', isTr ? 'tr' : 'en') ?? 'Yeni Sayım Daveti',
+            textContent: 'Merhaba ${config.user.fullName},\n\nYeni bir sayım için davet edildiniz!\n\nTarih: $sayimTarihi\nSaat: $grupSaati\nToplanma Yeri: ${sayim.toplanmaYeri}\n\nLütfen uygulamaya girerek daveti yanıtlayın.',
+          );
+        }
 
         // Kendi oluşturduğu sayımda kendine davet atıyorsa otomatik kabul et
-        if (config.user.id == widget.currentUser.id) {
+        if (isSelfInvite) {
           await _davetService.acceptDavet(createdDavetId);
         }
       }

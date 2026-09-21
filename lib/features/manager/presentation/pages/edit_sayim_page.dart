@@ -329,6 +329,10 @@ class _EditSayimPageState extends State<EditSayimPage> {
       for (var config in _selectedUsers) {
         final existing = widget.existingDavets.any((d) => d.userId == config.user.id);
         if (!existing) {
+          final isSayimClosed = updatedSayim.effectiveStatus == SayimStatus.closed;
+          final isSelfInvite = config.user.id == widget.currentUser.id;
+          final initialStatus = (isSayimClosed || isSelfInvite) ? DavetStatus.accepted : DavetStatus.pending;
+
           final newDavet = Davet(
             id: '', 
             sayimId: updatedSayim.id,
@@ -338,12 +342,12 @@ class _EditSayimPageState extends State<EditSayimPage> {
             sehirIciDisi: _sehirTipi,
             ucret: config.ucret,
             multiplier: config.multiplier,
-            status: updatedSayim.effectiveStatus == SayimStatus.closed ? DavetStatus.accepted : DavetStatus.pending,
+            status: initialStatus,
             createdAt: DateTime.now(),
           );
           final createdId = await _davetService.createDavet(newDavet);
           
-          if (updatedSayim.effectiveStatus == SayimStatus.open) {
+          if (!isSayimClosed && !isSelfInvite) {
             final sayimTarihi = '${updatedSayim.date.day.toString().padLeft(2, '0')}.${updatedSayim.date.month.toString().padLeft(2, '0')}.${updatedSayim.date.year}';
             final grupSaati = updatedSayim.gruplar.firstWhere((g) => g.grupId == config.grupId, orElse: () => const SayimGrup(grupId: 1, saat: '')).saat;
             final NotificationService notificationService = NotificationService();
@@ -354,7 +358,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
             );
           }
 
-          if (config.user.id == widget.currentUser.id && updatedSayim.effectiveStatus == SayimStatus.open) {
+          if (isSayimClosed || isSelfInvite) {
             await _davetService.acceptDavet(createdId);
           }
         }

@@ -95,14 +95,16 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
     try {
       final now = DateTime.now();
       
-      // 1. Yeni davetleri oluştur
       for (var config in _selectedConfigs) {
         final isSayimClosed = widget.sayim.isClosed;
+        final isSelfInvite = config.user.id == widget.currentUser.id;
+        final initialStatus = (isSayimClosed || isSelfInvite) ? DavetStatus.accepted : DavetStatus.pending;
+
         final davet = Davet(
           id: '',
           sayimId: widget.sayim.id,
           userId: config.user.id,
-          status: isSayimClosed ? DavetStatus.accepted : DavetStatus.pending,
+          status: initialStatus,
           role: config.role,
           grupId: config.grupId,
           sehirIciDisi: widget.sayim.sehirTipi, // Sayımın kendi sehirTipini kullan
@@ -116,7 +118,7 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
         final sayimTarihi = '${widget.sayim.date.day.toString().padLeft(2, '0')}.${widget.sayim.date.month.toString().padLeft(2, '0')}.${widget.sayim.date.year}';
         final grupSaati = widget.sayim.gruplar.firstWhere((g) => g.grupId == config.grupId, orElse: () => const SayimGrup(grupId: 1, saat: '')).saat;
         
-        if (!isSayimClosed) {
+        if (!isSayimClosed && !isSelfInvite) {
           await _notificationService.sendEmailNotification(
             targetUserId: config.user.id,
             subject: AppStrings.get('new_sayim_invitation', isTr ? 'tr' : 'en') ?? 'Yeni Sayım Daveti',
@@ -124,8 +126,8 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
           );
         }
 
-        // Eğer yönetici kendini eklediyse veya sayım kapalıysa zaten kabul edildi (gereksiz write engelle)
-        if (!isSayimClosed && config.user.id == widget.currentUser.id) {
+        // Eğer yönetici kendini eklediyse veya sayım kapalıysa zaten kabul edildi (takvime ekle)
+        if (isSayimClosed || isSelfInvite) {
           await _davetService.acceptDavet(davetId);
         }
       }

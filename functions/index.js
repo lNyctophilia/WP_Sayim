@@ -2,6 +2,9 @@ const { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } = require("fir
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
 
+const firestore = require('@google-cloud/firestore');
+const { Storage } = require('@google-cloud/storage');
+
 admin.initializeApp();
 
 /**
@@ -146,6 +149,11 @@ exports.sendDavetNotification = onDocumentCreated("davetler/{davetId}", async (e
 
   if (davetData.isPast === true) {
     console.log(`Davet notification skipped: Past sayim (davet ${event.params.davetId}).`);
+    return;
+  }
+
+  if (davetData.status === "accepted" || davetData.status === "declined") {
+    console.log(`Davet notification skipped: Status is ${davetData.status} at creation (${event.params.davetId}).`);
     return;
   }
 
@@ -817,5 +825,75 @@ exports.hardDeleteSoftDeletedUsers = onSchedule(
     }
 
     console.log(`[HardDelete] Done. Deleted: ${deletedCount}, Skipped: ${skippedCount}`);
+  }
+);
+
+// 14. Firestore Weekly Backup (Pazar 03:00)
+exports.weeklyFirestoreBackup = onSchedule(
+  {
+    schedule: "0 3 * * 0",
+    timeZone: "Europe/Istanbul",
+    region: "europe-west1",
+  },
+  async (event) => {
+    const firestoreClient = new firestore.v1.FirestoreAdminClient();
+    const projectId = process.env.GCP_PROJECT || process.env.GCLOUD_PROJECT || "wp-sayim";
+    const databaseName = firestoreClient.databasePath(projectId, '(default)');
+    const bucketName = `${projectId}.appspot.com`; // Varsayılan bucket
+
+    try {
+      const responses = await firestoreClient.exportDocuments({
+        name: databaseName,
+        outputUriPrefix: `gs://${bucketName}/backups`,
+        // Boş collectionIds dizisi tüm veritabanını dışa aktarır
+        collectionIds: []
+      });
+
+      const response = responses[0];
+      console.log(`[Backup] Export operation started: ${response.name}`);
+    } catch (err) {
+      console.error("[Backup] Error during export:", err);
+    }
+  }
+);
+
+// 15. Eski yedekleri silme fonksiyonu (Pazar 04:00 - Yedekten 1 saat sonra)
+exports.cleanupOldBackups = onSchedule(
+  {
+    schedule: "0 4 * * 0",
+    timeZone: "Europe/Istanbul",
+    region: "europe-west1",
+  },
+  async (event) => {
+    const storageClient = new Storage();
+    const projectId = process.env.GCP_PROJECT || process.env.GCLOUD_PROJECT || "wp-sayim";
+    const bucketName = `${projectId}.appspot.com`;
+    const bucket = storageClient.bucket(bucketName);
+    const prefix = "backups/";
+
+    try {
+      // Sadece klasörleri/dosyaları listele
+      const [files] = await bucket.getFiles({ prefix });
+      const now = Date.now();
+      const retentionTime = 14 * 24 * 60 * 60 * 1000; // 14 gün
+      
+      let deletedCount = 0;
+      
+      for (const file of files) {
+        // Dosyanın oluşturulma zamanı
+        const metadata = file.metadata;
+        const timeCreated = new Date(metadata.timeCreated).getTime();
+
+        if (now - timeCreated > retentionTime) {
+          await file.delete();
+          console.log(`[Cleanup] Deleted old backup file: ${file.name}`);
+          deletedCount++;
+        }
+      }
+      
+      console.log(`[Cleanup] Done. Deleted ${deletedCount} old backup files/objects.`);
+    } catch (err) {
+      console.error("[Cleanup] Error during cleanup:", err);
+    }
   }
 );
