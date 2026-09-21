@@ -69,11 +69,12 @@ class SayimService {
       final combinedNote = '${newSayim.firmaAdi} ${newSayim.note} ${grup.saat}'.trim();
       
       final dateString = "${newSayim.date.year}-${newSayim.date.month.toString().padLeft(2, '0')}-${newSayim.date.day.toString().padLeft(2, '0')}";
+      final docId = "${dateString}_${newSayim.id}";
       final workDayRef = _firestore
           .collection('personel_takvimi')
           .doc(newDavet.userId)
           .collection('gunler')
-          .doc(dateString);
+          .doc(docId);
 
       final workDay = {
         'date': newSayim.date.toIso8601String(),
@@ -132,17 +133,20 @@ class SayimService {
         final oldDateString = "${oldSayim.date.year}-${oldSayim.date.month.toString().padLeft(2, '0')}-${oldSayim.date.day.toString().padLeft(2, '0')}";
         final newDateString = "${sayim.date.year}-${sayim.date.month.toString().padLeft(2, '0')}-${sayim.date.day.toString().padLeft(2, '0')}";
 
+        final oldDocId = "${oldDateString}_${sayim.id}";
+        final newDocId = "${newDateString}_${sayim.id}";
+
         final oldWorkDayRef = _firestore
             .collection('personel_takvimi')
             .doc(userId)
             .collection('gunler')
-            .doc(oldDateString);
+            .doc(oldDocId);
             
         final newWorkDayRef = _firestore
             .collection('personel_takvimi')
             .doc(userId)
             .collection('gunler')
-            .doc(newDateString);
+            .doc(newDocId);
 
         if (oldDateString != newDateString) {
           batch.delete(oldWorkDayRef);
@@ -218,11 +222,12 @@ class SayimService {
       if (status == 'accepted') {
         final userId = davetDoc.data()['userId'] as String;
         final dateString = "${sayim.date.year}-${sayim.date.month.toString().padLeft(2, '0')}-${sayim.date.day.toString().padLeft(2, '0')}";
+        final docId = "${dateString}_${sayim.id}";
         final workDayRef = _firestore
             .collection('personel_takvimi')
             .doc(userId)
             .collection('gunler')
-            .doc(dateString);
+            .doc(docId);
         batch.delete(workDayRef);
       }
     }

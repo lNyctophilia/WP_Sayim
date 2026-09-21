@@ -17,7 +17,12 @@ class MonthlyData {
   double get totalEarnings =>
       workDays.fold(0.0, (sum, day) => sum + day.payment);
 
-  /// Belirli bir günde iş var mı?
+  /// Belirli bir günde olan tüm işleri döner
+  List<WorkDay> getWorkDaysForDay(int day) {
+    return workDays.where((wd) => wd.date.day == day).toList();
+  }
+
+  /// Geriye uyumluluk veya tek bir iş beklendiğinde ilkini döner
   WorkDay? getWorkDay(int day) {
     try {
       return workDays.firstWhere(

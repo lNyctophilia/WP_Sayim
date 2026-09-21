@@ -54,13 +54,15 @@ service cloud.firestore {
       // Yönetici yetkisi olanlar sadece 'staff' oluşturabilir.
       allow create: if hasAdminPermission() || (
         hasManagerPermission() && 
-        !hasProtectedRole(request.resource.data.roles)
+        !hasProtectedRole(request.resource.data.roles) &&
+        !('permissions' in request.resource.data)
       ) || (
         request.auth != null && 
         request.auth.uid == userId &&
         request.resource.data.isApproved == false &&
         request.resource.data.roles.size() == 1 &&
-        request.resource.data.roles[0] == 'staff'
+        request.resource.data.roles[0] == 'staff' &&
+        !('permissions' in request.resource.data)
       );
       
       // Admin yetkisi olanlar herkesi güncelleyebilir (permissions dahil).
@@ -111,7 +113,11 @@ service cloud.firestore {
       // Personel kendi davetlerini okuyabilir. Yönetici/Admin hepsini görebilir.
       allow read: if hasManagerPermission() || hasAdminPermission() || (request.auth != null && resource.data.userId == request.auth.uid);
       // Personel kendi davet durumunu güncelleyebilir
-      allow update: if hasManagerPermission() || hasAdminPermission() || (request.auth != null && resource.data.userId == request.auth.uid);
+      allow update: if hasManagerPermission() || hasAdminPermission() || (
+        request.auth != null && 
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'respondedAt'])
+      );
       // Davet oluşturma/silme yönetici yetkisi gerektirir
       allow create, delete: if hasManagerPermission() || hasAdminPermission();
     }

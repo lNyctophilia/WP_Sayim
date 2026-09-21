@@ -11,8 +11,8 @@ class CalendarGrid extends StatelessWidget {
   final int month;
   final MonthlyData monthlyData;
   final LanguageService lang;
-  final void Function(DateTime date, WorkDay? existing) onDayTapped;
-  final void Function(DateTime date, WorkDay? existing) onDayLongPressed;
+  final void Function(DateTime date, List<WorkDay> existingList) onDayTapped;
+  final void Function(DateTime date, List<WorkDay> existingList) onDayLongPressed;
 
   const CalendarGrid({
     super.key,
@@ -80,17 +80,17 @@ class CalendarGrid extends StatelessWidget {
           }
 
           final date = DateTime(year, month, dayIndex);
-          final workDay = monthlyData.getWorkDay(dayIndex);
+          final workDaysForDay = monthlyData.getWorkDaysForDay(dayIndex);
           final isToday = AppDateUtils.isToday(date);
           final isFuture = date.isAfter(DateTime.now());
 
           return Expanded(
             child: GestureDetector(
-              onTap: () => onDayTapped(date, workDay),
-              onLongPress: () => onDayLongPressed(date, workDay),
+              onTap: () => onDayTapped(date, workDaysForDay),
+              onLongPress: () => onDayLongPressed(date, workDaysForDay),
               child: _DayCell(
                 day: dayIndex,
-                workDay: workDay,
+                workDays: workDaysForDay,
                 isToday: isToday,
                 isFuture: isFuture,
               ),
@@ -104,21 +104,22 @@ class CalendarGrid extends StatelessWidget {
 
 class _DayCell extends StatelessWidget {
   final int day;
-  final WorkDay? workDay;
+  final List<WorkDay> workDays;
   final bool isToday;
   final bool isFuture;
 
   const _DayCell({
     required this.day,
-    this.workDay,
+    required this.workDays,
     required this.isToday,
     required this.isFuture,
   });
 
   @override
   Widget build(BuildContext context) {
-    final hasWork = workDay != null;
-    final isCityCenter = workDay?.isCityCenter ?? true;
+    final hasWork = workDays.isNotEmpty;
+    // Eğer birden fazla iş varsa ve en az biri şehir dışıysa dışı olarak göster
+    final isCityCenter = hasWork ? !workDays.any((wd) => !wd.isCityCenter) : true;
 
     Color bgColor;
     Color textColor;
@@ -169,16 +170,21 @@ class _DayCell extends StatelessWidget {
               ),
             ),
             if (hasWork)
-              Container(
-                width: 5,
-                height: 5,
-                margin: const EdgeInsets.only(top: 2),
-                decoration: BoxDecoration(
-                  color: isCityCenter
-                      ? AppColors.cityInner
-                      : AppColors.cityOuter,
-                  shape: BoxShape.circle,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: workDays.take(3).map((wd) {
+                  return Container(
+                    width: 5,
+                    height: 5,
+                    margin: const EdgeInsets.only(top: 2, right: 2),
+                    decoration: BoxDecoration(
+                      color: wd.isCityCenter
+                          ? AppColors.cityInner
+                          : AppColors.cityOuter,
+                      shape: BoxShape.circle,
+                    ),
+                  );
+                }).toList(),
               ),
           ],
         ),

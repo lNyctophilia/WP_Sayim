@@ -74,24 +74,25 @@ class WorkDayRepository {
 
   /// İş günü kaydet (yeni veya güncelle)
   Future<void> saveWorkDay(WorkDay workDay) async {
-    // Sadece tarihi (YYYY-MM-DD) ID olarak kullanıyoruz ki her gün için tek kayıt olsun
     final dateString = "${workDay.date.year}-${workDay.date.month.toString().padLeft(2, '0')}-${workDay.date.day.toString().padLeft(2, '0')}";
+    final docId = workDay.sayimId != null ? "${dateString}_${workDay.sayimId}" : dateString;
     await _firestore
         .collection('personel_takvimi')
         .doc(userId)
         .collection('gunler')
-        .doc(dateString)
+        .doc(docId)
         .set(workDay.toJson(), SetOptions(merge: true));
   }
 
   /// İş günü sil (Eğer yönetici daveti iptal ederse kullanılabilir)
-  Future<void> deleteWorkDay(DateTime date) async {
+  Future<void> deleteWorkDay(DateTime date, {String? sayimId}) async {
     final dateString = "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+    final docId = sayimId != null ? "${dateString}_$sayimId" : dateString;
     await _firestore
         .collection('personel_takvimi')
         .doc(userId)
         .collection('gunler')
-        .doc(dateString)
+        .doc(docId)
         .delete();
   }
 }

@@ -205,12 +205,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _changeMonth(-1);
   }
 
-  void _showNotePreview(DateTime date, WorkDay? existing) {
+  void _showNotePreview(DateTime date, List<WorkDay> existingList) {
     // Haptik geri bildirim
     HapticFeedback.mediumImpact();
 
-    final hasEntry = existing != null;
-    final hasNote = hasEntry && existing.displayNote.trim().isNotEmpty;
+    final hasEntry = existingList.isNotEmpty;
 
     // Tarih formatla
     final dayNames = widget.lang.currentLang == 'tr'
@@ -232,12 +231,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 320),
+          constraints: const BoxConstraints(maxWidth: 320, maxHeight: 500),
           decoration: BoxDecoration(
             color: AppColors.card,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: hasNote
+              color: hasEntry
                   ? AppColors.accentLight.withValues(alpha: 0.3)
                   : AppColors.textHint.withValues(alpha: 0.3),
               width: 1,
@@ -267,10 +266,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 child: Row(
                   children: [
                     Icon(
-                      hasNote
+                      hasEntry
                           ? Icons.sticky_note_2_rounded
                           : Icons.event_note_rounded,
-                      color: hasNote
+                      color: hasEntry
                           ? AppColors.accentLight
                           : AppColors.textHint,
                       size: 20,
@@ -307,106 +306,120 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
               ),
               // İçerik — sola yaslı
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                child: hasNote
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Konum bilgisi ve Ücret — sola yaslı
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: (existing.isCityCenter
-                                            ? AppColors.cityInner
-                                            : AppColors.cityOuter)
-                                        .withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    existing.isCityCenter
-                                        ? widget.lang.tr('city_inner')
-                                        : widget.lang.tr('city_outer'),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: existing.isCityCenter
-                                          ? AppColors.cityInner
-                                          : AppColors.cityOuter,
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                  child: hasEntry
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: existingList.map((existing) {
+                            final hasNote = existing.displayNote.trim().isNotEmpty;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Konum bilgisi ve Ücret — sola yaslı
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 5,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: (existing.isCityCenter
+                                                    ? AppColors.cityInner
+                                                    : AppColors.cityOuter)
+                                                .withValues(alpha: 0.15),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            existing.isCityCenter
+                                                ? widget.lang.tr('city_inner')
+                                                : widget.lang.tr('city_outer'),
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: existing.isCityCenter
+                                                  ? AppColors.cityInner
+                                                  : AppColors.cityOuter,
+                                            ),
+                                          ),
+                                        ),
+                                        if (existing.payment > 0) ...[
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 5,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.success.withValues(alpha: 0.15),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Text(
+                                              '${existing.payment.toInt()} ₺',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.success,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                   ),
-                                ),
-                                if (existing.payment > 0) ...[
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.success.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      '${existing.payment.toInt()} ₺',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.success,
+                                  if (hasNote) ...[
+                                    const SizedBox(height: 12),
+                                    // Not metni — sola yaslı
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        existing.displayNote.trim(),
+                                        textAlign: TextAlign.left,
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          height: 1.5,
+                                          color: AppColors.textPrimary,
+                                        ),
                                       ),
                                     ),
-                                  ),
+                                  ],
+                                  if (existingList.length > 1 && existing != existingList.last)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 12.0),
+                                      child: Divider(color: AppColors.divider),
+                                    )
                                 ],
-                              ],
+                              ),
+                            );
+                          }).toList(),
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.event_busy_rounded,
+                              color: AppColors.textHint,
+                              size: 36,
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                          // Not metni — sola yaslı
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              existing.displayNote.trim(),
+                            const SizedBox(height: 8),
+                            Text(
+                              widget.lang.tr('no_entry'),
                               textAlign: TextAlign.left,
                               style: TextStyle(
-                                fontSize: 15,
-                                height: 1.5,
-                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                                color: AppColors.textHint,
                               ),
                             ),
-                          ),
-                        ],
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(
-                            hasEntry
-                                ? Icons.note_outlined
-                                : Icons.event_busy_rounded,
-                            color: AppColors.textHint,
-                            size: 36,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            hasEntry
-                                ? widget.lang.tr('no_note')
-                                : widget.lang.tr('no_entry'),
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: AppColors.textHint,
-                            ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                ),
               ),
             ],
           ),
