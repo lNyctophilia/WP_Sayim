@@ -62,7 +62,7 @@ service cloud.firestore {
         request.resource.data.isApproved == false &&
         request.resource.data.roles.size() == 1 &&
         request.resource.data.roles[0] == 'staff' &&
-        !('permissions' in request.resource.data)
+        (!('permissions' in request.resource.data) || request.resource.data.permissions == ['staff'])
       );
       
       // Admin yetkisi olanlar herkesi güncelleyebilir (permissions dahil).
