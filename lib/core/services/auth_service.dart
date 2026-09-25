@@ -176,6 +176,9 @@ class AuthService {
       );
 
       final userData = appUser.toFirestore();
+      // Güvenlik kuralları self-registration'da permissions alanını yasaklar.
+      // Kullanıcı kendine yetki atayamamalı; permissions yönetici onayında verilecek.
+      userData.remove('permissions');
       userData['deviceId'] = deviceId;
       
       if (fcmToken != null) {
