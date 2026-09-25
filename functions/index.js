@@ -373,10 +373,13 @@ exports.deleteUserFromAuth = onDocumentDeleted("users/{userId}", async (event) =
 
 // 6. Sayım Hatırlatıcı (Her 1 saatte bir çalışır, 3 saat kalanlara bildirim atar)
 exports.sayimAutoReminder = onSchedule("every 60 minutes", async (event) => {
-  const nowMs = Date.now();
-  
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const endOfWindow = new Date(startOfDay.getTime() + 36 * 60 * 60 * 1000);
+
   const sayimlarSnap = await admin.firestore().collection("sayimlar")
-    .where("status", "==", "open")
+    .where("date", ">=", admin.firestore.Timestamp.fromDate(startOfDay))
+    .where("date", "<=", admin.firestore.Timestamp.fromDate(endOfWindow))
     .get();
 
   if (sayimlarSnap.empty) return;
