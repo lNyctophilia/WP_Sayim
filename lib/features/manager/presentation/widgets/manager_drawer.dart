@@ -100,10 +100,10 @@ class ManagerDrawer extends StatelessWidget {
                       );
                     },
                   ),
-                  
-                  Divider(color: AppColors.divider),
                 ],
                 if (currentUser.hasManagerPermission) ...[
+                  if (currentUser.hasStaffPermission)
+                    Divider(color: AppColors.divider),
                   _buildSectionTitle(lang.tr('manager_tools')),
                   
                   ListTile(
@@ -213,7 +213,8 @@ class ManagerDrawer extends StatelessWidget {
                 ],
                 
                 if (currentUser.hasAdminPermission) ...[
-                  Divider(color: AppColors.divider),
+                  if (currentUser.hasStaffPermission || currentUser.hasManagerPermission)
+                    Divider(color: AppColors.divider),
                   _buildSectionTitle(lang.tr('system_tools')),
 
                   ListTile(
