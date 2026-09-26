@@ -1,8 +1,6 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
-import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/theme/theme_service.dart';
@@ -43,65 +41,43 @@ class ManagerShellPageState extends State<ManagerShellPage> {
   late String _currentPanel;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   
-  /// Firestore'dan gerçek zamanlı güncellenen kullanıcı verisi
+  /// AppRouter'ın StreamBuilder'ından gelen en güncel kullanıcı verisi
   late AppUser _liveUser;
-  StreamSubscription<AppUser?>? _userSubscription;
-  final AuthService _authService = AuthService();
 
   @override
   void initState() {
     super.initState();
     _currentPanel = widget.initialPanel;
     _liveUser = widget.currentUser;
-    _listenToUserChanges();
   }
 
   @override
   void didUpdateWidget(covariant ManagerShellPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // AppRouter'dan gelen güncellemeleri de yakala
+    
+    // Farklı kullanıcı geldi — state'i sıfırla
     if (oldWidget.currentUser.id != widget.currentUser.id) {
       _liveUser = widget.currentUser;
-      _userSubscription?.cancel();
-      _listenToUserChanges();
-    } else if (widget.currentUser != oldWidget.currentUser) {
-      // Aynı kullanıcı ama farklı veri geldi (AppRouter StreamBuilder)
-      _liveUser = widget.currentUser;
+      return;
     }
-  }
-
-  void _listenToUserChanges() {
-    _userSubscription?.cancel();
-    _userSubscription = _authService
-        .getUserDataStream(_liveUser.id)
-        .listen((updatedUser) {
-      if (updatedUser == null || !mounted) return;
-      
-      // Yetki değişikliği kontrolü
-      final oldPermissions = Set<UserPermission>.from(_liveUser.permissions);
-      final newPermissions = Set<UserPermission>.from(updatedUser.permissions);
-      final permissionsChanged = !oldPermissions.containsAll(newPermissions) || 
-                                  !newPermissions.containsAll(oldPermissions);
-      
-      setState(() {
-        _liveUser = updatedUser;
+    
+    // Aynı kullanıcı ama veri değişmiş — yetki kontrolü yap
+    final oldPermissions = Set<UserPermission>.from(_liveUser.permissions);
+    final newPermissions = Set<UserPermission>.from(widget.currentUser.permissions);
+    final permissionsChanged = !oldPermissions.containsAll(newPermissions) || 
+                                !newPermissions.containsAll(oldPermissions);
+    
+    // _liveUser'ı güncelle (build() çağrılacak — setState gerekmez)
+    _liveUser = widget.currentUser;
+    
+    // Yetki değişikliği olduysa drawer'ı otomatik aç
+    if (permissionsChanged) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _scaffoldKey.currentState != null) {
+          _scaffoldKey.currentState!.openDrawer();
+        }
       });
-      
-      // Yetki değişikliği olduysa drawer'ı otomatik aç
-      if (permissionsChanged) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted && _scaffoldKey.currentState != null) {
-            _scaffoldKey.currentState!.openDrawer();
-          }
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _userSubscription?.cancel();
-    super.dispose();
+    }
   }
 
   void switchPanel(String panel) {
@@ -121,7 +97,6 @@ class ManagerShellPageState extends State<ManagerShellPage> {
           switchPanel('manager_denizli');
         } else {
           // Zaten ana paneldeysek uygulamadan çıkış yap veya arka plana at.
-          // SystemNavigator.pop() çalışabilir, ancak Flutter Web'de hiçbir şey yapmaz.
         }
       },
       child: Scaffold(
@@ -257,4 +232,3 @@ class ManagerShellPageState extends State<ManagerShellPage> {
     );
   }
 }
-

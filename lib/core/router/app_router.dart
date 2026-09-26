@@ -47,6 +47,9 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
   bool _isDialogShowing = false;
   bool _wasLoggedIn = false;
   StreamSubscription<RemoteMessage>? _fcmSubscription;
+  
+  /// Önceki yetkileri takip et — yetki geçişlerini algılamak için
+  Set<UserPermission>? _previousPermissions;
 
   @override
   void initState() {
@@ -308,8 +311,22 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
     // Sadece personel yetkisi olan ya da hiçbir özel yetkisi olmayanlar HomePage'e gider.
     final hasManagerOrAdmin = user.hasManagerPermission || user.hasAdminPermission;
 
+    // Yetki geçişi algılama — staff → manager/admin geçişinde
+    // lastPanel='home' olsa bile ManagerShellPage'e yönlendir
+    final currentPermissions = Set<UserPermission>.from(user.permissions);
+    bool justGainedManagerOrAdmin = false;
+    if (_previousPermissions != null && hasManagerOrAdmin) {
+      final hadManagerOrAdmin = _previousPermissions!.contains(UserPermission.manager) ||
+                                 _previousPermissions!.contains(UserPermission.admin);
+      if (!hadManagerOrAdmin) {
+        justGainedManagerOrAdmin = true;
+        widget.storage.setLastPanel('manager');
+      }
+    }
+    _previousPermissions = currentPermissions;
+
     if (hasManagerOrAdmin) {
-      if (lastPanel == 'home') {
+      if (lastPanel == 'home' && !justGainedManagerOrAdmin) {
         return HomePage(
           storage: widget.storage,
           lang: widget.lang,
@@ -322,7 +339,7 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
         storage: widget.storage,
         lang: widget.lang,
         themeService: widget.themeService,
-        initialPanel: lastPanel.isEmpty ? 'manager' : lastPanel,
+        initialPanel: justGainedManagerOrAdmin ? 'manager' : (lastPanel.isEmpty ? 'manager' : lastPanel),
         onLogout: () {},
       );
     }
