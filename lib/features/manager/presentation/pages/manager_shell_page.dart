@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
+import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/theme/theme_service.dart';
@@ -40,11 +42,66 @@ class ManagerShellPage extends StatefulWidget {
 class ManagerShellPageState extends State<ManagerShellPage> {
   late String _currentPanel;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  
+  /// Firestore'dan gerçek zamanlı güncellenen kullanıcı verisi
+  late AppUser _liveUser;
+  StreamSubscription<AppUser?>? _userSubscription;
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
     super.initState();
     _currentPanel = widget.initialPanel;
+    _liveUser = widget.currentUser;
+    _listenToUserChanges();
+  }
+
+  @override
+  void didUpdateWidget(covariant ManagerShellPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // AppRouter'dan gelen güncellemeleri de yakala
+    if (oldWidget.currentUser.id != widget.currentUser.id) {
+      _liveUser = widget.currentUser;
+      _userSubscription?.cancel();
+      _listenToUserChanges();
+    } else if (widget.currentUser != oldWidget.currentUser) {
+      // Aynı kullanıcı ama farklı veri geldi (AppRouter StreamBuilder)
+      _liveUser = widget.currentUser;
+    }
+  }
+
+  void _listenToUserChanges() {
+    _userSubscription?.cancel();
+    _userSubscription = _authService
+        .getUserDataStream(_liveUser.id)
+        .listen((updatedUser) {
+      if (updatedUser == null || !mounted) return;
+      
+      // Yetki değişikliği kontrolü
+      final oldPermissions = Set<UserPermission>.from(_liveUser.permissions);
+      final newPermissions = Set<UserPermission>.from(updatedUser.permissions);
+      final permissionsChanged = !oldPermissions.containsAll(newPermissions) || 
+                                  !newPermissions.containsAll(oldPermissions);
+      
+      setState(() {
+        _liveUser = updatedUser;
+      });
+      
+      // Yetki değişikliği olduysa drawer'ı otomatik aç
+      if (permissionsChanged) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _scaffoldKey.currentState != null) {
+            _scaffoldKey.currentState!.openDrawer();
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _userSubscription?.cancel();
+    super.dispose();
   }
 
   void switchPanel(String panel) {
@@ -71,7 +128,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
         key: _scaffoldKey,
         backgroundColor: AppColors.background,
         drawer: ManagerDrawer(
-          currentUser: widget.currentUser,
+          currentUser: _liveUser,
           lang: widget.lang,
           storage: widget.storage,
           themeService: widget.themeService,
@@ -80,7 +137,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
         body: Column(
           children: [
             CustomTopBar(
-              currentUser: widget.currentUser,
+              currentUser: _liveUser,
               lang: widget.lang,
               storage: widget.storage,
               themeService: widget.themeService,
@@ -98,7 +155,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
     switch (_currentPanel) {
       case 'shuttle':
         return ShuttlePanelPage(
-          currentUser: widget.currentUser,
+          currentUser: _liveUser,
           storage: widget.storage,
           lang: widget.lang,
           themeService: widget.themeService,
@@ -106,16 +163,16 @@ class ManagerShellPageState extends State<ManagerShellPage> {
         );
       case 'export':
         return ExportSayimPage(
-          currentUser: widget.currentUser,
+          currentUser: _liveUser,
           storage: widget.storage,
           lang: widget.lang,
           themeService: widget.themeService,
           isEmbedded: true,
         );
       case 'edit_profiles':
-        if (widget.currentUser.hasAdminPermission) {
+        if (_liveUser.hasAdminPermission) {
           return EditProfilesPage(
-            currentUser: widget.currentUser,
+            currentUser: _liveUser,
             storage: widget.storage,
             lang: widget.lang,
             themeService: widget.themeService,
@@ -124,9 +181,9 @@ class ManagerShellPageState extends State<ManagerShellPage> {
         }
         break;
       case 'create_past':
-        if (widget.currentUser.hasAdminPermission) {
+        if (_liveUser.hasAdminPermission) {
           return CreatePastSayimPage(
-            currentUser: widget.currentUser,
+            currentUser: _liveUser,
             storage: widget.storage,
             lang: widget.lang,
             themeService: widget.themeService,
@@ -135,9 +192,9 @@ class ManagerShellPageState extends State<ManagerShellPage> {
         }
         break;
       case 'global_settings':
-        if (widget.currentUser.hasAdminPermission) {
+        if (_liveUser.hasAdminPermission) {
           return GlobalSettingsPage(
-            currentUser: widget.currentUser,
+            currentUser: _liveUser,
             storage: widget.storage,
             lang: widget.lang,
             themeService: widget.themeService,
@@ -146,9 +203,9 @@ class ManagerShellPageState extends State<ManagerShellPage> {
         }
         break;
       case 'deleted_calendars':
-        if (widget.currentUser.hasAdminPermission) {
+        if (_liveUser.hasAdminPermission) {
           return DeletedUsersCalendarPage(
-            currentUser: widget.currentUser,
+            currentUser: _liveUser,
             storage: widget.storage,
             lang: widget.lang,
             themeService: widget.themeService,
@@ -158,7 +215,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
         break;
       case 'manager_denizli':
         return ManagerPanelPage(
-          currentUser: widget.currentUser,
+          currentUser: _liveUser,
           storage: widget.storage,
           lang: widget.lang,
           themeService: widget.themeService,
@@ -168,7 +225,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
         );
       case 'manager_mugla':
         return ManagerPanelPage(
-          currentUser: widget.currentUser,
+          currentUser: _liveUser,
           storage: widget.storage,
           lang: widget.lang,
           themeService: widget.themeService,
@@ -179,7 +236,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
       case 'manager':
       default:
         return ManagerPanelPage(
-          currentUser: widget.currentUser,
+          currentUser: _liveUser,
           storage: widget.storage,
           lang: widget.lang,
           themeService: widget.themeService,
@@ -190,7 +247,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
     }
     // Varsayılan
     return ManagerPanelPage(
-      currentUser: widget.currentUser,
+      currentUser: _liveUser,
       storage: widget.storage,
       lang: widget.lang,
       themeService: widget.themeService,
@@ -200,3 +257,4 @@ class ManagerShellPageState extends State<ManagerShellPage> {
     );
   }
 }
+

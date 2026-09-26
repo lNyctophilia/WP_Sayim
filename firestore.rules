@@ -84,6 +84,11 @@ service cloud.firestore {
         (
           // Kullanıcının kendi hesabını soft-delete yapmasına izin ver
           request.auth.uid == userId &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['softDeletedAt'])
+        ) ||
+        (
+          // Kullanıcının kendi hesabını hard-delete yapmasına izin ver
+          request.auth.uid == userId &&
           request.resource.data.isDeleted == true &&
           request.resource.data.active == false &&
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isDeleted', 'active', 'username', 'phone'])
