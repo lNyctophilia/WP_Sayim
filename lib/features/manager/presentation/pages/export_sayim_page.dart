@@ -392,17 +392,19 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
       if (_selectedMonthKey != null && _selectedCity != null) 
         Padding(
           padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0, bottom: 24.0),
-          child: ElevatedButton.icon(
-            onPressed: _isExcelLoading ? null : _exportAylikRapor,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accentLight,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _isExcelLoading ? null : _exportAylikRapor,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.accentLight,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
               ),
-              elevation: 0,
-            ),
             icon: _isExcelLoading 
                 ? const SizedBox(
                     width: 20, 
@@ -416,8 +418,9 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
             ),
           ),
         ),
-            ],
-          ),
+      ),
+    ],
+  ),
         ),
       ],
     );
