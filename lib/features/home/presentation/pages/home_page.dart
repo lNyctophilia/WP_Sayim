@@ -286,19 +286,26 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                     ),
                     // Kapatma butonu
-                    GestureDetector(
-                      onTap: () => Navigator.pop(ctx),
-                      child: Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: AppColors.card,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          Icons.close_rounded,
-                          color: AppColors.textHint,
-                          size: 16,
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => Navigator.pop(ctx),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              color: AppColors.card,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.close_rounded,
+                              color: AppColors.textHint,
+                              size: 16,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -463,23 +470,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         ),
                       )
                     : Center(
-                        child: RefreshIndicator(
-                          onRefresh: () async {
-                            await _loadData();
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onHorizontalDragEnd: (details) {
+                            if (details.primaryVelocity! > 0) {
+                              _previousMonth();
+                            } else if (details.primaryVelocity! < 0) {
+                              _nextMonth();
+                            }
                           },
-                          color: AppColors.accentLight,
-                          backgroundColor: AppColors.card,
-                          child: SingleChildScrollView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            child: GestureDetector(
-                              behavior: HitTestBehavior.translucent,
-                              onHorizontalDragEnd: (details) {
-                                if (details.primaryVelocity! > 0) {
-                                  _previousMonth();
-                                } else if (details.primaryVelocity! < 0) {
-                                  _nextMonth();
-                                }
-                              },
+                          child: RefreshIndicator(
+                            onRefresh: () async {
+                              await _loadData();
+                            },
+                            color: AppColors.accentLight,
+                            backgroundColor: AppColors.card,
+                            child: SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
                               child: _isAnimating
                                   ? _buildAnimatedContent()
                                   : _buildStaticContent(),

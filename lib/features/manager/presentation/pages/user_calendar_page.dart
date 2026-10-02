@@ -211,16 +211,23 @@ class _UserCalendarPageState extends State<UserCalendarPage> with TickerProvider
                         ),
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () => Navigator.pop(ctx),
-                      child: Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: AppColors.card,
-                          borderRadius: BorderRadius.circular(8),
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => Navigator.pop(ctx),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              color: AppColors.card,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(Icons.close_rounded, color: AppColors.textHint, size: 16),
+                          ),
                         ),
-                        child: Icon(Icons.close_rounded, color: AppColors.textHint, size: 16),
                       ),
                     ),
                   ],
@@ -344,15 +351,7 @@ class _UserCalendarPageState extends State<UserCalendarPage> with TickerProvider
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: AppColors.accentLight))
           : Center(
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  await _loadData();
-                },
-                color: AppColors.accentLight,
-                backgroundColor: AppColors.card,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: GestureDetector(
+              child: GestureDetector(
                     behavior: HitTestBehavior.translucent,
                     onHorizontalDragEnd: (details) {
                       if (details.primaryVelocity! > 0) {
@@ -361,10 +360,18 @@ class _UserCalendarPageState extends State<UserCalendarPage> with TickerProvider
                         _nextMonth();
                       }
                     },
-                    child: _isAnimating ? _buildAnimatedContent() : _buildStaticContent(),
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        await _loadData();
+                      },
+                      color: AppColors.accentLight,
+                      backgroundColor: AppColors.card,
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: _isAnimating ? _buildAnimatedContent() : _buildStaticContent(),
+                      ),
+                    ),
                   ),
-                ),
-              ),
             ),
     );
   }

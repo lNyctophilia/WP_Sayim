@@ -85,14 +85,20 @@ class CalendarGrid extends StatelessWidget {
           final isFuture = date.isAfter(DateTime.now());
 
           return Expanded(
-            child: GestureDetector(
-              onTap: () => onDayTapped(date, workDaysForDay),
-              onLongPress: () => onDayLongPressed(date, workDaysForDay),
-              child: _DayCell(
-                day: dayIndex,
-                workDays: workDaysForDay,
-                isToday: isToday,
-                isFuture: isFuture,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => onDayTapped(date, workDaysForDay),
+                onLongPress: () => onDayLongPressed(date, workDaysForDay),
+                borderRadius: BorderRadius.circular(12),
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                child: _DayCell(
+                  day: dayIndex,
+                  workDays: workDaysForDay,
+                  isToday: isToday,
+                  isFuture: isFuture,
+                ),
               ),
             ),
           );

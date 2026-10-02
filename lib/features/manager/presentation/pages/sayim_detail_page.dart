@@ -1,5 +1,10 @@
 import 'package:daytrack/core/constants/app_strings.dart';
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
+import 'package:file_saver/file_saver.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xlsio;
+import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/models/app_user.dart';
 import '../../../../core/models/davet.dart';
@@ -129,6 +134,364 @@ class _SayimDetailPageState extends State<SayimDetailPage>
     }
   }
 
+  Future<void> _exportSayimRaporu(Sayim selectedSayim, List<Davet> acceptedDavetler) async {
+    showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
+    
+    try {
+      final Map<String, AppUser> userMap = {};
+      final allUsers = await _authService.getAllUsers();
+      for (var u in allUsers) {
+        userMap[u.id] = u;
+      }
+      
+      for (var d in acceptedDavetler) {
+        if (!userMap.containsKey(d.userId)) {
+          final u = await _authService.getUserData(d.userId);
+          if (u != null) {
+            userMap[u.id] = u;
+          }
+        }
+      }
+
+      final xlsio.Workbook workbook = xlsio.Workbook();
+      final xlsio.Worksheet sheet = workbook.worksheets[0];
+      sheet.name = 'Sayım Raporu';
+
+      final xlsio.Style headerStyle = workbook.styles.add('HeaderStyle');
+      headerStyle.backColor = '#003366'; // Koyu mavi
+      headerStyle.fontColor = '#FFFFFF';
+      headerStyle.bold = true;
+      headerStyle.hAlign = xlsio.HAlignType.center;
+      headerStyle.vAlign = xlsio.VAlignType.center;
+
+      final xlsio.Style centerStyle = workbook.styles.add('CenterStyle');
+      centerStyle.hAlign = xlsio.HAlignType.center;
+      centerStyle.vAlign = xlsio.VAlignType.center;
+
+      final managerDavetler = acceptedDavetler.where((d) => d.role == DavetRole.manager).toList();
+      final personnelDavetler = acceptedDavetler.where((d) => d.role != DavetRole.manager).toList();
+
+      String firmaAdi = selectedSayim.firmaAdi.isNotEmpty ? selectedSayim.firmaAdi : 'Bilinmeyen Firma';
+      String not = selectedSayim.note;
+      List<String> words = not.split(' ').where((w) => w.trim().isNotEmpty).toList();
+      String magazaAdi = firmaAdi;
+      
+      if (words.isNotEmpty) {
+        magazaAdi = "$firmaAdi-${words.join('-')}";
+      }
+
+      sheet.getRangeByIndex(1, 1).setText('Working Partners Stok Sayım Hiz. A.Ş.');
+      sheet.getRangeByIndex(1, 1, 1, 3).merge();
+      sheet.getRangeByIndex(1, 1, 1, 3).cellStyle = headerStyle;
+
+      sheet.getRangeByIndex(2, 1).setText('Sayım Tarihi');
+      sheet.getRangeByIndex(2, 2).setText('Başlangıç Saati');
+      sheet.getRangeByIndex(2, 3).setText('Firma Adı');
+      sheet.getRangeByIndex(2, 1, 2, 3).cellStyle = headerStyle;
+
+      final dateStrFormatted = DateFormat('dd.MM.yyyy').format(selectedSayim.date);
+      sheet.getRangeByIndex(3, 1).setText(dateStrFormatted);
+      sheet.getRangeByIndex(3, 2).setText(selectedSayim.startTime ?? '');
+      sheet.getRangeByIndex(3, 3).setText(firmaAdi);
+      sheet.getRangeByIndex(3, 1, 3, 3).cellStyle = centerStyle;
+
+      sheet.getRangeByIndex(4, 1).setText('Mağaza Adı');
+      sheet.getRangeByIndex(4, 1, 4, 2).merge();
+      sheet.getRangeByIndex(4, 3).setText('Sayıma Katılacak Kişi Sayısı');
+      sheet.getRangeByIndex(4, 1, 4, 3).cellStyle = headerStyle;
+
+      sheet.getRangeByIndex(5, 1).setText(magazaAdi);
+      sheet.getRangeByIndex(5, 1, 5, 2).merge();
+      sheet.getRangeByIndex(5, 3).setText('${personnelDavetler.length}+${managerDavetler.length}');
+      sheet.getRangeByIndex(5, 1, 5, 3).cellStyle = centerStyle;
+
+      sheet.getRangeByIndex(6, 1).setText('WP Sayım Firması Yetkilileri (Sayıma Olası Katılabilecekler)');
+      sheet.getRangeByIndex(6, 1, 6, 3).merge();
+      sheet.getRangeByIndex(6, 1, 6, 3).cellStyle = headerStyle;
+
+      int r = 7;
+      void addContact(String title, String name, String detail) {
+        sheet.getRangeByIndex(r, 1).setText(title);
+        sheet.getRangeByIndex(r, 2).setText(name);
+        sheet.getRangeByIndex(r, 3).setText(detail);
+        sheet.getRangeByIndex(r, 1, r, 3).cellStyle = centerStyle;
+        r++;
+      }
+      addContact('Bölge Müdürü', 'Emin Körpe', '05498147929');
+      addContact('Bölge Müdürü Yrd.', '', '');
+      addContact('Operasyon Müdürü', 'Kadir Özer', '05059732202');
+      addContact('İç Denetim', 'Mustafa Koray Göç', 'm.goc@workingpartners.com.tr');
+      addContact('İç Denetim', 'Erdem Köhneli', 'e.kohneli@workingpartners.com.tr');
+      addContact('Bilgi İşlem', 'Doğan Eroğlu', 'd.eroglu@workingpartners.com.tr');
+
+      sheet.getRangeByIndex(r, 1).setText('Sayım Yöneticileri');
+      sheet.getRangeByIndex(r, 1, r, 3).merge();
+      sheet.getRangeByIndex(r, 1, r, 3).cellStyle = headerStyle;
+      r++;
+
+      int counter = 1;
+      for (var davet in managerDavetler) {
+        final user = userMap[davet.userId];
+        sheet.getRangeByIndex(r, 1).setNumber(counter.toDouble());
+        sheet.getRangeByIndex(r, 2).setText(user?.fullName ?? 'Bilinmeyen Kullanıcı');
+        sheet.getRangeByIndex(r, 3).setText(user?.phone ?? '');
+        sheet.getRangeByIndex(r, 1, r, 3).cellStyle = centerStyle;
+        r++;
+        counter++;
+      }
+
+      sheet.getRangeByIndex(r, 1).setText('Sayım Personelleri');
+      sheet.getRangeByIndex(r, 1, r, 3).merge();
+      sheet.getRangeByIndex(r, 1, r, 3).cellStyle = headerStyle;
+      r++;
+
+      counter = 1;
+      for (var davet in personnelDavetler) {
+        final user = userMap[davet.userId];
+        String saatStr = "";
+        try {
+          final grp = selectedSayim.gruplar.firstWhere((g) => g.grupId == davet.grupId);
+          saatStr = grp.saat;
+        } catch (e) {}
+
+        sheet.getRangeByIndex(r, 1).setNumber(counter.toDouble());
+        sheet.getRangeByIndex(r, 2).setText(user?.fullName ?? 'Bilinmeyen Kullanıcı');
+        sheet.getRangeByIndex(r, 3).setText(saatStr);
+        sheet.getRangeByIndex(r, 1, r, 3).cellStyle = centerStyle;
+        r++;
+        counter++;
+      }
+
+      sheet.setColumnWidthInPixels(1, 180);
+      sheet.setColumnWidthInPixels(2, 280);
+      sheet.setColumnWidthInPixels(3, 220);
+
+      String extraName = "";
+      if (words.isNotEmpty) {
+        extraName = "_${words.join('_')}";
+      }
+
+      final dateStr = DateFormat('dd-MM-yyyy').format(selectedSayim.date);
+      final String fileName = '${firmaAdi}${extraName}_$dateStr';
+
+      final List<int> bytes = workbook.saveAsStream();
+      workbook.dispose();
+
+      final savedPath = await FileSaver.instance.saveFile(
+        name: fileName,
+        bytes: Uint8List.fromList(bytes),
+        fileExtension: 'xlsx',
+        mimeType: MimeType.microsoftExcel,
+      );
+
+      if (mounted) {
+        Navigator.pop(context); // close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${AppStrings.get('excel_downloaded_successfully', isTr ? 'tr' : 'en')}:\n$savedPath'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${AppStrings.get('error_occurred', isTr ? 'tr' : 'en')}: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _exportToPng(Sayim selectedSayim, List<Davet> acceptedDavetler) async {
+    showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
+    
+    try {
+      final Map<String, AppUser> userMap = {};
+      final allUsers = await _authService.getAllUsers();
+      for (var u in allUsers) {
+        userMap[u.id] = u;
+      }
+      
+      for (var d in acceptedDavetler) {
+        if (!userMap.containsKey(d.userId)) {
+          final u = await _authService.getUserData(d.userId);
+          if (u != null) {
+            userMap[u.id] = u;
+          }
+        }
+      }
+
+      final managerDavetler = acceptedDavetler.where((d) => d.role == DavetRole.manager).toList();
+      final personnelDavetler = acceptedDavetler.where((d) => d.role != DavetRole.manager).toList();
+
+      String firmaAdi = selectedSayim.firmaAdi.isNotEmpty ? selectedSayim.firmaAdi : 'Bilinmeyen Firma';
+      String not = selectedSayim.note;
+      List<String> words = not.split(' ').where((w) => w.trim().isNotEmpty).toList();
+      String magazaAdi = firmaAdi;
+      if (words.isNotEmpty) {
+        magazaAdi = "$firmaAdi-${words.join('-')}";
+      }
+      final dateStrFormatted = DateFormat('dd.MM.yyyy').format(selectedSayim.date);
+
+      Widget buildRow(String index, String name, String time, {bool isHeader = false, bool isEven = false}) {
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 2.0),
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+          decoration: BoxDecoration(
+            color: isHeader 
+                ? Colors.transparent 
+                : isEven ? const Color(0xFF003366).withOpacity(0.06) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              SizedBox(width: 40, child: Text(index, style: TextStyle(fontWeight: isHeader ? FontWeight.bold : FontWeight.normal, color: Colors.black87, fontSize: 16))),
+              Expanded(child: Text(name, style: TextStyle(fontWeight: isHeader ? FontWeight.bold : FontWeight.normal, color: Colors.black87, fontSize: 16))),
+              SizedBox(width: 100, child: Text(time, style: TextStyle(fontWeight: isHeader ? FontWeight.bold : FontWeight.normal, color: Colors.black87, fontSize: 16))),
+            ],
+          ),
+        );
+      }
+
+      final pngWidget = Container(
+        width: 600,
+        padding: const EdgeInsets.all(32),
+        color: Colors.white,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF003366),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text('${selectedSayim.firmaAdi} - ${selectedSayim.note}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ),
+                  Text(dateStrFormatted, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF003366),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                children: [
+                  Expanded(
+                    child: Text('Sayım Yöneticileri', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            buildRow('#', 'Ad Soyad', 'Saat', isHeader: true),
+            ...managerDavetler.asMap().entries.map((entry) {
+              final idx = entry.key + 1;
+              final davet = entry.value;
+              final user = userMap[davet.userId];
+              String saatStr = "";
+              try {
+                final grp = selectedSayim.gruplar.firstWhere((g) => g.grupId == davet.grupId);
+                saatStr = grp.saat;
+              } catch (e) {}
+              return buildRow('$idx', user?.fullName ?? 'Bilinmeyen Kullanıcı', saatStr, isEven: entry.key % 2 == 0);
+            }),
+            
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF003366),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                children: [
+                  Expanded(
+                    child: Text('Sayım Personelleri', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            buildRow('#', 'Ad Soyad', 'Saat', isHeader: true),
+            ...personnelDavetler.asMap().entries.map((entry) {
+              final idx = entry.key + 1;
+              final davet = entry.value;
+              final user = userMap[davet.userId];
+              String saatStr = "";
+              try {
+                final grp = selectedSayim.gruplar.firstWhere((g) => g.grupId == davet.grupId);
+                saatStr = grp.saat;
+              } catch (e) {}
+              return buildRow('$idx', user?.fullName ?? 'Bilinmeyen Kullanıcı', saatStr, isEven: entry.key % 2 == 0);
+            }),
+          ],
+        ),
+      );
+
+      double calculatedHeight = 200.0;
+      calculatedHeight += (managerDavetler.length + 1) * 45.0 + 80.0;
+      calculatedHeight += (personnelDavetler.length + 1) * 45.0 + 80.0;
+
+      final screenshotController = ScreenshotController();
+      final Uint8List imageBytes = await screenshotController.captureFromWidget(
+        Material(child: pngWidget),
+        delay: const Duration(milliseconds: 100),
+        pixelRatio: 2.0,
+        targetSize: Size(600, calculatedHeight),
+      );
+
+      String extraName = "";
+      if (words.isNotEmpty) {
+        extraName = "_${words.join('_')}";
+      }
+      final dateStrForFile = DateFormat('dd-MM-yyyy').format(selectedSayim.date);
+      final String fileName = '${firmaAdi}${extraName}_$dateStrForFile';
+
+      final savedPath = await FileSaver.instance.saveFile(
+        name: fileName,
+        bytes: imageBytes,
+        fileExtension: 'png',
+        mimeType: MimeType.png,
+      );
+
+      if (mounted) {
+        Navigator.pop(context); // close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${AppStrings.get('png_downloaded_successfully', isTr ? 'tr' : 'en')}:\n$savedPath'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${AppStrings.get('error_occurred', isTr ? 'tr' : 'en')}: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   bool get isTr => widget.lang.currentLang == 'tr';
 
   @override
@@ -208,42 +571,127 @@ class _SayimDetailPageState extends State<SayimDetailPage>
               ),
             ),
             actions: [
-              if (widget.currentUser.hasManagerPermission || widget.currentUser.hasAdminPermission) ...[
-                if (currentSayim.effectiveStatus == SayimStatus.open)
-                  IconButton(
-                    icon: Icon(Icons.lock_outline_rounded, color: AppColors.warning, size: 20),
-                    tooltip: AppStrings.get('close_count', isTr ? 'tr' : 'en'),
-                    onPressed: () => _sayimService.closeSayim(currentSayim.id),
-                  )
-                else
-                  IconButton(
-                    icon: Icon(Icons.lock_open_rounded, color: AppColors.success, size: 20),
-                    tooltip: AppStrings.get('open_count', isTr ? 'tr' : 'en'),
-                    onPressed: () => _sayimService.openSayim(currentSayim.id),
-                  ),
-                IconButton(
-                  icon: Icon(Icons.edit_rounded, color: AppColors.textPrimary, size: 20),
-                    tooltip: AppStrings.get('edit', isTr ? 'tr' : 'en'),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => EditSayimPage(
-                            sayim: currentSayim,
-                            existingDavets: davetler,
-                            currentUser: widget.currentUser,
-                            lang: widget.lang,
+              if (widget.currentUser.hasManagerPermission || widget.currentUser.hasAdminPermission)
+                PopupMenuButton<String>(
+                  icon: Icon(Icons.more_vert_rounded, color: AppColors.textPrimary, size: 22),
+                  color: AppColors.card,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 8,
+                  offset: const Offset(0, 40),
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'edit':
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => EditSayimPage(
+                              sayim: currentSayim,
+                              existingDavets: davetler,
+                              currentUser: widget.currentUser,
+                              lang: widget.lang,
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                IconButton(
-                  icon: Icon(Icons.delete_rounded, color: AppColors.danger, size: 20),
-                  tooltip: AppStrings.get('delete_count', isTr ? 'tr' : 'en'),
-                  onPressed: () => _confirmDeleteSayim(davetler, currentSayim),
+                        );
+                        break;
+                      case 'export_excel':
+                        final acceptedDavets = davetler.where((d) => d.status == DavetStatus.accepted).toList();
+                        _exportSayimRaporu(currentSayim, acceptedDavets);
+                        break;
+                      case 'export_png':
+                        final acceptedDavetsPng = davetler.where((d) => d.status == DavetStatus.accepted).toList();
+                        _exportToPng(currentSayim, acceptedDavetsPng);
+                        break;
+                      case 'toggle_status':
+                        if (currentSayim.effectiveStatus == SayimStatus.open) {
+                          _sayimService.closeSayim(currentSayim.id);
+                        } else {
+                          _sayimService.openSayim(currentSayim.id);
+                        }
+                        break;
+                      case 'delete':
+                        _confirmDeleteSayim(davetler, currentSayim);
+                        break;
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem<String>(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit_rounded, color: AppColors.textPrimary, size: 20),
+                          const SizedBox(width: 12),
+                          Text(
+                            AppStrings.get('edit', isTr ? 'tr' : 'en'),
+                            style: TextStyle(color: AppColors.textPrimary),
+                          ),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'export_excel',
+                      child: Row(
+                        children: [
+                          Icon(Icons.download_rounded, color: AppColors.textPrimary, size: 20),
+                          const SizedBox(width: 12),
+                          Text(
+                            AppStrings.get('export_excel_output', isTr ? 'tr' : 'en'),
+                            style: TextStyle(color: AppColors.textPrimary),
+                          ),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'export_png',
+                      child: Row(
+                        children: [
+                          Icon(Icons.image_rounded, color: AppColors.textPrimary, size: 20),
+                          const SizedBox(width: 12),
+                          Text(
+                            AppStrings.get('export_png_output', isTr ? 'tr' : 'en'),
+                            style: TextStyle(color: AppColors.textPrimary),
+                          ),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'toggle_status',
+                      child: Row(
+                        children: [
+                          Icon(
+                            currentSayim.effectiveStatus == SayimStatus.open
+                                ? Icons.lock_outline_rounded
+                                : Icons.lock_open_rounded,
+                            color: currentSayim.effectiveStatus == SayimStatus.open
+                                ? AppColors.warning
+                                : AppColors.success,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            currentSayim.effectiveStatus == SayimStatus.open
+                                ? AppStrings.get('close_count', isTr ? 'tr' : 'en')
+                                : AppStrings.get('open_count', isTr ? 'tr' : 'en'),
+                            style: TextStyle(color: AppColors.textPrimary),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuDivider(),
+                    PopupMenuItem<String>(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_rounded, color: AppColors.danger, size: 20),
+                          const SizedBox(width: 12),
+                          Text(
+                            AppStrings.get('delete', isTr ? 'tr' : 'en'),
+                            style: TextStyle(color: AppColors.danger),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
             ],
             bottom: TabBar(
               controller: _tabController,
