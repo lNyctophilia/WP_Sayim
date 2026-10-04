@@ -282,8 +282,8 @@ class _ExportSayimPageState extends State<ExportSayimPage> {
               style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
             ),
             const SizedBox(height: 16),
-            FutureBuilder<List<Sayim>>(
-              future: _sayimService.getSayimlarFuture(),
+            StreamBuilder<List<Sayim>>(
+              stream: _sayimService.getSayimlar(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator(color: AppColors.accentLight));

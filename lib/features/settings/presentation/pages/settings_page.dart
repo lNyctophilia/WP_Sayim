@@ -395,8 +395,8 @@ class _SettingsPageState extends State<SettingsPage> {
     
     if (uid == null) return const SizedBox.shrink();
 
-    return FutureBuilder<AppUser?>(
-      future: authService.getUserData(uid),
+    return StreamBuilder<AppUser?>(
+      stream: authService.getUserDataStream(uid),
       builder: (context, snapshot) {
         final user = snapshot.data;
         final isSoftDeleted = user?.isSoftDeleted ?? false;

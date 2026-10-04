@@ -496,8 +496,8 @@ class _SayimDetailPageState extends State<SayimDetailPage>
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Sayim?>(
-      future: _sayimService.getSayimFuture(widget.sayim.id),
+    return StreamBuilder<Sayim?>(
+      stream: _sayimService.getSayimStream(widget.sayim.id),
       builder: (context, sayimSnapshot) {
         if (sayimSnapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
@@ -522,8 +522,8 @@ class _SayimDetailPageState extends State<SayimDetailPage>
           );
         }
 
-        return FutureBuilder<List<Davet>>(
-          future: _davetService.getDavetlerBySayimFuture(currentSayim.id),
+        return StreamBuilder<List<Davet>>(
+          stream: _davetService.getDavetlerBySayim(currentSayim.id),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Scaffold(

@@ -113,8 +113,8 @@ class _ManagerPanelPageState extends State<ManagerPanelPage>
   Widget _buildTabBar() {
     final isTr = widget.lang.currentLang == 'tr';
 
-    return FutureBuilder<int>(
-      future: _authService.getPendingUsersCountFuture(widget.targetCity),
+    return StreamBuilder<int>(
+      stream: _authService.getPendingUsersCountStream(widget.targetCity),
       builder: (context, snapshot) {
         final hasPending = (snapshot.data ?? 0) > 0;
 
