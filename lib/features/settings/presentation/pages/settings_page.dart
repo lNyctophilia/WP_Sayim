@@ -52,7 +52,7 @@ class _SettingsPageState extends State<SettingsPage> {
           // ─── Genel ─────────────────────────────────────
           _buildSectionHeader(widget.lang.tr('general')),
           _buildLanguageTile(),
-
+          _buildReminderToggle(),
           _buildNotificationHelpTile(),
 
           const SizedBox(height: 24),
@@ -546,7 +546,87 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Widget _buildReminderToggle() {
+    final authService = AuthService();
+    final uid = authService.currentFirebaseUser?.uid;
+    
+    if (uid == null) return const SizedBox.shrink();
 
+    return StreamBuilder<AppUser?>(
+      stream: authService.getUserDataStream(uid),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox.shrink();
+        
+        final user = snapshot.data!;
+        
+        final isOldIos = user.email != null && user.email!.isNotEmpty;
+        final bool isEnabled = isOldIos ? false : user.sayimReminderEnabled;
+
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppColors.card,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: SwitchListTile(
+            activeThumbColor: isOldIos ? AppColors.textHint : AppColors.accentLight,
+            secondary: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isOldIos 
+                    ? AppColors.divider.withValues(alpha: 0.15) 
+                    : AppColors.accentLight.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                Icons.notifications_active_rounded,
+                color: isOldIos ? AppColors.textHint : AppColors.accentLight,
+                size: 22,
+              ),
+            ),
+            title: Text(
+              widget.lang.tr('sayim_reminder'),
+              style: TextStyle(
+                fontSize: 15,
+                color: isOldIos ? AppColors.textHint : AppColors.textPrimary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            subtitle: Text(
+              isOldIos 
+                  ? widget.lang.tr('device_not_supported')
+                  : widget.lang.tr('reminder_desc'),
+              style: TextStyle(
+                fontSize: 12,
+                color: isOldIos ? AppColors.danger.withValues(alpha: 0.7) : AppColors.textSecondary,
+              ),
+            ),
+            value: isEnabled,
+            onChanged: isOldIos ? null : (bool value) async {
+              try {
+                await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(uid)
+                    .update({'sayimReminderEnabled': value});
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Ayarlar kaydedilirken bir hata oluştu: $e'),
+                      backgroundColor: AppColors.danger,
+                    ),
+                  );
+                }
+              }
+            },
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   Widget _buildNotificationHelpTile() {
     return Container(

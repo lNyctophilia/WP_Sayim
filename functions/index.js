@@ -1,6 +1,8 @@
 const { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } = require("firebase-functions/v2/firestore");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
+const firestore = require('@google-cloud/firestore');
+const { Storage } = require('@google-cloud/storage');
 
 
 
@@ -792,3 +794,131 @@ exports.cleanupOldNotifications = onSchedule(
     }
   }
 );
+
+
+// 6. Sayım Hatırlatıcı (Her 1 saatte bir çalışır, 3 saat kalanlara bildirim atar)
+exports.sayimAutoReminder = onSchedule("every 60 minutes", async (event) => {
+  const now = new Date();
+  const nowMs = now.getTime();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const endOfWindow = new Date(startOfDay.getTime() + 36 * 60 * 60 * 1000);
+
+  const sayimlarSnap = await admin.firestore().collection("sayimlar")
+    .where("date", ">=", admin.firestore.Timestamp.fromDate(startOfDay))
+    .where("date", "<=", admin.firestore.Timestamp.fromDate(endOfWindow))
+    .get();
+
+  if (sayimlarSnap.empty) return;
+
+  for (const sayimDoc of sayimlarSnap.docs) {
+    const sayimData = sayimDoc.data();
+    if (!sayimData || !sayimData.date || !sayimData.gruplar) continue;
+    
+    const davetlerSnap = await admin.firestore().collection("davetler")
+      .where("sayimId", "==", sayimDoc.id)
+      .where("status", "==", "accepted")
+      .get();
+
+    if (davetlerSnap.empty) continue;
+
+    for (const davetDoc of davetlerSnap.docs) {
+      const davet = davetDoc.data();
+      
+      if (davet.autoReminderSent === true) continue;
+
+      const grup = sayimData.gruplar.find(g => g.grupId === davet.grupId);
+      if (!grup || !grup.saat) continue;
+
+      const sayimDateObj = sayimData.date.toDate();
+      const trtDateMs = sayimDateObj.getTime() + (3 * 60 * 60 * 1000); 
+      const trtDateObj = new Date(trtDateMs);
+      
+      const year = trtDateObj.getUTCFullYear();
+      const month = String(trtDateObj.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(trtDateObj.getUTCDate()).padStart(2, '0');
+      
+      const isoString = `${year}-${month}-${day}T${grup.saat}:00+03:00`;
+      const finalSayimDate = new Date(isoString);
+
+      const diffHours = (finalSayimDate.getTime() - nowMs) / (1000 * 60 * 60);
+
+      if (diffHours > 0 && diffHours <= 3) {
+        const userDoc = await admin.firestore().collection("users").doc(davet.userId).get();
+        if (!userDoc.exists) continue;
+        
+        const userData = userDoc.data();
+        if (userData.sayimReminderEnabled === false) continue;
+
+        const sayimName = sayimData.toplanmaYeri || "Sayım";
+        
+        await sendNotificationAndLog({
+          userId: davet.userId,
+          title: "Yaklaşan Sayım",
+          body: `Bugün saat ${grup.saat}'te "${sayimName}" sayımı var. Lütfen vaktinde orada olun.`,
+          type: "sayim_auto_reminder",
+          relatedId: davetDoc.id,
+          dataPayload: {
+            type: "sayim_auto_reminder",
+            davetId: davetDoc.id,
+            sayimId: sayimDoc.id
+          },
+          tag: `sayim_auto_reminder_${davetDoc.id}`
+        });
+        
+        try {
+          await davetDoc.ref.update({ autoReminderSent: true });
+        } catch (e) {
+          console.error("Error updating autoReminderSent for davet " + davetDoc.id, e);
+        }
+      }
+    }
+  }
+});
+
+// 15. Haftalık Firestore Yedekleme (Pazar 03:00)
+exports.weeklyFirestoreBackup = onSchedule("0 3 * * 0", async (event) => {
+  const projectId = process.env.GCP_PROJECT || process.env.GCLOUD_PROJECT || "wp-sayim";
+  const client = new firestore.v1.FirestoreAdminClient();
+  const bucket = `gs://${projectId}-backups`;
+  
+  const databaseName = client.databasePath(projectId, "(default)");
+  try {
+    const responses = await client.exportDocuments({
+      name: databaseName,
+      outputUriPrefix: bucket,
+      collectionIds: [] // all collections
+    });
+    console.log("Backup successfully started");
+  } catch (err) {
+    console.error("Backup failed", err);
+  }
+});
+
+// 16. Eski Yedekleri Temizleme (Pazar 04:00)
+exports.cleanupOldBackups = onSchedule("0 4 * * 0", async (event) => {
+  const projectId = process.env.GCP_PROJECT || process.env.GCLOUD_PROJECT || "wp-sayim";
+  const storage = new Storage();
+  const bucketName = `${projectId}-backups`;
+  const bucket = storage.bucket(bucketName);
+  
+  const now = new Date();
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+  
+  try {
+    const [files] = await bucket.getFiles();
+    let deletedCount = 0;
+    
+    for (const file of files) {
+      const [metadata] = await file.getMetadata();
+      const created = new Date(metadata.timeCreated);
+      if (created < fourteenDaysAgo) {
+        await file.delete();
+        deletedCount++;
+      }
+    }
+    console.log(`Cleaned up ${deletedCount} old backup files.`);
+  } catch (err) {
+    console.error("Cleanup failed", err);
+  }
+});
+
