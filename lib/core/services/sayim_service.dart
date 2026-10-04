@@ -16,6 +16,15 @@ class SayimService {
     });
   }
 
+  /// Tüm sayımları tek seferlik getirir (tarihe göre azalan sırada)
+  Future<List<Sayim>> getSayimlarFuture() async {
+    final snapshot = await _firestore
+        .collection('sayimlar')
+        .orderBy('date', descending: true)
+        .get();
+    return snapshot.docs.map((doc) => Sayim.fromFirestore(doc)).toList();
+  }
+
   /// Belirli bir sayımın anlık değişikliklerini dinler
   Stream<Sayim?> getSayimStream(String sayimId) {
     return _firestore
@@ -23,6 +32,12 @@ class SayimService {
         .doc(sayimId)
         .snapshots()
         .map((doc) => doc.exists ? Sayim.fromFirestore(doc) : null);
+  }
+
+  /// Belirli bir sayımı tek seferlik getirir
+  Future<Sayim?> getSayimFuture(String sayimId) async {
+    final doc = await _firestore.collection('sayimlar').doc(sayimId).get();
+    return doc.exists ? Sayim.fromFirestore(doc) : null;
   }
 
   /// Sadece belirli bir kullanıcının oluşturduğu sayımları getirir
@@ -36,6 +51,17 @@ class SayimService {
       list.sort((a, b) => b.date.compareTo(a.date)); // Sort in Dart to avoid index
       return list;
     });
+  }
+
+  /// Sadece belirli bir kullanıcının oluşturduğu sayımları tek seferlik getirir
+  Future<List<Sayim>> getSayimlarByCreatorFuture(String creatorId) async {
+    final snapshot = await _firestore
+        .collection('sayimlar')
+        .where('createdBy', isEqualTo: creatorId)
+        .get();
+    final list = snapshot.docs.map((doc) => Sayim.fromFirestore(doc)).toList();
+    list.sort((a, b) => b.date.compareTo(a.date));
+    return list;
   }
 
   /// Yeni bir sayım oluşturur ve ID'sini döner

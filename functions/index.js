@@ -2,8 +2,7 @@ const { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } = require("fir
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
 
-const firestore = require('@google-cloud/firestore');
-const { Storage } = require('@google-cloud/storage');
+
 
 admin.initializeApp();
 
@@ -371,83 +370,7 @@ exports.deleteUserFromAuth = onDocumentDeleted("users/{userId}", async (event) =
   }
 });
 
-// 6. Sayım Hatırlatıcı (Her 1 saatte bir çalışır, 3 saat kalanlara bildirim atar)
-exports.sayimAutoReminder = onSchedule("every 60 minutes", async (event) => {
-  const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const endOfWindow = new Date(startOfDay.getTime() + 36 * 60 * 60 * 1000);
 
-  const sayimlarSnap = await admin.firestore().collection("sayimlar")
-    .where("date", ">=", admin.firestore.Timestamp.fromDate(startOfDay))
-    .where("date", "<=", admin.firestore.Timestamp.fromDate(endOfWindow))
-    .get();
-
-  if (sayimlarSnap.empty) return;
-
-  for (const sayimDoc of sayimlarSnap.docs) {
-    const sayimData = sayimDoc.data();
-    if (!sayimData || !sayimData.date || !sayimData.gruplar) continue;
-    
-    const davetlerSnap = await admin.firestore().collection("davetler")
-      .where("sayimId", "==", sayimDoc.id)
-      .where("status", "==", "accepted")
-      .get();
-
-    if (davetlerSnap.empty) continue;
-
-    for (const davetDoc of davetlerSnap.docs) {
-      const davet = davetDoc.data();
-      
-      if (davet.autoReminderSent === true) continue;
-
-      const grup = sayimData.gruplar.find(g => g.grupId === davet.grupId);
-      if (!grup || !grup.saat) continue;
-
-      const sayimDateObj = sayimData.date.toDate();
-      const trtDateMs = sayimDateObj.getTime() + (3 * 60 * 60 * 1000); 
-      const trtDateObj = new Date(trtDateMs);
-      
-      const year = trtDateObj.getUTCFullYear();
-      const month = String(trtDateObj.getUTCMonth() + 1).padStart(2, '0');
-      const day = String(trtDateObj.getUTCDate()).padStart(2, '0');
-      
-      const isoString = `${year}-${month}-${day}T${grup.saat}:00+03:00`;
-      const finalSayimDate = new Date(isoString);
-
-      const diffHours = (finalSayimDate.getTime() - nowMs) / (1000 * 60 * 60);
-
-      if (diffHours > 0 && diffHours <= 3) {
-        const userDoc = await admin.firestore().collection("users").doc(davet.userId).get();
-        if (!userDoc.exists) continue;
-        
-        const userData = userDoc.data();
-        if (userData.sayimReminderEnabled === false) continue;
-
-        const sayimName = sayimData.toplanmaYeri || "Sayım";
-        
-        await sendNotificationAndLog({
-          userId: davet.userId,
-          title: "Yaklaşan Sayım",
-          body: `Bugün saat ${grup.saat}'te "${sayimName}" sayımı var. Lütfen vaktinde orada olun.`,
-          type: "sayim_auto_reminder",
-          relatedId: davetDoc.id,
-          dataPayload: {
-            type: "sayim_auto_reminder",
-            davetId: davetDoc.id,
-            sayimId: sayimDoc.id
-          },
-          tag: `sayim_auto_reminder_${davetDoc.id}`
-        });
-        
-        try {
-          await davetDoc.ref.update({ autoReminderSent: true });
-        } catch (e) {
-          console.error("Error updating autoReminderSent for davet " + davetDoc.id, e);
-        }
-      }
-    }
-  }
-});
 
 // 7. Kullanıcı onaylandığında bildirim gönder
 exports.sendApprovalNotification = onDocumentUpdated("users/{userId}", async (event) => {
@@ -831,72 +754,41 @@ exports.hardDeleteSoftDeletedUsers = onSchedule(
   }
 );
 
-// 14. Firestore Weekly Backup (Pazar 03:00)
-exports.weeklyFirestoreBackup = onSchedule(
+// 14. Eski bildirimleri temizleme (Pazar günleri saat 05:00'te çalışır, 30 günden eski bildirimleri siler)
+exports.cleanupOldNotifications = onSchedule(
   {
-    schedule: "0 3 * * 0",
+    schedule: "0 5 * * 0",
     timeZone: "Europe/Istanbul",
     region: "europe-west1",
   },
   async (event) => {
-    const firestoreClient = new firestore.v1.FirestoreAdminClient();
-    const projectId = process.env.GCP_PROJECT || process.env.GCLOUD_PROJECT || "wp-sayim";
-    const databaseName = firestoreClient.databasePath(projectId, '(default)');
-    const bucketName = `${projectId}.appspot.com`; // Varsayılan bucket
+    const db = admin.firestore();
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     try {
-      const responses = await firestoreClient.exportDocuments({
-        name: databaseName,
-        outputUriPrefix: `gs://${bucketName}/backups`,
-        // Boş collectionIds dizisi tüm veritabanını dışa aktarır
-        collectionIds: []
+      const notificationsSnap = await db.collection("notifications")
+        .where("createdAt", "<", admin.firestore.Timestamp.fromDate(thirtyDaysAgo))
+        .limit(500) // Firestore batch limit
+        .get();
+
+      if (notificationsSnap.empty) {
+        console.log("[CleanupNotifications] No old notifications found to delete.");
+        return;
+      }
+
+      const batch = db.batch();
+      let count = 0;
+
+      notificationsSnap.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+        count++;
       });
 
-      const response = responses[0];
-      console.log(`[Backup] Export operation started: ${response.name}`);
+      await batch.commit();
+      console.log(`[CleanupNotifications] Deleted ${count} old notifications.`);
     } catch (err) {
-      console.error("[Backup] Error during export:", err);
-    }
-  }
-);
-
-// 15. Eski yedekleri silme fonksiyonu (Pazar 04:00 - Yedekten 1 saat sonra)
-exports.cleanupOldBackups = onSchedule(
-  {
-    schedule: "0 4 * * 0",
-    timeZone: "Europe/Istanbul",
-    region: "europe-west1",
-  },
-  async (event) => {
-    const storageClient = new Storage();
-    const projectId = process.env.GCP_PROJECT || process.env.GCLOUD_PROJECT || "wp-sayim";
-    const bucketName = `${projectId}.appspot.com`;
-    const bucket = storageClient.bucket(bucketName);
-    const prefix = "backups/";
-
-    try {
-      // Sadece klasörleri/dosyaları listele
-      const [files] = await bucket.getFiles({ prefix });
-      const now = Date.now();
-      const retentionTime = 14 * 24 * 60 * 60 * 1000; // 14 gün
-      
-      let deletedCount = 0;
-      
-      for (const file of files) {
-        // Dosyanın oluşturulma zamanı
-        const metadata = file.metadata;
-        const timeCreated = new Date(metadata.timeCreated).getTime();
-
-        if (now - timeCreated > retentionTime) {
-          await file.delete();
-          console.log(`[Cleanup] Deleted old backup file: ${file.name}`);
-          deletedCount++;
-        }
-      }
-      
-      console.log(`[Cleanup] Done. Deleted ${deletedCount} old backup files/objects.`);
-    } catch (err) {
-      console.error("[Cleanup] Error during cleanup:", err);
+      console.error("[CleanupNotifications] Error deleting old notifications:", err);
     }
   }
 );

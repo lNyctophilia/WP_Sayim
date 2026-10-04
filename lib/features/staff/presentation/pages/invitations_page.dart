@@ -25,17 +25,17 @@ class InvitationsPage extends StatefulWidget {
 class _InvitationsPageState extends State<InvitationsPage> {
   final DavetService _davetService = DavetService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  late Stream<List<Davet>> _davetStream;
+  late Future<List<Davet>> _davetFuture;
 
   @override
   void initState() {
     super.initState();
-    _davetStream = _davetService.getDavetlerByUser(widget.currentUser.id);
+    _davetFuture = _davetService.getDavetlerByUserFuture(widget.currentUser.id);
   }
 
   Future<void> _onRefresh() async {
     setState(() {
-      _davetStream = _davetService.getDavetlerByUser(widget.currentUser.id);
+      _davetFuture = _davetService.getDavetlerByUserFuture(widget.currentUser.id);
     });
     // Provide some visual feedback time for the refresh indicator
     await Future.delayed(const Duration(milliseconds: 600));
@@ -125,8 +125,8 @@ class _InvitationsPageState extends State<InvitationsPage> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: StreamBuilder<List<Davet>>(
-        stream: _davetStream,
+      body: FutureBuilder<List<Davet>>(
+        future: _davetFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator(color: AppColors.accentLight));
@@ -209,8 +209,8 @@ class _InvitationsPageState extends State<InvitationsPage> {
   }
 
   Widget _buildDavetCard(Davet davet) {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: _firestore.collection('sayimlar').doc(davet.sayimId).snapshots(),
+    return FutureBuilder<DocumentSnapshot>(
+      future: _firestore.collection('sayimlar').doc(davet.sayimId).get(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Container(

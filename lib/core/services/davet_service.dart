@@ -39,6 +39,17 @@ class DavetService {
     });
   }
 
+  /// Belirli bir kullanıcıya ait davetleri tek seferlik getir
+  Future<List<Davet>> getDavetlerByUserFuture(String userId) async {
+    final snapshot = await _firestore
+        .collection('davetler')
+        .where('userId', isEqualTo: userId)
+        .get();
+    final list = snapshot.docs.map((doc) => Davet.fromFirestore(doc)).toList();
+    list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return list;
+  }
+
   /// Yeni bir davet oluşturur (Toplu oluşturma için de kullanılabilir)
   Future<String> createDavet(Davet davet) async {
     final docRef = await _firestore.collection('davetler').add(davet.toFirestore());

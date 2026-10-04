@@ -73,8 +73,8 @@ class CustomTopBar extends StatelessWidget {
               const Spacer(),
               if (currentUser != null) ...[
                 // Bildirim Butonu
-                StreamBuilder<List<Davet>>(
-                  stream: davetService.getDavetlerByUser(currentUser!.id),
+                FutureBuilder<List<Davet>>(
+                  future: davetService.getDavetlerByUserFuture(currentUser!.id),
                   builder: (context, snapshot) {
                     final pendingCount = snapshot.data
                             ?.where((d) => d.status == DavetStatus.pending)

@@ -30,7 +30,7 @@ class _SayimListTabState extends State<SayimListTab> {
   late int _currentMonth;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  late Stream<List<Sayim>> _sayimlarStream;
+  late Future<List<Sayim>> _sayimlarFuture;
 
   @override
   void initState() {
@@ -38,7 +38,13 @@ class _SayimListTabState extends State<SayimListTab> {
     final now = DateTime.now();
     _currentYear = now.year;
     _currentMonth = now.month;
-    _sayimlarStream = SayimService().getSayimlar();
+    _sayimlarFuture = SayimService().getSayimlarFuture();
+  }
+
+  Future<void> _refresh() async {
+    setState(() {
+      _sayimlarFuture = SayimService().getSayimlarFuture();
+    });
   }
 
   @override
@@ -145,8 +151,12 @@ class _SayimListTabState extends State<SayimListTab> {
 
     return Stack(
       children: [
-        StreamBuilder<List<Sayim>>(
-          stream: _sayimlarStream,
+        RefreshIndicator(
+          onRefresh: _refresh,
+          color: AppColors.accentLight,
+          backgroundColor: AppColors.card,
+          child: FutureBuilder<List<Sayim>>(
+            future: _sayimlarFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(
@@ -256,6 +266,7 @@ class _SayimListTabState extends State<SayimListTab> {
             );
           },
         ),
+        ),
         Positioned(
           bottom: 24,
           right: 24,
@@ -304,8 +315,8 @@ class _SayimListTabState extends State<SayimListTab> {
           borderRadius: BorderRadius.circular(16),
         ),
         padding: const EdgeInsets.all(16),
-        child: StreamBuilder<List<Davet>>(
-          stream: davetService.getDavetlerBySayim(sayim.id),
+        child: FutureBuilder<List<Davet>>(
+          future: davetService.getDavetlerBySayimFuture(sayim.id),
           builder: (context, snapshot) {
             final davetler = snapshot.data ?? [];
             final bool isLoading = snapshot.connectionState == ConnectionState.waiting;

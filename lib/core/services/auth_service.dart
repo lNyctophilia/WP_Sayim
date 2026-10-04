@@ -441,4 +441,17 @@ class AuthService {
               return c == city;
             }).length);
   }
+
+  /// Bekleyen kullanıcı (onaylanmamış) sayısını tek seferlik getir
+  Future<int> getPendingUsersCountFuture(String city) async {
+    final snapshot = await _firestore
+        .collection('users')
+        .where('isApproved', isEqualTo: false)
+        .where('isDeleted', isEqualTo: false)
+        .get();
+    return snapshot.docs.where((doc) {
+      final c = doc.data()['city'] as String? ?? 'Denizli';
+      return c == city;
+    }).length;
+  }
 }
