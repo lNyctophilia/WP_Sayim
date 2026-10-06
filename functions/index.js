@@ -796,8 +796,8 @@ exports.cleanupOldNotifications = onSchedule(
 );
 
 
-// 6. Sayım Hatırlatıcı (Her 1 saatte bir çalışır, 3 saat kalanlara bildirim atar)
-exports.sayimAutoReminder = onSchedule("every 60 minutes", async (event) => {
+// 6. Sayım Hatırlatıcı (Her 2 saatte bir çalışır, 3 saat kalanlara bildirim atar)
+exports.sayimAutoReminder = onSchedule("every 120 minutes", async (event) => {
   const now = new Date();
   const nowMs = now.getTime();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
