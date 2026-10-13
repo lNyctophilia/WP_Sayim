@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/sayim.dart';
 import '../models/davet.dart';
+import 'cloudflare_api_service.dart';
 
 class SayimService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final CloudflareApiService _cfApi = CloudflareApiService();
 
   /// Tüm sayımları getirir (tarihe göre azalan sırada)
   Stream<List<Sayim>> getSayimlar() {
@@ -202,6 +204,28 @@ class SayimService {
     }
 
     await batch.commit();
+
+    // Sayım saati değiştiyse Cloudflare Worker'ı bilgilendir
+    final oldGruplarList = oldSayim.gruplar.map((g) => {'grupId': g.grupId, 'saat': g.saat}).toList();
+    final newGruplarList = sayim.gruplar.map((g) => {'grupId': g.grupId, 'saat': g.saat}).toList();
+    
+    // Saat değişikliği var mı kontrol et
+    bool hasTimeChange = false;
+    for (final newGrup in sayim.gruplar) {
+      final oldGrup = oldSayim.gruplar.where((g) => g.grupId == newGrup.grupId).firstOrNull;
+      if (oldGrup != null && oldGrup.saat != newGrup.saat) {
+        hasTimeChange = true;
+        break;
+      }
+    }
+    
+    if (hasTimeChange) {
+      _cfApi.notifySayimTimeChanged(
+        sayimId: sayim.id,
+        oldGruplar: oldGruplarList.cast<Map<String, dynamic>>(),
+        newGruplar: newGruplarList.cast<Map<String, dynamic>>(),
+      );
+    }
   }
 
   /// Sayımı kapatır
@@ -233,17 +257,8 @@ class SayimService {
         .get();
 
     if (isSayimClosed || sayim.effectiveStatus == SayimStatus.closed) {
-      final updateBatch = _firestore.batch();
-      bool hasUpdates = false;
-      for (var davetDoc in davetlerQuery.docs) {
-        updateBatch.update(davetDoc.reference, {'silentDelete': true});
-        hasUpdates = true;
-      }
-      if (hasUpdates) {
-        await updateBatch.commit();
-        // Firestore trigger'ının (onDocumentDeleted) yeni datayı (silentDelete: true) görmesi için biraz daha uzun bekleme
-        await Future.delayed(const Duration(milliseconds: 1500));
-      }
+      // Artık Firestore trigger yok, silentDelete + delay gerekmez
+      // Davetleri direkt sil
     }
 
     final batch = _firestore.batch();

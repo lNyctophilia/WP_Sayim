@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/app_user.dart';
 import 'notification_service.dart';
 import 'storage_service.dart';
+import 'cloudflare_api_service.dart';
 
 /// Firebase Auth servisi — pseudo-email yöntemiyle kullanıcı adı + şifre
 ///
@@ -15,6 +16,7 @@ import 'storage_service.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final CloudflareApiService _cfApi = CloudflareApiService();
 
   static const String _emailDomain = 'wpsayim.local';
 
@@ -327,8 +329,8 @@ class AuthService {
     if (!doc.exists) return;
     
     final data = doc.data();
-    final username = data?['username'] ?? '';
-    final newUsername = '${username}_deleted_${DateTime.now().millisecondsSinceEpoch}';
+    final oldUsername = data?['username'] ?? '';
+    final newUsername = '${oldUsername}_deleted_${DateTime.now().millisecondsSinceEpoch}';
     
     // Firestore'u güncelle — isDeleted:true olunca login bloke edilir.
     await _firestore.collection('users').doc(uid).update({
@@ -337,6 +339,13 @@ class AuthService {
       'username': newUsername,
       'phone': newUsername,
     });
+
+    // Auth sync: username değişti → email de değişmeli
+    _cfApi.syncUserAuth(
+      userId: uid,
+      oldData: {'username': oldUsername, 'fullName': data?['fullName']},
+      newData: {'username': newUsername, 'fullName': data?['fullName']},
+    );
   }
 
   /// Admin/Owner yetkisiyle kullanıcı bilgilerini güncelle
@@ -355,6 +364,10 @@ class AuthService {
     String? email,
     String? city,
   }) async {
+    // Eski veriyi çek (auth sync için)
+    final oldDoc = await _firestore.collection('users').doc(uid).get();
+    final oldData = oldDoc.exists ? oldDoc.data()! : <String, dynamic>{};
+
     final Map<String, dynamic> updates = {};
     if (fullName != null && fullName.isNotEmpty) updates['fullName'] = fullName;
     if (username != null && username.isNotEmpty) updates['username'] = username;
@@ -371,17 +384,52 @@ class AuthService {
 
     if (updates.isNotEmpty) {
       await _firestore.collection('users').doc(uid).update(updates);
+
+      // Auth sync: username, password veya fullName değiştiyse
+      if (updates.containsKey('username') || updates.containsKey('password') || updates.containsKey('fullName')) {
+        final newData = {...oldData, ...updates};
+        _cfApi.syncUserAuth(
+          userId: uid,
+          oldData: {'fullName': oldData['fullName'], 'username': oldData['username']},
+          newData: {'fullName': newData['fullName'], 'username': newData['username'], 'password': updates['password']},
+        );
+      }
+
+      // Approval bildirimi: isApproved false→true geçişi
+      if (isApproved == true && oldData['isApproved'] != true) {
+        _cfApi.notifyApproval(
+          userId: uid,
+          oldIsApproved: oldData['isApproved'] == true,
+          newIsApproved: true,
+          email: (email ?? oldData['email']) as String?,
+        );
+      }
     }
   }
 
   /// Bekleyen kaydı onayla
   Future<void> approveUser(String uid) async {
+    // Eski veriyi çek (email bilgisi için)
+    final oldDoc = await _firestore.collection('users').doc(uid).get();
+    final oldEmail = oldDoc.exists ? (oldDoc.data()?['email'] as String?) : null;
+
     await _firestore.collection('users').doc(uid).update({'isApproved': true});
+
+    // Cloudflare Worker'a onay bildirimi gönder
+    _cfApi.notifyApproval(
+      userId: uid,
+      oldIsApproved: false,
+      newIsApproved: true,
+      email: oldEmail,
+    );
   }
 
   /// Bekleyen kaydı reddet (Firestore'dan sil)
   Future<void> rejectUser(String uid) async {
     await _firestore.collection('users').doc(uid).delete();
+
+    // Cloudflare Worker'a auth silme bildirimi gönder
+    _cfApi.deleteUserAuth(userId: uid);
   }
 
   /// Şifre değiştir (kendi şifresini)

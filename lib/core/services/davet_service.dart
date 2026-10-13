@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/davet.dart';
+import 'cloudflare_api_service.dart';
 import '../models/sayim.dart';
 import '../../features/home/data/models/work_day.dart';
 
 class DavetService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final CloudflareApiService _cfApi = CloudflareApiService();
 
   /// Belirli bir sayıma ait davetleri getir
   Stream<List<Davet>> getDavetlerBySayim(String sayimId) {
@@ -53,6 +55,18 @@ class DavetService {
   /// Yeni bir davet oluşturur (Toplu oluşturma için de kullanılabilir)
   Future<String> createDavet(Davet davet) async {
     final docRef = await _firestore.collection('davetler').add(davet.toFirestore());
+    
+    // Cloudflare Worker'a bildirim gönder (fire-and-forget)
+    _cfApi.notifyDavetCreated(
+      davetId: docRef.id,
+      davetData: {
+        'userId': davet.userId,
+        'sayimId': davet.sayimId,
+        'status': davet.status.name,
+        'isPast': davet.isPast,
+      },
+    );
+    
     return docRef.id;
   }
 
@@ -66,9 +80,22 @@ class DavetService {
 
   /// Hatırlatma bildirim tarihini günceller
   Future<void> updateLastReminder(String davetId) async {
+    // Önce davet verisini çek (bildirim için)
+    final doc = await _firestore.collection('davetler').doc(davetId).get();
+    
     await _firestore.collection('davetler').doc(davetId).update({
       'lastReminderAt': Timestamp.now(),
     });
+    
+    // Cloudflare Worker'a hatırlatma bildirimi gönder
+    if (doc.exists) {
+      final data = doc.data()!;
+      _cfApi.notifyDavetReminder(
+        davetId: davetId,
+        userId: data['userId'] ?? '',
+        sayimId: data['sayimId'] ?? '',
+      );
+    }
   }
 
   /// Daveti kabul et ve takvime işle
@@ -121,6 +148,15 @@ class DavetService {
     batch.set(workDayRef, workDay.toJson(), SetOptions(merge: true));
 
     await batch.commit();
+    
+    // Cloudflare Worker'a bildirim gönder (fire-and-forget)
+    _cfApi.notifyDavetResponse(
+      davetId: davet.id,
+      oldStatus: 'pending',
+      newStatus: 'accepted',
+      userId: davet.userId,
+      sayimId: davet.sayimId,
+    );
   }
 
   /// Daveti reddet
@@ -161,6 +197,15 @@ class DavetService {
     }
 
     await batch.commit();
+    
+    // Cloudflare Worker'a bildirim gönder (fire-and-forget)
+    _cfApi.notifyDavetResponse(
+      davetId: davet.id,
+      oldStatus: 'pending',
+      newStatus: 'declined',
+      userId: davet.userId,
+      sayimId: davet.sayimId,
+    );
   }
 
   /// Daveti siler (Yönetici daveti iptal ederse) ve takvimden de kaldırır
@@ -170,10 +215,17 @@ class DavetService {
 
     final davet = Davet.fromFirestore(doc);
     
-    if (isSayimClosed) {
-      await doc.reference.update({'silentDelete': true});
-      // Firestore trigger'ının (onDocumentDeleted) yeni datayı görmesi için kısa bir bekleme
-      await Future.delayed(const Duration(milliseconds: 300));
+    // Cloudflare Worker'a silme bildirimi gönder (silmeden ÖNCE, davet verisi hala var)
+    if (!isSayimClosed) {
+      _cfApi.notifyDavetCancelled(
+        davetId: davetId,
+        davetData: {
+          'userId': davet.userId,
+          'sayimId': davet.sayimId,
+          'status': davet.status.name,
+          'silentDelete': isSayimClosed,
+        },
+      );
     }
 
     final batch = _firestore.batch();
@@ -239,6 +291,7 @@ class DavetService {
     if (!doc.exists) return;
 
     final davet = Davet.fromFirestore(doc);
+    final oldGrupId = davet.grupId;
     final batch = _firestore.batch();
 
     batch.update(doc.reference, {
@@ -281,15 +334,41 @@ class DavetService {
     }
 
     await batch.commit();
+    
+    // Grup değiştiyse bildirim gönder (fire-and-forget)
+    if (oldGrupId != newGrupId) {
+      _cfApi.notifyDavetGrupChanged(
+        davetId: davetId,
+        oldGrupId: oldGrupId,
+        newGrupId: newGrupId,
+        userId: davet.userId,
+        sayimId: davet.sayimId,
+        status: davet.status.name,
+        isPast: davet.isPast,
+      );
+    }
   }
 
   /// Reddedilmiş daveti tekrar bekleyen durumuna alır
   Future<void> reinviteDavet(String davetId) async {
+    // Önce davet verisini çek (bildirim için)
+    final doc = await _firestore.collection('davetler').doc(davetId).get();
+    
     await _firestore.collection('davetler').doc(davetId).update({
       'status': DavetStatus.pending.name,
       'respondedAt': FieldValue.delete(),
       'lastReminderAt': Timestamp.now(),
     });
+    
+    // Hatırlatma bildirimi gönder (yeniden davet)
+    if (doc.exists) {
+      final data = doc.data()!;
+      _cfApi.notifyDavetReminder(
+        davetId: davetId,
+        userId: data['userId'] ?? '',
+        sayimId: data['sayimId'] ?? '',
+      );
+    }
   }
 }
 

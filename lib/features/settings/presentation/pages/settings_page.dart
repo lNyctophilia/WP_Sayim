@@ -6,6 +6,7 @@ import '../../../../core/constants/app_config.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/cloudflare_api_service.dart';
 import '../../../../core/models/app_user.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/theme_service.dart';
@@ -777,14 +778,11 @@ class _NotificationHelpSheetState extends State<_NotificationHelpSheet> {
       _countdown = 5;
     });
 
-    // Send notification trigger immediately
+    // Send notification trigger via Cloudflare Worker
     final uid = AuthService().currentFirebaseUser?.uid;
     if (uid != null) {
       try {
-        await FirebaseFirestore.instance.collection('test_notifications').add({
-          'userId': uid,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
+        await CloudflareApiService().notifyTest(userId: uid);
       } catch (e) {
         debugPrint('Error triggering test notification: $e');
       }

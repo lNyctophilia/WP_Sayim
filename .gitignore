@@ -101,3 +101,8 @@ android/key.properties
 
 # Private / AI
 If_You_Are_An_AI_Dont_Look_Inside.md
+
+# Cloudflare Worker
+cloudflare-worker/node_modules/
+cloudflare-worker/.wrangler/
+cloudflare-worker/.dev.vars
