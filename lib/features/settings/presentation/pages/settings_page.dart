@@ -375,12 +375,10 @@ class _SettingsPageState extends State<SettingsPage> {
           );
 
           if (confirmed == true && mounted) {
-            // Önce stack'ı temizle (Settings sayfasından çık)
+            await AuthService().logout();
             if (appNavigatorKey.currentState?.canPop() ?? false) {
               appNavigatorKey.currentState?.popUntil((route) => route.isFirst);
             }
-            // Sonra logout — authStateChanges stream'i LoginPage'e geçirecek
-            await AuthService().logout();
           }
         },
         shape: RoundedRectangleBorder(

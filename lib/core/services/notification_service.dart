@@ -210,7 +210,7 @@ class NotificationService {
     try {
       await _firestore.collection('users').doc(user.uid).update({
         'fcmToken': FieldValue.delete(),
-      });
+      }).timeout(const Duration(milliseconds: 1000));
       // Cihazdaki tokenı tamamen silmiyoruz (yeni girişte sorun yaşamamak için)
       // await _messaging.deleteToken();
     } catch (e) {

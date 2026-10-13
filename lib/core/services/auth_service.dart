@@ -122,7 +122,10 @@ class AuthService {
   Future<void> logout([bool isKicked = false]) async {
     try {
       if (!isKicked) {
-        await NotificationService().clearToken();
+        await NotificationService().clearToken().timeout(
+          const Duration(milliseconds: 1000),
+          onTimeout: () => debugPrint('Token silme zaman aşımına uğradı.'),
+        );
       }
     } catch (e) {
       // Token silinirken hata olsa bile çıkışa devam et
