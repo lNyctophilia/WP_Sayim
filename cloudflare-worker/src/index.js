@@ -570,6 +570,14 @@ async function cronSayimAutoReminder(db, fcm) {
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const endOfWindow = new Date(startOfDay.getTime() + 36 * 60 * 60 * 1000);
 
+  const report = {
+    now: now.toISOString(),
+    foundSayimlar: 0,
+    matchedDavetler: 0,
+    sentNotifications: 0,
+    details: [],
+  };
+
   const sayimlar = await db.query('sayimlar', {
     where: [
       { field: 'date', op: '>=', value: startOfDay },
@@ -577,7 +585,8 @@ async function cronSayimAutoReminder(db, fcm) {
     ],
   });
 
-  if (sayimlar.length === 0) return;
+  report.foundSayimlar = sayimlar.length;
+  if (sayimlar.length === 0) return report;
 
   for (const sayim of sayimlar) {
     if (!sayim || !sayim.date || !sayim.gruplar) continue;
@@ -592,10 +601,17 @@ async function cronSayimAutoReminder(db, fcm) {
     if (davetler.length === 0) continue;
 
     for (const davet of davetler) {
-      if (davet.autoReminderSent === true) continue;
+      report.matchedDavetler++;
+      if (davet.autoReminderSent === true) {
+        report.details.push({ davetId: davet.id, status: 'already_sent' });
+        continue;
+      }
 
       const grup = (sayim.gruplar || []).find(g => g.grupId === davet.grupId);
-      if (!grup || !grup.saat) continue;
+      if (!grup || !grup.saat) {
+        report.details.push({ davetId: davet.id, status: 'no_group_or_time' });
+        continue;
+      }
 
       // Sayım tarihini Türkiye saatine çevir
       const sayimDateObj = sayim.date instanceof Date ? sayim.date : new Date(sayim.date);
@@ -613,8 +629,14 @@ async function cronSayimAutoReminder(db, fcm) {
 
       if (diffHours > 0 && diffHours <= 3) {
         const userDoc = await db.getDoc('users', davet.userId);
-        if (!userDoc) continue;
-        if (userDoc.sayimReminderEnabled === false) continue;
+        if (!userDoc) {
+          report.details.push({ davetId: davet.id, userId: davet.userId, status: 'user_not_found' });
+          continue;
+        }
+        if (userDoc.sayimReminderEnabled === false) {
+          report.details.push({ davetId: davet.id, userId: davet.userId, status: 'reminder_disabled_by_user' });
+          continue;
+        }
 
         const sayimName = sayim.toplanmaYeri || 'Sayım';
 
@@ -633,9 +655,16 @@ async function cronSayimAutoReminder(db, fcm) {
         } catch (e) {
           console.error('Error updating autoReminderSent for davet ' + davet.id, e);
         }
+
+        report.sentNotifications++;
+        report.details.push({ davetId: davet.id, userId: davet.userId, status: 'sent', diffHours });
+      } else {
+        report.details.push({ davetId: davet.id, status: 'not_in_3h_window', diffHours });
       }
     }
   }
+
+  return report;
 }
 
 // 14. cleanupOldNotifications (Pazar 05:00 TR)
@@ -834,6 +863,17 @@ export default {
       return jsonResponse({ status: 'ok', worker: 'wp-sayim-api' });
     }
 
+    // Test endpoint: Cron Manuel Tetikleme (GET veya POST)
+    if (path === '/api/test/cron-reminder') {
+      try {
+        const { db, fcm } = await initClients(env);
+        const report = await cronSayimAutoReminder(db, fcm);
+        return jsonResponse({ status: 'ok', report });
+      } catch (err) {
+        return jsonResponse({ status: 'error', error: err.message }, 500);
+      }
+    }
+
     if (request.method !== 'POST') {
       return jsonResponse({ error: 'Method not allowed' }, 405);
     }
@@ -891,12 +931,15 @@ export default {
         case '0 */2 * * *':
           await cronSayimAutoReminder(db, fcm);
           break;
+        case '0 2 * * SUN':
         case '0 2 * * 0':
           await cronCleanupOldNotifications(db);
           break;
+        case '0 22 * * SAT':
         case '0 22 * * 6':
           await cronWeeklyFirestoreBackup(env);
           break;
+        case '0 1 * * SUN':
         case '0 1 * * 0':
           await cronCleanupOldBackups(env);
           break;

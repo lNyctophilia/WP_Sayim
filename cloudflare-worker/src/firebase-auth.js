@@ -6,8 +6,23 @@
 
 // ─── Base64url encode/decode ───
 function base64urlEncode(data) {
-  const str = typeof data === 'string' ? data : new TextDecoder().decode(data);
-  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  let bytes;
+  if (typeof data === 'string') {
+    // TextEncoder ile UTF-8 → Uint8Array
+    bytes = new TextEncoder().encode(data);
+  } else {
+    bytes = data;
+  }
+  // Uint8Array → binary string → btoa
+  let binary = '';
+  const len = bytes.byteLength || bytes.length;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 }
 
 /**

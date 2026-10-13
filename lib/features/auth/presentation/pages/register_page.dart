@@ -8,8 +8,7 @@ import '../../../../core/services/language_service.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/utils/pwa_check.dart';
-import '../../../../core/widgets/map_location_picker.dart';
-import 'package:latlong2/latlong.dart';
+
 import 'package:url_launcher/url_launcher.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -28,7 +27,6 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _addressController = TextEditingController();
   final _passwordController = TextEditingController();
   final _emailController = TextEditingController();
   
@@ -38,8 +36,6 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   bool _obscurePassword = true;
   bool _requiresEmail = false;
   String? _errorMessage;
-  double? _selectedLat;
-  double? _selectedLng;
   bool _isPoliciesAccepted = false;
   String _selectedCity = 'Denizli';
   bool _hasPending = false;
@@ -69,7 +65,6 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     _animController.dispose();
     _fullNameController.dispose();
     _phoneController.dispose();
-    _addressController.dispose();
     _passwordController.dispose();
     _emailController.dispose();
     super.dispose();
@@ -125,9 +120,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
         phone: phone,
         password: _passwordController.text,
         fullName: _toTitleCase(_fullNameController.text),
-        address: _toTitleCase(_addressController.text),
-        latitude: _selectedLat,
-        longitude: _selectedLng,
+        address: '',
         fcmToken: token,
         email: _requiresEmail ? _emailController.text.trim() : null,
         city: _selectedCity,
@@ -348,58 +341,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           ),
           const SizedBox(height: 14),
 
-          Row(
-            children: [
-              Expanded(
-                child: _buildTextField(
-                  controller: _addressController,
-                  hintText: widget.lang.tr('address_hint'),
-                  icon: Icons.location_on_outlined,
-                  validator: (value) => (value == null || value.trim().isEmpty) ? widget.lang.tr('address_required') : null,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: IconButton(
-                  icon: Icon(Icons.map_outlined, color: AppColors.accentLight),
-                  onPressed: () async {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => MapLocationPicker(
-                          lang: widget.lang,
-                          initialLocation: _selectedLat != null && _selectedLng != null 
-                              ? LatLng(_selectedLat!, _selectedLng!) 
-                              : null,
-                        ),
-                      ),
-                    );
-                    
-                    if (result != null && mounted) {
-                      setState(() {
-                        _addressController.text = result['address'] ?? '';
-                        _selectedLat = result['latitude'];
-                        _selectedLng = result['longitude'];
-                      });
-                    }
-                  },
-                  tooltip: widget.lang.tr('select_from_map'),
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 12, top: 4),
-            child: Text(
-              widget.lang.tr('address_note'),
-              style: GoogleFonts.inter(fontSize: 11, color: AppColors.textHint),
-            ),
-          ),
-          const SizedBox(height: 14),
+
 
           _buildTextField(
             controller: _passwordController,
