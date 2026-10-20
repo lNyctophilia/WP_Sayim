@@ -863,16 +863,6 @@ export default {
       return jsonResponse({ status: 'ok', worker: 'wp-sayim-api' });
     }
 
-    // Test endpoint: Cron Manuel Tetikleme (GET veya POST)
-    if (path === '/api/test/cron-reminder') {
-      try {
-        const { db, fcm } = await initClients(env);
-        const report = await cronSayimAutoReminder(db, fcm);
-        return jsonResponse({ status: 'ok', report });
-      } catch (err) {
-        return jsonResponse({ status: 'error', error: err.message }, 500);
-      }
-    }
 
     if (request.method !== 'POST') {
       return jsonResponse({ error: 'Method not allowed' }, 405);

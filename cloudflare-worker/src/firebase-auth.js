@@ -110,38 +110,35 @@ export async function getAccessToken(serviceAccount) {
 
 /**
  * Firebase ID Token doğrulama (Flutter'dan gelen kullanıcı auth token'ı)
- * Basit doğrulama: Google public keys ile verify yerine,
- * Firebase Auth REST API ile token'ı doğruluyoruz.
+ * JWT'yi decode edip exp, aud, iss, iat, sub kontrolü yapar.
  */
 export async function verifyIdToken(idToken, projectId) {
-  // Firebase Auth REST API ile tokenInfo endpoint'i
-  const response = await fetch(
-    `https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key=UNUSED`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idToken }),
-    }
-  );
-  
-  if (!response.ok) {
-    // Alternatif: Token'ı decode edip exp kontrolü yap
-    try {
-      const parts = idToken.split('.');
-      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-      const now = Math.floor(Date.now() / 1000);
-      if (payload.exp < now) throw new Error('Token expired');
-      if (payload.aud !== projectId) throw new Error('Invalid audience');
-      return { uid: payload.sub || payload.user_id, email: payload.email };
-    } catch {
-      throw new Error('Invalid ID token');
-    }
+  try {
+    const parts = idToken.split('.');
+    if (parts.length !== 3) throw new Error('Invalid token format');
+
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    const now = Math.floor(Date.now() / 1000);
+
+    // Token süresi dolmuş mu?
+    if (!payload.exp || payload.exp < now) throw new Error('Token expired');
+
+    // Doğru proje mi?
+    if (payload.aud !== projectId) throw new Error('Invalid audience');
+
+    // Doğru issuer mı?
+    const expectedIssuer = `https://securetoken.google.com/${projectId}`;
+    if (payload.iss !== expectedIssuer) throw new Error('Invalid issuer');
+
+    // Gelecek tarihli token mı? (replay attack koruması)
+    if (payload.iat && payload.iat > now + 60) throw new Error('Token issued in the future');
+
+    // Kullanıcı ID'si var mı?
+    const uid = payload.sub || payload.user_id;
+    if (!uid) throw new Error('No user ID in token');
+
+    return { uid, email: payload.email };
+  } catch (e) {
+    throw new Error(`Invalid ID token: ${e.message}`);
   }
-  
-  const data = await response.json();
-  if (!data.users || data.users.length === 0) {
-    throw new Error('No user found for token');
-  }
-  
-  return { uid: data.users[0].localId, email: data.users[0].email };
 }
