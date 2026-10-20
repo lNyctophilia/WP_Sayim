@@ -49,6 +49,7 @@ class AppStrings {
       'en': 'Are you sure you want to delete this entry?'
     },
     'cancel': {'tr': 'İptal', 'en': 'Cancel'},
+    'go_back': {'tr': 'Vazgeç', 'en': 'Go Back'},
     'currency_symbol': {'tr': '₺', 'en': '₺'},
 
     // Ayarlar
@@ -439,8 +440,8 @@ class AppStrings {
     'person_successfully_removed': {'tr': 'Kişi başarıyla çıkarıldı.', 'en': 'Person successfully removed.'},
     'send_reminder_confirm_title': {'tr': 'Hatırlatma Gönder', 'en': 'Send Reminder'},
     'send_reminder_confirm_msg': {'tr': 'Bu kişiye yeniden hatırlatma bildirimi göndermek istediğinize emin misiniz?', 'en': 'Are you sure you want to send a reminder notification to this person?'},
-    'cancel_invitation_confirm_title': {'tr': 'Daveti İptal Et', 'en': 'Cancel Invitation'},
-    'cancel_invitation_confirm_msg': {'tr': 'Bu daveti iptal etmek istediğinize emin misiniz?', 'en': 'Are you sure you want to cancel this invitation?'},
+    'cancel_invitation_confirm_title': {'tr': 'Daveti Sil', 'en': 'Delete Invitation'},
+    'cancel_invitation_confirm_msg': {'tr': 'Bu daveti silmek istediğinize emin misiniz?', 'en': 'Are you sure you want to delete this invitation?'},
     'sayim_cancelled': {'tr': 'Sayım İptali', 'en': 'Count Cancelled'},
     'reinvite_confirm_title': {'tr': 'Yeniden Davet Et', 'en': 'Re-invite'},
     'reinvite_confirm_msg': {'tr': 'Bu kişiye yeniden davet göndermek istediğinize emin misiniz?', 'en': 'Are you sure you want to send a new invitation to this person?'},

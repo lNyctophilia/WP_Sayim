@@ -112,7 +112,7 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
           ucret: config.ucret,
           createdAt: now,
         );
-        final davetId = await _davetService.createDavet(davet);
+        final davetId = await _davetService.createDavet(davet, skipNotification: isSayimClosed || isSelfInvite);
         
         // E-posta gönderimi tetikleniyor (sadece mail adresi olanlar için)
         final sayimTarihi = '${widget.sayim.date.day.toString().padLeft(2, '0')}.${widget.sayim.date.month.toString().padLeft(2, '0')}.${widget.sayim.date.year}';
@@ -128,7 +128,7 @@ class _AddPersonToSayimPageState extends State<AddPersonToSayimPage> {
 
         // Eğer yönetici kendini eklediyse veya sayım kapalıysa zaten kabul edildi (takvime ekle)
         if (isSayimClosed || isSelfInvite) {
-          await _davetService.acceptDavet(davetId);
+          await _davetService.acceptDavet(davetId, silent: true);
         }
       }
 

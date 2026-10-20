@@ -17,3 +17,19 @@ crons = [
   "0 1 * * SUN",
   "0 1 16 * *"
 ]
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
+
+[observability.traces]
+enabled = true
+head_sampling_rate = 1
+
+[observability.issues]
+enabled = true

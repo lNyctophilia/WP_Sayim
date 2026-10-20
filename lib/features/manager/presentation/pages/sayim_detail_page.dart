@@ -950,11 +950,11 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context, false),
-                                child: Text(AppStrings.get('cancel', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textHint)),
+                                child: Text(AppStrings.get('go_back', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.textHint)),
                               ),
                               TextButton(
                                 onPressed: () => Navigator.pop(context, true),
-                                child: Text(AppStrings.get('cancel', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.danger)),
+                                child: Text(AppStrings.get('delete', isTr ? 'tr' : 'en'), style: TextStyle(color: AppColors.danger)),
                               ),
                             ],
                           ),

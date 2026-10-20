@@ -53,19 +53,22 @@ class DavetService {
   }
 
   /// Yeni bir davet oluşturur (Toplu oluşturma için de kullanılabilir)
-  Future<String> createDavet(Davet davet) async {
+  /// [skipNotification]: true ise Cloudflare bildirim çağrısı atlanır (sayım kapalı / self-invite).
+  Future<String> createDavet(Davet davet, {bool skipNotification = false}) async {
     final docRef = await _firestore.collection('davetler').add(davet.toFirestore());
     
     // Cloudflare Worker'a bildirim gönder (fire-and-forget)
-    _cfApi.notifyDavetCreated(
-      davetId: docRef.id,
-      davetData: {
-        'userId': davet.userId,
-        'sayimId': davet.sayimId,
-        'status': davet.status.name,
-        'isPast': davet.isPast,
-      },
-    );
+    if (!skipNotification) {
+      _cfApi.notifyDavetCreated(
+        davetId: docRef.id,
+        davetData: {
+          'userId': davet.userId,
+          'sayimId': davet.sayimId,
+          'status': davet.status.name,
+          'isPast': davet.isPast,
+        },
+      );
+    }
     
     return docRef.id;
   }
@@ -99,7 +102,9 @@ class DavetService {
   }
 
   /// Daveti kabul et ve takvime işle
-  Future<void> acceptDavet(String davetId) async {
+  /// [silent]: true ise yöneticiye "kabul edildi" bildirimi gönderilmez
+  /// (sayım kapalıyken otomatik kabul veya self-invite senaryolarında kullanılır).
+  Future<void> acceptDavet(String davetId, {bool silent = false}) async {
     final doc = await _firestore.collection('davetler').doc(davetId).get();
     if (!doc.exists) return;
     final davet = Davet.fromFirestore(doc);
@@ -150,13 +155,16 @@ class DavetService {
     await batch.commit();
     
     // Cloudflare Worker'a bildirim gönder (fire-and-forget)
-    _cfApi.notifyDavetResponse(
-      davetId: davet.id,
-      oldStatus: 'pending',
-      newStatus: 'accepted',
-      userId: davet.userId,
-      sayimId: davet.sayimId,
-    );
+    // silent=true ise bildirim atlanır (sayım kapalı / self-invite)
+    if (!silent) {
+      _cfApi.notifyDavetResponse(
+        davetId: davet.id,
+        oldStatus: 'pending',
+        newStatus: 'accepted',
+        userId: davet.userId,
+        sayimId: davet.sayimId,
+      );
+    }
   }
 
   /// Daveti reddet
