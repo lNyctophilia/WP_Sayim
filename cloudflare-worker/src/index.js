@@ -563,12 +563,13 @@ async function handleSayimTimeChanged(body, db, fcm) {
 // CRON HANDLERS (Zamanlanmış görevler)
 // ═══════════════════════════════════════════════════════════
 
-// 6. sayimAutoReminder (her 2 saatte)
+// 6. sayimAutoReminder (her saat başı)
 async function cronSayimAutoReminder(db, fcm) {
   const now = new Date();
   const nowMs = now.getTime();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const endOfWindow = new Date(startOfDay.getTime() + 36 * 60 * 60 * 1000);
+  // TRT (UTC+3) ve yerel gece yarısı (21:00 UTC) farkını kapsamak için son 24 saat ile gelecek 36 saat taranır
+  const windowStart = new Date(nowMs - 24 * 60 * 60 * 1000);
+  const windowEnd = new Date(nowMs + 36 * 60 * 60 * 1000);
 
   const report = {
     now: now.toISOString(),
@@ -580,8 +581,8 @@ async function cronSayimAutoReminder(db, fcm) {
 
   const sayimlar = await db.query('sayimlar', {
     where: [
-      { field: 'date', op: '>=', value: startOfDay },
-      { field: 'date', op: '<=', value: endOfWindow },
+      { field: 'date', op: '>=', value: windowStart },
+      { field: 'date', op: '<=', value: windowEnd },
     ],
   });
 
@@ -615,6 +616,11 @@ async function cronSayimAutoReminder(db, fcm) {
 
       // Sayım tarihini Türkiye saatine çevir
       const sayimDateObj = sayim.date instanceof Date ? sayim.date : new Date(sayim.date);
+      if (isNaN(sayimDateObj.getTime())) {
+        report.details.push({ davetId: davet.id, status: 'invalid_sayim_date' });
+        continue;
+      }
+
       const trtDateMs = sayimDateObj.getTime() + (3 * 60 * 60 * 1000);
       const trtDateObj = new Date(trtDateMs);
 
@@ -622,8 +628,24 @@ async function cronSayimAutoReminder(db, fcm) {
       const month = String(trtDateObj.getUTCMonth() + 1).padStart(2, '0');
       const day = String(trtDateObj.getUTCDate()).padStart(2, '0');
 
-      const isoString = `${year}-${month}-${day}T${grup.saat}:00+03:00`;
+      // Saat formatını doğrula ve pad et (örn: '9:00' -> '09:00')
+      const rawSaat = (grup.saat || '').trim();
+      const saatParts = rawSaat.split(':');
+      if (saatParts.length < 2) {
+        report.details.push({ davetId: davet.id, status: 'invalid_saat_format', saat: grup.saat });
+        continue;
+      }
+      const hh = saatParts[0].padStart(2, '0');
+      const mm = saatParts[1].padStart(2, '0');
+      const formattedSaat = `${hh}:${mm}`;
+
+      const isoString = `${year}-${month}-${day}T${formattedSaat}:00+03:00`;
       const finalSayimDate = new Date(isoString);
+
+      if (isNaN(finalSayimDate.getTime())) {
+        report.details.push({ davetId: davet.id, status: 'invalid_final_date', isoString });
+        continue;
+      }
 
       const diffHours = (finalSayimDate.getTime() - nowMs) / (1000 * 60 * 60);
 
@@ -638,12 +660,10 @@ async function cronSayimAutoReminder(db, fcm) {
           continue;
         }
 
-        const sayimName = sayim.toplanmaYeri || 'Sayım';
-
         await sendNotificationAndLog(db, fcm, {
           userId: davet.userId,
           title: 'Yaklaşan Sayım',
-          body: `Bugün saat ${grup.saat}'te "${sayimName}" sayımı var. Lütfen vaktinde orada olun.`,
+          body: `Bugün saat ${formattedSaat}'te sayım var. Lütfen vaktinde orada olun.`,
           type: 'sayim_auto_reminder',
           relatedId: davet.id,
           dataPayload: { type: 'sayim_auto_reminder', davetId: davet.id, sayimId: sayim.id },
@@ -918,6 +938,7 @@ export default {
 
     try {
       switch (cronPattern) {
+        case '0 * * * *':
         case '0 */2 * * *':
           await cronSayimAutoReminder(db, fcm);
           break;
