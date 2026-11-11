@@ -14,6 +14,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
 import '../../../../main.dart';
+import '../../../../core/utils/update_check.dart' as update_check;
 
 /// Ayarlar Sayfası
 class SettingsPage extends StatefulWidget {
@@ -35,6 +36,44 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   static String get _appVersion => AppConfig.version;
   static String get _developerName => AppConfig.developerName;
+
+  // Güncelleme kontrol durumu
+  bool _isCheckingUpdate = false;
+  String? _updateStatus; // 'updated', 'up_to_date', 'error', null
+
+  Future<void> _handleCheckUpdate() async {
+    setState(() {
+      _isCheckingUpdate = true;
+      _updateStatus = null;
+    });
+
+    try {
+      final result = await update_check.manualCheckForUpdates();
+      if (!mounted) return;
+      
+      setState(() {
+        _isCheckingUpdate = false;
+        _updateStatus = result;
+      });
+
+      // 3 saniye sonra status'u sıfırla (up_to_date veya error ise)
+      if (result == 'up_to_date' || result == 'error') {
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) {
+            setState(() {
+              _updateStatus = null;
+            });
+          }
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isCheckingUpdate = false;
+        _updateStatus = 'error';
+      });
+    }
+  }
 
 
   @override
@@ -727,6 +766,63 @@ class _SettingsPageState extends State<SettingsPage> {
               color: AppColors.textSecondary,
             ),
           ),
+          // ─── Güncelleştirmeleri Denetle Butonu ───
+          if (kIsWeb) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _isCheckingUpdate ? null : _handleCheckUpdate,
+                icon: _isCheckingUpdate
+                    ? SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.accentLight,
+                        ),
+                      )
+                    : Icon(
+                        _updateStatus == 'up_to_date'
+                            ? Icons.check_circle_outline_rounded
+                            : _updateStatus == 'error'
+                                ? Icons.error_outline_rounded
+                                : Icons.system_update_rounded,
+                        size: 18,
+                      ),
+                label: Text(
+                  _isCheckingUpdate
+                      ? widget.lang.tr('checking_updates')
+                      : _updateStatus == 'up_to_date'
+                          ? widget.lang.tr('already_up_to_date')
+                          : _updateStatus == 'updated'
+                              ? widget.lang.tr('update_available')
+                              : _updateStatus == 'error'
+                                  ? widget.lang.tr('update_check_error')
+                                  : widget.lang.tr('check_updates'),
+                  style: const TextStyle(fontSize: 13),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: _updateStatus == 'up_to_date'
+                      ? AppColors.success
+                      : _updateStatus == 'error'
+                          ? AppColors.danger
+                          : AppColors.accentLight,
+                  side: BorderSide(
+                    color: _updateStatus == 'up_to_date'
+                        ? AppColors.success.withValues(alpha: 0.4)
+                        : _updateStatus == 'error'
+                            ? AppColors.danger.withValues(alpha: 0.4)
+                            : AppColors.accentLight.withValues(alpha: 0.4),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
+          ],
           SizedBox(height: 16),
           Divider(color: AppColors.divider),
           const SizedBox(height: 12),

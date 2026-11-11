@@ -54,8 +54,8 @@ let tokenExpiry = 0;
 export async function getAccessToken(serviceAccount) {
   const now = Math.floor(Date.now() / 1000);
   
-  // Cache'den döndür (5 dakika erken expire et)
-  if (cachedToken && tokenExpiry > now + 300) {
+  // Cache'den döndür (10 dakika erken expire et — Cloudflare isolate recycling güvenliği)
+  if (cachedToken && tokenExpiry > now + 600) {
     return cachedToken;
   }
   

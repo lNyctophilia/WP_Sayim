@@ -97,6 +97,37 @@
 
   <script>
     // PWA Otomatik Güncelleme ve Hard Cache Temizleme
+    
+    // Cache ve Service Worker temizleme yardımcı fonksiyonu
+    async function _clearCachesAndSW() {
+      if (window.caches) {
+        try {
+          const names = await caches.keys();
+          await Promise.all(names.map(name => caches.delete(name)));
+          console.log('[PWA Update] Tüm önbellek (cache) başarıyla silindi.');
+        } catch (e) {
+          console.error('[PWA Update] Önbellek silinirken hata oluştu:', e);
+        }
+      }
+      
+      if ('serviceWorker' in navigator) {
+        try {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for (let registration of registrations) {
+            const swUrl = registration.active?.scriptURL || registration.installing?.scriptURL || registration.waiting?.scriptURL || '';
+            if (swUrl.includes('firebase-messaging-sw')) {
+              console.log('[PWA Update] Firebase Messaging SW korunuyor:', swUrl);
+              try { await registration.update(); } catch(e) {}
+              continue;
+            }
+            await registration.unregister();
+          }
+        } catch (e) {
+          console.error('[PWA Update] SW temizlenirken hata:', e);
+        }
+      }
+    }
+
     async function checkForUpdates() {
       try {
         // Cache'i atlamak için rastgele bir timestamp ekliyoruz
@@ -114,36 +145,13 @@
           console.log('[PWA Update] Yeni versiyon bulundu!', latestVersion);
           
           // Mevcut Service Worker'ları ve Cache'i temizle
-          if (window.caches) {
-            try {
-              const names = await caches.keys();
-              await Promise.all(names.map(name => caches.delete(name)));
-              console.log('[PWA Update] Tüm önbellek (cache) başarıyla silindi.');
-            } catch (e) {
-              console.error('[PWA Update] Önbellek silinirken hata oluştu:', e);
-            }
-          }
-          
-          if ('serviceWorker' in navigator) {
-            const registrations = await navigator.serviceWorker.getRegistrations();
-            for (let registration of registrations) {
-              // firebase-messaging-sw.js'i KORUYORUZ — unregister edilirse push subscription ölür.
-              // Sadece Flutter cache SW'sini (flutter_service_worker.js) kaldırıyoruz.
-              const swUrl = registration.active?.scriptURL || registration.installing?.scriptURL || registration.waiting?.scriptURL || '';
-              if (swUrl.includes('firebase-messaging-sw')) {
-                console.log('[PWA Update] Firebase Messaging SW korunuyor:', swUrl);
-                // SW'yi güncelleye zorla (kaldırma)
-                try { await registration.update(); } catch(e) {}
-                continue;
-              }
-              await registration.unregister();
-            }
-          }
+          await _clearCachesAndSW();
           
           // Yeni versiyonu kaydet
           localStorage.setItem('appVersion', latestVersion);
           
-          alert('Uygulama güncellendi. Yeni sürüm yükleniyor...');
+          // Popup OLMADAN sessiz güncelleme — sayfa otomatik yenilenir
+          console.log('[PWA Update] Sessiz güncelleme uygulanıyor...');
           window.location.href = window.location.pathname + '?v=' + new Date().getTime();
         } else if (!currentVersion && latestVersion) {
           // İlk açılışta versiyonu kaydet
@@ -156,6 +164,44 @@
 
     // Uygulama her açıldığında ve görünür olduğunda güncellemeleri kontrol et
     window.addEventListener('load', checkForUpdates);
+
+    // ─── Dart'tan çağırılabilir Manuel Güncelleme Kontrolü ───
+    // Sonuç: 'updated' (güncelleme bulundu, sayfa yenilenecek), 
+    //        'up_to_date' (zaten güncel), 
+    //        'error' (kontrol başarısız)
+    window.manualCheckForUpdates = async function() {
+      try {
+        const response = await fetch('version.json?v=' + new Date().getTime(), {
+          cache: 'no-store'
+        });
+        
+        if (!response.ok) return 'error';
+        
+        const data = await response.json();
+        const latestVersion = data.version;
+        const currentVersion = localStorage.getItem('appVersion');
+
+        if (currentVersion && latestVersion && currentVersion !== latestVersion) {
+          console.log('[Manuel Update] Yeni versiyon bulundu!', latestVersion);
+          
+          await _clearCachesAndSW();
+          localStorage.setItem('appVersion', latestVersion);
+          
+          // Sayfayı yenile — güncelleme uygulanacak
+          setTimeout(() => {
+            window.location.href = window.location.pathname + '?v=' + new Date().getTime();
+          }, 500);
+          
+          return 'updated';
+        }
+        
+        return 'up_to_date';
+      } catch (e) {
+        console.error('[Manuel Update] Kontrol başarısız:', e);
+        return 'error';
+      }
+    };
+
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         checkForUpdates();

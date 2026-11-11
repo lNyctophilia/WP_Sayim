@@ -160,6 +160,9 @@ class NotificationService {
             'fcmError': FieldValue.delete(),
             'fcmTokenInvalidatedAt': FieldValue.delete(),
             'fcmTokenInvalidReason': FieldValue.delete(),
+            'fcmTokenFailCount': FieldValue.delete(),
+            'fcmTokenLastFailAt': FieldValue.delete(),
+            'fcmTokenLastFailReason': FieldValue.delete(),
           },
           SetOptions(merge: true),
         );

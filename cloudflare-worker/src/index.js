@@ -54,6 +54,77 @@ async function authenticateRequest(request) {
   }
 }
 
+// ─── HELPER: FCM Token Hata Yönetimi (Soft-Invalidate) ───
+// Kesin geçersiz token → hemen sil
+// Muhtemel geçersiz token → 3 ardışık hatadan sonra sil
+async function handleFcmTokenError(db, userId, userDoc, error) {
+  const immediateDeleteCodes = [
+    'messaging/invalid-registration-token',
+  ];
+  const softInvalidateCodes = [
+    'messaging/registration-token-not-registered',
+    'messaging/third-party-auth-error',
+    'messaging/mismatched-credential',
+  ];
+
+  if (error.code && immediateDeleteCodes.includes(error.code)) {
+    console.log(`[TOKEN CLEANUP] Kesin geçersiz token siliniyor. userId: ${userId}, hata: ${error.code}`);
+    try {
+      await db.updateDoc('users', userId, {
+        fcmToken: deleteField(),
+        fcmTokenFailCount: deleteField(),
+        fcmTokenLastFailAt: deleteField(),
+        fcmTokenLastFailReason: deleteField(),
+        fcmTokenInvalidatedAt: new Date().toISOString(),
+        fcmTokenInvalidReason: error.code,
+      });
+    } catch (cleanupErr) {
+      console.error('[TOKEN CLEANUP] Token silinirken hata:', cleanupErr);
+    }
+  } else if (error.code && softInvalidateCodes.includes(error.code)) {
+    const currentCount = (userDoc.fcmTokenFailCount || 0) + 1;
+    if (currentCount >= 3) {
+      console.log(`[TOKEN CLEANUP] ${currentCount} ardışık hata sonrası token siliniyor. userId: ${userId}, hata: ${error.code}`);
+      try {
+        await db.updateDoc('users', userId, {
+          fcmToken: deleteField(),
+          fcmTokenFailCount: deleteField(),
+          fcmTokenLastFailAt: deleteField(),
+          fcmTokenLastFailReason: deleteField(),
+          fcmTokenInvalidatedAt: new Date().toISOString(),
+          fcmTokenInvalidReason: `${error.code} (${currentCount} ardışık hata)`,
+        });
+      } catch (cleanupErr) {
+        console.error('[TOKEN CLEANUP] Token silinirken hata:', cleanupErr);
+      }
+    } else {
+      console.log(`[TOKEN SOFT-FAIL] userId: ${userId}, hata: ${error.code}, sayac: ${currentCount}/3`);
+      try {
+        await db.updateDoc('users', userId, {
+          fcmTokenFailCount: currentCount,
+          fcmTokenLastFailAt: new Date().toISOString(),
+          fcmTokenLastFailReason: error.code,
+        });
+      } catch (updateErr) {
+        console.error('[TOKEN SOFT-FAIL] Sayac güncellenirken hata:', updateErr);
+      }
+    }
+  }
+}
+
+// Başarılı gönderim sonrası hata sayacını sıfırla
+async function resetFcmTokenFailCount(db, userId, userDoc) {
+  if (userDoc.fcmTokenFailCount) {
+    try {
+      await db.updateDoc('users', userId, {
+        fcmTokenFailCount: deleteField(),
+        fcmTokenLastFailAt: deleteField(),
+        fcmTokenLastFailReason: deleteField(),
+      });
+    } catch (_) {}
+  }
+}
+
 // ─── HELPER: sendNotificationAndLog ───
 // Orijinal Firebase Functions'taki sendNotificationAndLog'un birebir karşılığı
 async function sendNotificationAndLog(db, fcm, { userId, title, body, type, relatedId, dataPayload, tag, link }) {
@@ -68,65 +139,33 @@ async function sendNotificationAndLog(db, fcm, { userId, title, body, type, rela
     if (fcmToken && !hasEmail) {
       const safeTopic = tag ? (tag.length > 32 ? tag.substring(tag.length - 32) : tag) : '';
 
+      // Data-only payload — bildirim gösterimi tamamen Service Worker'a bırakılıyor.
+      // Top-level notification alanı yok → tarayıcı/FCM SDK otomatik bildirim göstermez,
+      // çift bildirim sorunu ortadan kalkar ve SW vibrate/requireInteraction doğru çalışır.
       const message = {
         token: fcmToken,
-        notification: { title, body },
-        apns: {
-          headers: {
-            'apns-priority': '10',
-            'apns-push-type': 'alert',
-          },
-        },
-        android: {
-          priority: 'high',
-          notification: {
-            channelId: 'sayim_notifications',
-            tag: tag,
-          },
-        },
         webpush: {
           headers: {
             Topic: safeTopic,
             Urgency: 'high',
           },
-          notification: {
-            title,
-            body,
-            icon: '/icons/Icon-192.png',
-            badge: '/icons/Icon-192.png',
-            requireInteraction: true,
-          },
-          fcmOptions: {
-            link: link || 'https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true',
-          },
         },
-        data: dataPayload,
+        data: {
+          ...(dataPayload || {}),
+          title,
+          body,
+          tag: tag || '',
+          link: link || 'https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true',
+        },
       };
 
       try {
         await fcm.send(message);
+        // Başarılı gönderim — varsa önceki hata sayacını sıfırla
+        await resetFcmTokenFailCount(db, userId, userDoc);
       } catch (e) {
-        console.error('Error sending push notification:', e);
-
-        const invalidTokenCodes = [
-          'messaging/registration-token-not-registered',
-          'messaging/invalid-registration-token',
-          'messaging/third-party-auth-error',
-          'messaging/mismatched-credential',
-        ];
-
-        if (e.code && invalidTokenCodes.includes(e.code)) {
-          console.log(`[TOKEN CLEANUP] Geçersiz token siliniyor. userId: ${userId}, hata: ${e.code}`);
-          try {
-            await db.updateDoc('users', userId, {
-              fcmToken: deleteField(),
-              fcmTokenInvalidatedAt: new Date().toISOString(),
-              fcmTokenInvalidReason: e.code,
-            });
-          } catch (cleanupErr) {
-            console.error('[TOKEN CLEANUP] Token silinirken hata:', cleanupErr);
-          }
-        }
+        console.error(`[FCM Error] userId: ${userId}, code: ${e.code}, retries: ${e.retries}, message: ${e.message}`);
+        await handleFcmTokenError(db, userId, userDoc, e);
       }
     }
 
@@ -420,54 +459,26 @@ async function handleTestNotification(body, db, fcm, env) {
     });
   } else {
     if (fcmToken) {
+      // Data-only payload — kontrol tamamen Service Worker'da
       const message = {
         token: fcmToken,
-        notification: {
-          title: 'Test Bildirimi',
-          body: 'Uygulama kapalıyken (veya arka plandayken) de bildirim alabiliyorsunuz. Harika!',
-        },
-        apns: {
-          headers: { 'apns-priority': '10', 'apns-push-type': 'alert' },
-        },
-        android: {
-          priority: 'high',
-          notification: { channelId: 'sayim_notifications', tag: `test_${userId}` },
-        },
         webpush: {
           headers: { Urgency: 'high' },
-          notification: {
-            title: 'Test Bildirimi',
-            body: 'Uygulama kapalıyken (veya arka plandayken) de bildirim alabiliyorsunuz. Harika!',
-            icon: '/icons/Icon-192.png',
-            badge: '/icons/Icon-192.png',
-          },
-          fcmOptions: { link: 'https://lnyctophilia.github.io/WP_Sayim/' },
         },
-        data: { type: 'test' },
+        data: {
+          type: 'test',
+          title: 'Test Bildirimi',
+          body: 'Uygulama kapalıyken (veya arka plandayken) de bildirim alabiliyorsunuz. Harika!',
+          link: 'https://lnyctophilia.github.io/WP_Sayim/',
+        },
       };
 
       try {
         await fcm.send(message);
+        await resetFcmTokenFailCount(db, userId, userDoc);
       } catch (pushErr) {
-        console.error('sendTestNotification: Push error:', pushErr);
-
-        const invalidTokenCodes = [
-          'messaging/registration-token-not-registered',
-          'messaging/invalid-registration-token',
-          'messaging/third-party-auth-error',
-          'messaging/mismatched-credential',
-        ];
-        if (pushErr.code && invalidTokenCodes.includes(pushErr.code)) {
-          try {
-            await db.updateDoc('users', userId, {
-              fcmToken: deleteField(),
-              fcmTokenInvalidatedAt: new Date().toISOString(),
-              fcmTokenInvalidReason: pushErr.code,
-            });
-          } catch (cleanupErr) {
-            console.error('[TOKEN CLEANUP] Token silinirken hata:', cleanupErr);
-          }
-        }
+        console.error(`[FCM Error] Test bildirim hatası. userId: ${userId}, code: ${pushErr.code}, retries: ${pushErr.retries}`);
+        await handleFcmTokenError(db, userId, userDoc, pushErr);
       }
     }
 

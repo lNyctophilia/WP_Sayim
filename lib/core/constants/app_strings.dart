@@ -501,6 +501,13 @@ class AppStrings {
     'route_error': {'tr': 'Rota hesaplanırken bir hata oluştu.', 'en': 'An error occurred while calculating route.'},
     'no_valid_location_for_routing': {'tr': 'Rota için geçerli başlangıç ve varış noktası seçilmeli.', 'en': 'Valid start and destination must be selected.'},
     'search': {'tr': 'Ara...', 'en': 'Search...'},
+
+    // Güncelleme
+    'check_updates': {'tr': 'Güncelleştirmeleri Denetle', 'en': 'Check for Updates'},
+    'checking_updates': {'tr': 'Kontrol ediliyor...', 'en': 'Checking...'},
+    'update_available': {'tr': 'Güncelleme bulundu! Yükleniyor...', 'en': 'Update found! Loading...'},
+    'already_up_to_date': {'tr': 'Uygulama güncel ✓', 'en': 'App is up to date ✓'},
+    'update_check_error': {'tr': 'Güncelleme kontrolü başarısız', 'en': 'Update check failed'},
   };
 
   static const List<String> monthKeys = [

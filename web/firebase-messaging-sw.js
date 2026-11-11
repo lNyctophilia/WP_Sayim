@@ -26,12 +26,23 @@ self.addEventListener('install', function(event) {
   event.waitUntil(self.skipWaiting());
 });
 self.addEventListener('activate', function(event) {
-  event.waitUntil(clients.claim());
+  event.waitUntil(
+    clients.claim().then(function() {
+      // Proaktif subscription kontrolü: SW aktive olduğunda subscription hâlâ canlı mı?
+      // iOS Safari PWA'da subscription sessizce ölebilir — erken tespit et.
+      return self.registration.pushManager.getSubscription().then(function(subscription) {
+        if (!subscription) {
+          console.log('[firebase-messaging-sw.js] Activate: Subscription yok! Client\'lara token yenileme sinyali gönderiliyor...');
+          notifyClientsToRefreshToken();
+        }
+      }).catch(function() {});
+    })
+  );
 });
 
-// ÇİFT BİLDİRİM ENGELLEYİCİ (Deduplicator)
-// Hem bizim 'push' listener'ımız hem de Firebase SDK aynı bildirimi göstermeye çalışır.
-// Bu çakışmayı önlemek için showNotification'ı araya girerek eziyoruz.
+// ÇİFT BİLDİRİM ENGELLEYİCİ (Deduplicator — Safety Net)
+// Data-only payload kullanıldığında FCM SDK otomatik bildirim göstermez,
+// bu yüzden çift bildirim normalde oluşmaz. Yine de güvenlik için korunuyor.
 let lastPushTime = 0;
 let lastPushTitle = "";
 const originalShowNotification = self.registration.showNotification.bind(self.registration);
@@ -67,8 +78,10 @@ self.addEventListener('push', function(event) {
 
   try {
     const payload = event.data.json();
-    title = payload.notification?.title || payload.data?.title || title;
-    body = payload.notification?.body || payload.data?.body || body;
+    // Data-only payload: title ve body artık data içinde geliyor (Cloudflare Worker değişikliği).
+    // Backward compat: notification alanı da kontrol ediliyor (eski mesajlar için).
+    title = payload.data?.title || payload.notification?.title || title;
+    body = payload.data?.body || payload.notification?.body || body;
     notifData = payload.data || {};
   } catch (e) {
     // JSON parse başarısız — fallback değerleri kullan (iOS budget koruması için yine de göster)
