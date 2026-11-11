@@ -372,6 +372,40 @@ async function handleSyncUserAuth(body, db, authClient) {
   return { ok: true };
 }
 
+// SW-TOKEN-UPDATE: POST /api/sw/update-token
+// Service Worker, uygulama kapalıyken push subscription değişince bu endpoint'i çağırır.
+// Firebase ID token yerine shared secret (env.SW_UPDATE_SECRET) ile korunur.
+async function handleSwUpdateToken(request, body, db, env) {
+  const secret = request.headers.get('X-SW-Secret');
+  if (!secret || secret !== env.SW_UPDATE_SECRET) {
+    return jsonResponse({ error: 'Forbidden' }, 403);
+  }
+
+  const { userId, fcmToken } = body;
+  if (!userId || !fcmToken) {
+    return jsonResponse({ error: 'userId ve fcmToken gerekli' }, 400);
+  }
+
+  try {
+    await db.updateDoc('users', userId, {
+      fcmToken,
+      fcmTokenUpdatedAt: new Date().toISOString(),
+      fcmTokenUpdatedBy: 'service-worker',
+      // Önceki hata sayaçlarını temizle
+      fcmTokenFailCount: deleteField(),
+      fcmTokenLastFailAt: deleteField(),
+      fcmTokenLastFailReason: deleteField(),
+      fcmTokenInvalidatedAt: deleteField(),
+      fcmTokenInvalidReason: deleteField(),
+    });
+    console.log(`[SW Token Update] Token güncellendi. userId: ${userId}`);
+    return jsonResponse({ ok: true });
+  } catch (err) {
+    console.error('[SW Token Update] Firestore güncelleme hatası:', err);
+    return jsonResponse({ error: 'Firestore güncelleme başarısız' }, 500);
+  }
+}
+
 // 5. POST /api/delete-user-auth
 async function handleDeleteUserAuth(body, authClient) {
   const { userId } = body;
@@ -897,6 +931,18 @@ export default {
 
     if (request.method !== 'POST') {
       return jsonResponse({ error: 'Method not allowed' }, 405);
+    }
+
+    // ─── SW Token Update: idToken auth YOK, shared secret ile korunur ───
+    if (path === '/api/sw/update-token') {
+      try {
+        const body = await request.json();
+        const { db } = await initClients(env);
+        return await handleSwUpdateToken(request, body, db, env);
+      } catch (error) {
+        console.error('Error in /api/sw/update-token:', error);
+        return jsonResponse({ error: 'Internal server error' }, 500);
+      }
     }
 
     // Auth check — Flutter'dan gelen idToken doğrula

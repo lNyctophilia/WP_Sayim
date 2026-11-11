@@ -9,7 +9,6 @@ import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
 /// window._swTokenRefreshNeeded flag'ini kontrol et ve temizle.
-/// Service Worker, iOS subscription değişikliğinde bu flag'i true yapar.
 bool checkAndClearSwRefreshFlag() {
   try {
     final win = web.window as JSObject;
@@ -32,11 +31,6 @@ bool checkAndClearSwRefreshFlag() {
 }
 
 /// Window'a 'fcm-token-refresh-needed' event listener'ı ekle.
-/// TOKEN_REFRESH_NEEDED, SUBSCRIPTION_CHANGED, SUBSCRIPTION_EXPIRED,
-/// ve VISIBILITY_CHANGE sebeplerini dinler.
-///
-/// [onExpired] varsa sadece SUBSCRIPTION_EXPIRED event'inde çağrılır
-/// (full re-subscribe gerekebilir). Verilmezse [callback] kullanılır.
 void addFcmTokenRefreshListener(Function callback, {Function? onExpired}) {
   try {
     web.window.addEventListener(
@@ -44,7 +38,6 @@ void addFcmTokenRefreshListener(Function callback, {Function? onExpired}) {
       (web.Event event) {
         try {
           String reason = '';
-          // CustomEvent.detail.reason'ı okumak için JS interop
           final jsEvent = event as JSObject;
           final detail = jsEvent.getProperty('detail'.toJS);
           if (detail != null) {
@@ -61,12 +54,38 @@ void addFcmTokenRefreshListener(Function callback, {Function? onExpired}) {
             callback();
           }
         } catch (_) {
-          // Reason okuma başarısız olursa standart callback çağır
           callback();
         }
       }.toJS,
     );
   } catch (e) {
     // Web API'sı desteklenmiyorsa sessizce devam et
+  }
+}
+
+/// Service Worker'a kullanıcının Firebase UID'sini gönderir.
+/// SW bunu IndexedDB'de saklar — uygulama kapalıyken de token yenileyebilmek için.
+void sendUserIdToSw(String userId) {
+  _postMessageToSw({'type': 'SET_USER_ID', 'userId': userId});
+}
+
+/// Çıkış yapılınca SW'deki userId'yi temizle.
+void clearUserIdFromSw() {
+  _postMessageToSw({'type': 'CLEAR_USER_ID'});
+}
+
+/// SW'ye mesaj gönder — ready promise tamamlanınca active controller'a iletir.
+void _postMessageToSw(Map<String, String> msg) {
+  try {
+    final sw = web.window.navigator.serviceWorker;
+    // toDart ile Future'a çevir, async olarak gönder
+    sw.ready.toDart.then((reg) {
+      final controller = reg.active;
+      if (controller != null) {
+        controller.postMessage(msg.jsify());
+      }
+    }).catchError((_) {/* sessiz hata */});
+  } catch (e) {
+    // Sessiz hata — kritik değil
   }
 }

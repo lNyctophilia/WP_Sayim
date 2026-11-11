@@ -1,0 +1,104 @@
+[
+  {
+    "source": {
+      "cloudflare": {
+        "colo": "AMS",
+        "script_name": "wp-sayim-api",
+        "script_version": {
+          "id": "c43e224e-5446-4e70-bbdb-f8ae94c33edf"
+        },
+        "ray_id": "a58ca2681fb10d30-AMS",
+        "invocation": {
+          "sequence": {
+            "number": 5
+          }
+        }
+      },
+      "faas": {
+        "invoked_region": "WEUR",
+        "name": "wp-sayim-api",
+        "version": "c43e224e-5446-4e70-bbdb-f8ae94c33edf"
+      },
+      "cloud": {
+        "provider": "cloudflare",
+        "platform": "cloudflare.workers"
+      },
+      "telemetry": {
+        "sdk": {
+          "language": "js",
+          "name": "workers-observability"
+        }
+      },
+      "service": {
+        "name": "wp-sayim-api"
+      },
+      "scope": {
+        "name": "workers-observability"
+      },
+      "network": {
+        "protocol": {
+          "name": "http",
+          "version": "HTTP/1.1"
+        }
+      },
+      "http": {
+        "request": {
+          "method": "POST",
+          "header": {
+            "content-type": "application/json"
+          },
+          "body": {
+            "size": 560
+          }
+        },
+        "response": {
+          "status_code": 404
+        }
+      },
+      "url": {
+        "full": "https://fcm.googleapis.com/v1/projects/wp-sayim/messages:send",
+        "scheme": "https",
+        "path": "/v1/projects/wp-sayim/messages:send",
+        "query": ""
+      },
+      "error": {
+        "type": "404"
+      },
+      "server": {
+        "port": "",
+        "address": "fcm.googleapis.com"
+      },
+      "traceId": "677ad3aa7869f838082e48a603539d7d",
+      "spanId": "3085c8ec37c18cd8",
+      "parentSpanId": "0afe15d3668d8214",
+      "name": "fetch",
+      "startTime": 1794393160969,
+      "endTime": 1794393161077,
+      "durationMS": 108
+    },
+    "dataset": "otel",
+    "timestamp": "2026-11-11T10:32:40.969Z",
+    "$metadata": {
+      "id": "01M752NF890000000000000005",
+      "rayId": "a58ca2681fb10d30-AMS",
+      "traceId": "677ad3aa7869f838082e48a603539d7d",
+      "spanId": "3085c8ec37c18cd8",
+      "trigger": "wp-sayim-api",
+      "parentSpanId": "0afe15d3668d8214",
+      "transactionName": "fetch /v1/projects/wp-sayim/messages:send",
+      "startTime": "2026-11-11T10:32:40.969Z",
+      "startTimeNs": "1794393160969000000",
+      "endTime": "2026-11-11T10:32:41.077Z",
+      "endTimeNs": "1794393161077000000",
+      "timestampNs": "1794393160969000000",
+      "service": "wp-sayim-api",
+      "level": "error",
+      "error": "404",
+      "message": "wp-sayim-api fetch 404",
+      "spanName": "fetch",
+      "type": "span",
+      "eventSize": 1466,
+      "spanStatus": "error"
+    }
+  }
+]

@@ -1,0 +1,43 @@
+[
+  {
+    "source": {
+      "level": "error",
+      "message": "[FCM Error] userId: EHnCwsWM5fSXdZlynYm7sja06IJ2, code: messaging/registration-token-not-registered, retries: 0, message: Device unregistered."
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-11-11T10:32:41.077Z",
+    "$workers": {
+      "truncated": false,
+      "scriptName": "wp-sayim-api",
+      "scriptVersion": {
+        "id": "c43e224e-5446-4e70-bbdb-f8ae94c33edf"
+      },
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "event": {
+        "request": {
+          "method": "POST",
+          "url": "https://wp-sayim-api.nycgamedevs.workers.dev/api/notify/davet-created",
+          "path": "/api/notify/davet-created"
+        }
+      }
+    },
+    "$metadata": {
+      "id": "01M752NFBN000000000000000D",
+      "requestId": "d5fa42f945d61fffee278dff7197a16b",
+      "rayId": "a58ca2663cc68614",
+      "traceId": "677ad3aa7869f838082e48a603539d7d",
+      "spanId": "0afe15d3668d8214",
+      "trigger": "POST /api/notify/davet-created",
+      "timestampNs": "1794393161077000000",
+      "service": "wp-sayim-api",
+      "level": "error",
+      "error": "[FCM Error] userId: EHnCwsWM5fSXdZlynYm7sja06IJ2, code: messaging/registration-token-not-registered, retries: 0, message: Device unregistered.",
+      "message": "[FCM Error] userId: EHnCwsWM5fSXdZlynYm7sja06IJ2, code: messaging/registration-token-not-registered, retries: 0, message: Device unregistered.",
+      "account": "1f60df5bfb0d5f7dfe27e01869debbbd",
+      "type": "cf-worker",
+      "origin": "fetch",
+      "eventSize": 1199
+    }
+  }
+]
