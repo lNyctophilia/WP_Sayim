@@ -160,19 +160,10 @@ class NotificationService {
             'fcmError': FieldValue.delete(),
             'fcmTokenInvalidatedAt': FieldValue.delete(),
             'fcmTokenInvalidReason': FieldValue.delete(),
-            'fcmTokenFailCount': FieldValue.delete(),
-            'fcmTokenLastFailAt': FieldValue.delete(),
-            'fcmTokenLastFailReason': FieldValue.delete(),
           },
           SetOptions(merge: true),
         );
         debugPrint('[iOS Push Fix] Token başarıyla kaydedildi ve eski hata bilgileri temizlendi.');
-
-        // Service Worker'a userId'yi bildir — uygulama kapalıyken
-        // push subscription değişirse SW kendi kendine token yenileyebilsin.
-        if (kIsWeb) {
-          sw_refresh.sendUserIdToSw(user.uid);
-        }
       }
     } catch (e) {
       debugPrint('FCM Token alınırken hata: $e');
@@ -222,11 +213,6 @@ class NotificationService {
       }).timeout(const Duration(milliseconds: 1000));
       // Cihazdaki tokenı tamamen silmiyoruz (yeni girişte sorun yaşamamak için)
       // await _messaging.deleteToken();
-
-      // SW'deki userId'yi temizle — çıkış sonrası yanlış hesaba token yazılmasın
-      if (kIsWeb) {
-        sw_refresh.clearUserIdFromSw();
-      }
     } catch (e) {
       debugPrint('FCM Token silinirken hata: $e');
     }

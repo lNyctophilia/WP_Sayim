@@ -40,8 +40,16 @@ class _SettingsPageState extends State<SettingsPage> {
   // Güncelleme kontrol durumu
   bool _isCheckingUpdate = false;
   String? _updateStatus; // 'updated', 'up_to_date', 'error', null
+  Timer? _updateStatusTimer;
+
+  @override
+  void dispose() {
+    _updateStatusTimer?.cancel();
+    super.dispose();
+  }
 
   Future<void> _handleCheckUpdate() async {
+    _updateStatusTimer?.cancel();
     setState(() {
       _isCheckingUpdate = true;
       _updateStatus = null;
@@ -58,7 +66,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
       // 3 saniye sonra status'u sıfırla (up_to_date veya error ise)
       if (result == 'up_to_date' || result == 'error') {
-        Future.delayed(const Duration(seconds: 3), () {
+        _updateStatusTimer = Timer(const Duration(seconds: 3), () {
           if (mounted) {
             setState(() {
               _updateStatus = null;
@@ -71,6 +79,13 @@ class _SettingsPageState extends State<SettingsPage> {
       setState(() {
         _isCheckingUpdate = false;
         _updateStatus = 'error';
+      });
+      _updateStatusTimer = Timer(const Duration(seconds: 3), () {
+        if (mounted) {
+          setState(() {
+            _updateStatus = null;
+          });
+        }
       });
     }
   }

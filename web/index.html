@@ -175,7 +175,14 @@
           cache: 'no-store'
         });
         
-        if (!response.ok) return 'error';
+        if (!response.ok) {
+          // Local geliştirme ortamında (flutter run) version.json olmayabilir
+          if (response.status === 404 && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+            console.log('[Manuel Update] Local ortamda version.json yok, güncel sayılıyor.');
+            return 'up_to_date';
+          }
+          return 'error';
+        }
         
         const data = await response.json();
         const latestVersion = data.version;
@@ -193,6 +200,8 @@
           }, 500);
           
           return 'updated';
+        } else if (!currentVersion && latestVersion) {
+          localStorage.setItem('appVersion', latestVersion);
         }
         
         return 'up_to_date';
