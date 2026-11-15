@@ -29,6 +29,9 @@ if exist web\manifest_beta.json (
     copy /y web\manifest_beta.json build\web\manifest.json >nul
 )
 
+REM 1.7. Cache Busting (flutter_bootstrap.js icindeki dosyalara timestamp ekle)
+powershell -Command "(Get-Content build\web\flutter_bootstrap.js).Replace('\"main.dart.js\"', '\"main.dart.js?v=%TIMESTAMP%\"').Replace('\"main.dart.wasm\"', '\"main.dart.wasm?v=%TIMESTAMP%\"').Replace('\"main.dart.mjs\"', '\"main.dart.mjs?v=%TIMESTAMP%\"') | Set-Content build\web\flutter_bootstrap.js"
+
 REM 2. Firebase Hosting'e Yukle (Google CDN - Turkiye'de 100% erisilebilir)
 echo [2/4] Firebase Hosting'e yukleniyor (wp-sayim-beta.web.app)...
 call firebase deploy --only hosting
