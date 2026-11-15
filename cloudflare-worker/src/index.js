@@ -67,11 +67,11 @@ async function sendNotificationAndLog(db, fcm, { userId, title, body, type, rela
       return;
     }
 
-    const defaultLink = env?.IS_BETA === 'true'
+    const defaultLink = env?.APP_BASE_URL || (env?.IS_BETA === 'true'
       ? 'https://wp-sayim-beta.web.app/?open_notifications=true'
-      : 'https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true';
+      : 'https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true');
 
-    const fcmToken = userDoc.fcmToken;
+    const fcmToken = (env?.IS_BETA === 'true' && userDoc.fcmTokenBeta) ? userDoc.fcmTokenBeta : userDoc.fcmToken;
     const hasEmail = userDoc.email && userDoc.email.trim() !== '';
 
     // E-posta adresi yoksa VE fcmToken varsa push notification at
@@ -126,10 +126,11 @@ async function sendNotificationAndLog(db, fcm, { userId, title, body, type, rela
         ];
 
         if (e.code && invalidTokenCodes.includes(e.code)) {
-          console.log(`[TOKEN CLEANUP] Geçersiz token siliniyor. userId: ${userId}, hata: ${e.code}`);
+          const tokenField = (env?.IS_BETA === 'true' && userDoc.fcmTokenBeta) ? 'fcmTokenBeta' : 'fcmToken';
+          console.log(`[TOKEN CLEANUP] Geçersiz token siliniyor. userId: ${userId}, field: ${tokenField}, hata: ${e.code}`);
           try {
             await db.updateDoc('users', userId, {
-              fcmToken: deleteField(),
+              [tokenField]: deleteField(),
               fcmTokenInvalidatedAt: new Date().toISOString(),
               fcmTokenInvalidReason: e.code,
             });
@@ -393,7 +394,7 @@ async function handleApprovalNotification(body, db, fcm, env) {
       relatedId: userId,
       dataPayload: { type: 'approval', userId },
       tag: `approval_${userId}`,
-      link: env?.APP_BASE_URL || (env?.IS_BETA === 'true' ? 'https://wp-sayim-beta.pages.dev/' : 'https://lnyctophilia.github.io/WP_Sayim/'),
+      link: env?.APP_BASE_URL || (env?.IS_BETA === 'true' ? 'https://wp-sayim-beta.web.app/' : 'https://lnyctophilia.github.io/WP_Sayim/'),
     }, env);
   }
 
@@ -409,7 +410,7 @@ async function handleTestNotification(body, db, fcm, env) {
   if (!userDoc) return { ok: true, skipped: 'no_user' };
 
   const hasEmail = userDoc.email && userDoc.email.trim() !== '';
-  const fcmToken = userDoc.fcmToken;
+  const fcmToken = (env?.IS_BETA === 'true' && userDoc.fcmTokenBeta) ? userDoc.fcmTokenBeta : userDoc.fcmToken;
 
   if (hasEmail) {
     await sendEmailJSEmail(
@@ -430,7 +431,7 @@ async function handleTestNotification(body, db, fcm, env) {
     });
   } else {
     if (fcmToken) {
-      const appUrl = env?.APP_BASE_URL || (env?.IS_BETA === 'true' ? 'https://wp-sayim-beta.pages.dev/' : 'https://lnyctophilia.github.io/WP_Sayim/');
+      const appUrl = env?.APP_BASE_URL || (env?.IS_BETA === 'true' ? 'https://wp-sayim-beta.web.app/' : 'https://lnyctophilia.github.io/WP_Sayim/');
       const message = {
         token: fcmToken,
         notification: {
@@ -468,10 +469,11 @@ async function handleTestNotification(body, db, fcm, env) {
           'messaging/third-party-auth-error',
           'messaging/mismatched-credential',
         ];
+        const tokenField = (env?.IS_BETA === 'true' && userDoc.fcmTokenBeta) ? 'fcmTokenBeta' : 'fcmToken';
         if (pushErr.code && invalidTokenCodes.includes(pushErr.code)) {
           try {
             await db.updateDoc('users', userId, {
-              fcmToken: deleteField(),
+              [tokenField]: deleteField(),
               fcmTokenInvalidatedAt: new Date().toISOString(),
               fcmTokenInvalidReason: pushErr.code,
             });
