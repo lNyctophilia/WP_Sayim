@@ -29,16 +29,16 @@ if exist web\manifest_beta.json (
     copy /y web\manifest_beta.json build\web\manifest.json >nul
 )
 
-REM 2. Cloudflare Pages'e Yukle
-echo [2/4] Cloudflare Pages'e yukleniyor (wp-sayim-beta)...
-call npx --prefix cloudflare-worker wrangler pages deploy build\web --project-name=wp-sayim-beta
+REM 2. Firebase Hosting'e Yukle (Google CDN - Turkiye'de 100% erisilebilir)
+echo [2/4] Firebase Hosting'e yukleniyor (wp-sayim-beta.web.app)...
+call firebase deploy --only hosting
 if errorlevel 1 (
     echo.
-    echo HATA: Cloudflare Pages deploy basarisiz!
+    echo HATA: Firebase Hosting deploy basarisiz!
     pause
     exit /b 1
 )
-echo Cloudflare Pages yuklendi!
+echo Firebase Hosting yuklendi!
 echo.
 
 REM 3. Beta Cloudflare Worker Deploy
@@ -61,7 +61,7 @@ echo.
 
 echo ===================================================
 echo   BETA YAYINLANDI!
-echo   Beta Web:    https://wp-sayim-beta.pages.dev/
+echo   Beta Web:    https://wp-sayim-beta.web.app/
 echo   Beta Worker: https://wp-sayim-api-beta.nycgamedevs.workers.dev/
 echo ===================================================
 echo.

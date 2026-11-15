@@ -68,7 +68,7 @@ async function sendNotificationAndLog(db, fcm, { userId, title, body, type, rela
     }
 
     const defaultLink = env?.IS_BETA === 'true'
-      ? 'https://wp-sayim-beta.pages.dev/?open_notifications=true'
+      ? 'https://wp-sayim-beta.web.app/?open_notifications=true'
       : 'https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true';
 
     const fcmToken = userDoc.fcmToken;

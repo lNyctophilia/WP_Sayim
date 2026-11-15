@@ -5,7 +5,7 @@ class AppConfig {
   static const String _buildVersion = String.fromEnvironment('BUILD_VERSION');
   static const bool isBeta = bool.fromEnvironment('IS_BETA', defaultValue: false);
   static const String liveAppUrl = 'https://lnyctophilia.github.io/WP_Sayim/';
-  static const String betaAppUrl = 'https://wp-sayim-beta.pages.dev/';
+  static const String betaAppUrl = 'https://wp-sayim-beta.web.app/';
   
   static String get version {
     final prefix = isBeta ? 'BETA ' : '';

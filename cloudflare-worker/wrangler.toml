@@ -28,7 +28,7 @@ name = "wp-sayim-api-beta"
 
 [env.beta.vars]
 IS_BETA = "true"
-APP_BASE_URL = "https://wp-sayim-beta.pages.dev/"
+APP_BASE_URL = "https://wp-sayim-beta.web.app/"
 
 # Test ortamında cron'ları devre dışı bırakıyoruz (çift bildirim/yedekleme olmaması için)
 [env.beta.triggers]
