@@ -54,6 +54,101 @@ async function authenticateRequest(request) {
   }
 }
 
+// ─── HELPER: FCM Token Hata Yönetimi ───
+// Beta ortamında (env.IS_BETA === 'true'):
+// - Kesin geçersiz token formatı -> hemen sil
+// - registration-token-not-registered / auth hatası -> 3 ardışık hatadan sonra sil (soft-invalidation)
+// Canlı ortamda (env.IS_BETA !== 'true'):
+// - Orijinal hemen silme davranışı korunur
+async function handleFcmTokenError(db, userId, userDoc, error, env) {
+  const isBeta = env?.IS_BETA === 'true';
+
+  const immediateDeleteCodes = [
+    'messaging/invalid-registration-token',
+  ];
+  const softInvalidateCodes = [
+    'messaging/registration-token-not-registered',
+    'messaging/third-party-auth-error',
+    'messaging/mismatched-credential',
+  ];
+
+  if (!isBeta) {
+    // Canlı ortam: Orijinal mantık aynen çalışır
+    const invalidTokenCodes = [...immediateDeleteCodes, ...softInvalidateCodes];
+    if (error.code && invalidTokenCodes.includes(error.code)) {
+      console.log(`[TOKEN CLEANUP] Geçersiz token siliniyor. userId: ${userId}, hata: ${error.code}`);
+      try {
+        await db.updateDoc('users', userId, {
+          fcmToken: deleteField(),
+          fcmTokenInvalidatedAt: new Date().toISOString(),
+          fcmTokenInvalidReason: error.code,
+        });
+      } catch (cleanupErr) {
+        console.error('[TOKEN CLEANUP] Token silinirken hata:', cleanupErr);
+      }
+    }
+    return;
+  }
+
+  // Beta ortamı: Soft-invalidation ve detaylı hata takibi
+  if (error.code && immediateDeleteCodes.includes(error.code)) {
+    console.log(`[BETA TOKEN CLEANUP] Kesin geçersiz token siliniyor. userId: ${userId}, hata: ${error.code}`);
+    try {
+      await db.updateDoc('users', userId, {
+        fcmToken: deleteField(),
+        fcmTokenFailCount: deleteField(),
+        fcmTokenLastFailAt: deleteField(),
+        fcmTokenLastFailReason: deleteField(),
+        fcmTokenInvalidatedAt: new Date().toISOString(),
+        fcmTokenInvalidReason: error.code,
+      });
+    } catch (cleanupErr) {
+      console.error('[BETA TOKEN CLEANUP] Token silinirken hata:', cleanupErr);
+    }
+  } else if (error.code && softInvalidateCodes.includes(error.code)) {
+    const currentCount = (userDoc.fcmTokenFailCount || 0) + 1;
+    if (currentCount >= 3) {
+      console.log(`[BETA TOKEN CLEANUP] ${currentCount} ardışık hata sonrası token siliniyor. userId: ${userId}, hata: ${error.code}`);
+      try {
+        await db.updateDoc('users', userId, {
+          fcmToken: deleteField(),
+          fcmTokenFailCount: deleteField(),
+          fcmTokenLastFailAt: deleteField(),
+          fcmTokenLastFailReason: deleteField(),
+          fcmTokenInvalidatedAt: new Date().toISOString(),
+          fcmTokenInvalidReason: `${error.code} (${currentCount} ardışık hata)`,
+        });
+      } catch (cleanupErr) {
+        console.error('[BETA TOKEN CLEANUP] Token silinirken hata:', cleanupErr);
+      }
+    } else {
+      console.log(`[BETA TOKEN SOFT-FAIL] userId: ${userId}, hata: ${error.code}, sayac: ${currentCount}/3, retries: ${error.retries ?? 0}`);
+      try {
+        await db.updateDoc('users', userId, {
+          fcmTokenFailCount: currentCount,
+          fcmTokenLastFailAt: new Date().toISOString(),
+          fcmTokenLastFailReason: error.code,
+        });
+      } catch (updateErr) {
+        console.error('[BETA TOKEN SOFT-FAIL] Sayac güncellenirken hata:', updateErr);
+      }
+    }
+  }
+}
+
+// Başarılı gönderim sonrası hata sayacını sıfırla (Beta)
+async function resetFcmTokenFailCount(db, userId, userDoc, env) {
+  if (env?.IS_BETA === 'true' && userDoc.fcmTokenFailCount) {
+    try {
+      await db.updateDoc('users', userId, {
+        fcmTokenFailCount: deleteField(),
+        fcmTokenLastFailAt: deleteField(),
+        fcmTokenLastFailReason: deleteField(),
+      });
+    } catch (_) {}
+  }
+}
+
 // ─── HELPER: sendNotificationAndLog ───
 // Orijinal Firebase Functions'taki sendNotificationAndLog'un birebir karşılığı
 async function sendNotificationAndLog(db, fcm, { userId, title, body, type, relatedId, dataPayload, tag, link }, env = null) {
@@ -91,6 +186,7 @@ async function sendNotificationAndLog(db, fcm, { userId, title, body, type, rela
           priority: 'high',
           notification: {
             channelId: 'sayim_notifications',
+            defaultSound: true,
             tag: tag,
           },
         },
@@ -103,38 +199,27 @@ async function sendNotificationAndLog(db, fcm, { userId, title, body, type, rela
             title,
             body,
             requireInteraction: true,
+            vibrate: [200, 100, 200],
           },
           fcmOptions: {
             link: link || defaultLink,
           },
         },
-        data: dataPayload,
+        data: {
+          ...(dataPayload || {}),
+          title,
+          body,
+          tag: tag || '',
+          link: link || defaultLink,
+        },
       };
 
       try {
         await fcm.send(message);
+        await resetFcmTokenFailCount(db, userId, userDoc, env);
       } catch (e) {
-        console.error('Error sending push notification:', e);
-
-        const invalidTokenCodes = [
-          'messaging/registration-token-not-registered',
-          'messaging/invalid-registration-token',
-          'messaging/third-party-auth-error',
-          'messaging/mismatched-credential',
-        ];
-
-        if (e.code && invalidTokenCodes.includes(e.code)) {
-          console.log(`[TOKEN CLEANUP] Geçersiz token siliniyor. userId: ${userId}, hata: ${e.code}`);
-          try {
-            await db.updateDoc('users', userId, {
-              fcmToken: deleteField(),
-              fcmTokenInvalidatedAt: new Date().toISOString(),
-              fcmTokenInvalidReason: e.code,
-            });
-          } catch (cleanupErr) {
-            console.error('[TOKEN CLEANUP] Token silinirken hata:', cleanupErr);
-          }
-        }
+        console.error(`Error sending push notification (userId: ${userId}, code: ${e.code}, retries: ${e.retries ?? 0}):`, e);
+        await handleFcmTokenError(db, userId, userDoc, e, env);
       }
     }
 
@@ -188,7 +273,7 @@ async function sendEmailJSEmail(toEmail, subject, textContent, env) {
 // ═══════════════════════════════════════════════════════════
 
 // 1. POST /api/notify/davet-created
-async function handleDavetCreated(body, db, fcm) {
+async function handleDavetCreated(body, db, fcm, env) {
   const { davetId, davetData } = body;
   if (!davetData) return { ok: true, skipped: true };
 
@@ -215,13 +300,13 @@ async function handleDavetCreated(body, db, fcm) {
     relatedId: davetId,
     dataPayload: { type: 'davet', davetId, sayimId },
     tag: `davet_${davetId}`,
-  });
+  }, env);
 
   return { ok: true };
 }
 
 // 2. POST /api/notify/davet-response
-async function handleDavetResponse(body, db, fcm) {
+async function handleDavetResponse(body, db, fcm, env) {
   const { davetId, oldStatus, newStatus, userId: staffId, sayimId } = body;
   
   if (!oldStatus || !newStatus) return { ok: true, skipped: true };
@@ -248,13 +333,13 @@ async function handleDavetResponse(body, db, fcm) {
     relatedId: davetId,
     dataPayload: { type: 'davet_response', davetId, sayimId },
     tag: `davet_response_${davetId}`,
-  });
+  }, env);
 
   return { ok: true };
 }
 
 // 2.5. POST /api/notify/davet-reminder
-async function handleDavetReminder(body, db, fcm) {
+async function handleDavetReminder(body, db, fcm, env) {
   const { davetId, userId: staffId, sayimId } = body;
 
   const sayimDoc = await db.getDoc('sayimlar', sayimId);
@@ -268,13 +353,13 @@ async function handleDavetReminder(body, db, fcm) {
     relatedId: davetId,
     dataPayload: { type: 'davet', davetId, sayimId },
     tag: `davet_${davetId}`,
-  });
+  }, env);
 
   return { ok: true };
 }
 
 // 3. POST /api/notify/davet-cancelled
-async function handleDavetCancelled(body, db, fcm) {
+async function handleDavetCancelled(body, db, fcm, env) {
   const { davetId, davetData } = body;
   if (!davetData) return { ok: true, skipped: true };
   if (davetData.status !== 'accepted') return { ok: true, skipped: 'not_accepted' };
@@ -297,7 +382,7 @@ async function handleDavetCancelled(body, db, fcm) {
     relatedId: sayimId,
     dataPayload: { type: 'davet_cancelled', sayimId },
     tag: `davet_${davetId}`,
-  });
+  }, env);
 
   return { ok: true };
 }
@@ -440,41 +525,32 @@ async function handleTestNotification(body, db, fcm, env) {
         },
         android: {
           priority: 'high',
-          notification: { channelId: 'sayim_notifications', tag: `test_${userId}` },
+          notification: { channelId: 'sayim_notifications', defaultSound: true, tag: `test_${userId}` },
         },
         webpush: {
           headers: { Urgency: 'high' },
           notification: {
             title: 'Test Bildirimi',
             body: 'Uygulama kapalıyken (veya arka plandayken) de bildirim alabiliyorsunuz. Harika!',
+            requireInteraction: true,
+            vibrate: [200, 100, 200],
           },
           fcmOptions: { link: appUrl },
         },
-        data: { type: 'test' },
+        data: {
+          type: 'test',
+          title: 'Test Bildirimi',
+          body: 'Uygulama kapalıyken (veya arka plandayken) de bildirim alabiliyorsunuz. Harika!',
+          link: appUrl,
+        },
       };
 
       try {
         await fcm.send(message);
+        await resetFcmTokenFailCount(db, userId, userDoc, env);
       } catch (pushErr) {
-        console.error('sendTestNotification: Push error:', pushErr);
-
-        const invalidTokenCodes = [
-          'messaging/registration-token-not-registered',
-          'messaging/invalid-registration-token',
-          'messaging/third-party-auth-error',
-          'messaging/mismatched-credential',
-        ];
-        if (pushErr.code && invalidTokenCodes.includes(pushErr.code)) {
-          try {
-            await db.updateDoc('users', userId, {
-              fcmToken: deleteField(),
-              fcmTokenInvalidatedAt: new Date().toISOString(),
-              fcmTokenInvalidReason: pushErr.code,
-            });
-          } catch (cleanupErr) {
-            console.error('[TOKEN CLEANUP] Token silinirken hata:', cleanupErr);
-          }
-        }
+        console.error(`sendTestNotification: Push error (userId: ${userId}, code: ${pushErr.code}, retries: ${pushErr.retries ?? 0}):`, pushErr);
+        await handleFcmTokenError(db, userId, userDoc, pushErr, env);
       }
     }
 
@@ -493,7 +569,7 @@ async function handleTestNotification(body, db, fcm, env) {
 }
 
 // 12. POST /api/notify/davet-grup-changed
-async function handleDavetGrupChanged(body, db, fcm) {
+async function handleDavetGrupChanged(body, db, fcm, env) {
   const { davetId, oldGrupId, newGrupId, userId: staffId, sayimId, status, isPast } = body;
 
   if (oldGrupId === newGrupId) return { ok: true, skipped: 'same_grup' };
@@ -517,13 +593,13 @@ async function handleDavetGrupChanged(body, db, fcm) {
     relatedId: sayimId,
     dataPayload: { type: 'davet_time_updated', sayimId, davetId },
     tag: `davet_time_updated_${davetId}`,
-  });
+  }, env);
 
   return { ok: true };
 }
 
 // 13. POST /api/notify/sayim-time-changed
-async function handleSayimTimeChanged(body, db, fcm) {
+async function handleSayimTimeChanged(body, db, fcm, env) {
   const { sayimId, oldGruplar, newGruplar } = body;
   if (!oldGruplar || !newGruplar) return { ok: true, skipped: true };
 
@@ -559,7 +635,7 @@ async function handleSayimTimeChanged(body, db, fcm) {
         relatedId: sayimId,
         dataPayload: { type: 'sayim_time_updated', sayimId, davetId: davet.id },
         tag: `sayim_time_updated_${davet.id}`,
-      });
+      }, env);
     }
   }
 
@@ -571,7 +647,7 @@ async function handleSayimTimeChanged(body, db, fcm) {
 // ═══════════════════════════════════════════════════════════
 
 // 6. sayimAutoReminder (her saat başı)
-async function cronSayimAutoReminder(db, fcm) {
+async function cronSayimAutoReminder(db, fcm, env = null) {
   const now = new Date();
   const nowMs = now.getTime();
   // TRT (UTC+3) ve yerel gece yarısı (21:00 UTC) farkını kapsamak için son 24 saat ile gelecek 36 saat taranır
@@ -675,7 +751,7 @@ async function cronSayimAutoReminder(db, fcm) {
           relatedId: davet.id,
           dataPayload: { type: 'sayim_auto_reminder', davetId: davet.id, sayimId: sayim.id },
           tag: `sayim_auto_reminder_${davet.id}`,
-        });
+        }, env);
 
         try {
           await db.updateDoc('davetler', davet.id, { autoReminderSent: true });
@@ -951,7 +1027,7 @@ export default {
       switch (cronPattern) {
         case '0 * * * *':
         case '0 */2 * * *':
-          await cronSayimAutoReminder(db, fcm);
+          await cronSayimAutoReminder(db, fcm, env);
           break;
         case '0 2 * * SUN':
         case '0 2 * * 0':

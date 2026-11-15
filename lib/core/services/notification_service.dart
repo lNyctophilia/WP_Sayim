@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../constants/app_config.dart';
 import '../models/app_notification.dart';
 import '../utils/pwa_check.dart';
 import '../utils/sw_token_refresh_stub.dart'
@@ -155,12 +156,18 @@ class NotificationService {
         
         // Başarılı olursa eski hatayı ve invalidation bilgisini temizle
         // (Backend, geçersiz token tespit ettiğinde bu alanları set ediyor)
+        final cleanData = <String, dynamic>{
+          'fcmError': FieldValue.delete(),
+          'fcmTokenInvalidatedAt': FieldValue.delete(),
+          'fcmTokenInvalidReason': FieldValue.delete(),
+        };
+        if (AppConfig.isBeta) {
+          cleanData['fcmTokenFailCount'] = FieldValue.delete();
+          cleanData['fcmTokenLastFailAt'] = FieldValue.delete();
+          cleanData['fcmTokenLastFailReason'] = FieldValue.delete();
+        }
         await _firestore.collection('users').doc(user.uid).set(
-          {
-            'fcmError': FieldValue.delete(),
-            'fcmTokenInvalidatedAt': FieldValue.delete(),
-            'fcmTokenInvalidReason': FieldValue.delete(),
-          },
+          cleanData,
           SetOptions(merge: true),
         );
         debugPrint('[iOS Push Fix] Token başarıyla kaydedildi ve eski hata bilgileri temizlendi.');
