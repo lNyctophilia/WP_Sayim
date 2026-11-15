@@ -53,6 +53,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
   UserRole _selectedRole = UserRole.staff;
   List<UserPermission> _selectedPermissions = [UserPermission.staff];
   String _selectedCity = 'Denizli';
+  bool _isBetaTester = false;
   
   double? _selectedLat;
   double? _selectedLng;
@@ -121,6 +122,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
         _selectedPermissions = List<UserPermission>.from(user.permissions);
         _selectedLat = user.latitude;
         _selectedLng = user.longitude;
+        _isBetaTester = user.isBetaTester;
         _errorMessage = null;
       }
     });
@@ -251,6 +253,7 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
         longitude: _selectedLng,
         email: _emailController.text.trim(),
         city: _selectedCity,
+        isBetaTester: widget.currentUser.hasAdminPermission ? _isBetaTester : null,
       );
 
       // Refresh user list
@@ -535,6 +538,63 @@ class _EditProfilesPageState extends State<EditProfilesPage> {
                             ),
                           ),
                           const SizedBox(height: 16),
+
+                          // --- Beta Test Erişimi (Sadece Admin/Owner) ---
+                          if (widget.currentUser.hasAdminPermission) ...[
+                            _buildLabel('Beta Test Erişimi'),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: _isBetaTester
+                                      ? AppColors.accentLight.withValues(alpha: 0.5)
+                                      : AppColors.divider,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.science_outlined,
+                                    color: _isBetaTester ? AppColors.accentLight : AppColors.textSecondary,
+                                    size: 22,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Beta Test Kullanıcısı',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Bu kullanıcı kapalı beta (test) sürümüne erişebilir',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Switch.adaptive(
+                                    value: _isBetaTester,
+                                    activeThumbColor: AppColors.accentLight,
+                                    activeTrackColor: AppColors.accentLight.withValues(alpha: 0.5),
+                                    onChanged: (val) => setState(() => _isBetaTester = val),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
 
                           _buildLabel(AppStrings.get('city', isTr ? 'tr' : 'en') ?? 'Şehir'),
                           const SizedBox(height: 6),
