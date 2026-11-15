@@ -71,11 +71,6 @@ async function sendNotificationAndLog(db, fcm, { userId, title, body, type, rela
       ? 'https://wp-sayim-beta.web.app/?open_notifications=true'
       : 'https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true');
 
-    const appBase = env?.APP_BASE_URL || (env?.IS_BETA === 'true'
-      ? 'https://wp-sayim-beta.web.app/'
-      : 'https://lnyctophilia.github.io/WP_Sayim/');
-    const iconUrl = new URL('icons/Icon-192.png', appBase).href;
-
     const fcmToken = userDoc.fcmToken;
     const hasEmail = userDoc.email && userDoc.email.trim() !== '';
 
@@ -107,8 +102,6 @@ async function sendNotificationAndLog(db, fcm, { userId, title, body, type, rela
           notification: {
             title,
             body,
-            icon: iconUrl,
-            badge: iconUrl,
             requireInteraction: true,
           },
           fcmOptions: {
@@ -436,7 +429,6 @@ async function handleTestNotification(body, db, fcm, env) {
   } else {
     if (fcmToken) {
       const appUrl = env?.APP_BASE_URL || (env?.IS_BETA === 'true' ? 'https://wp-sayim-beta.web.app/' : 'https://lnyctophilia.github.io/WP_Sayim/');
-      const iconUrl = new URL('icons/Icon-192.png', appUrl).href;
       const message = {
         token: fcmToken,
         notification: {
@@ -455,8 +447,6 @@ async function handleTestNotification(body, db, fcm, env) {
           notification: {
             title: 'Test Bildirimi',
             body: 'Uygulama kapalıyken (veya arka plandayken) de bildirim alabiliyorsunuz. Harika!',
-            icon: iconUrl,
-            badge: iconUrl,
           },
           fcmOptions: { link: appUrl },
         },

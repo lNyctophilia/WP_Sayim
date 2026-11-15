@@ -49,15 +49,11 @@ self.registration.showNotification = function(title, options) {
 // iOS'un aboneliği öldürmemesi için, push event'inde her durumda (foreground/background)
 // event.waitUntil() içinde showNotification çağrılmak ZORUNDADIR.
 self.addEventListener('push', function(event) {
-  const defaultIcon = new URL('icons/Icon-192.png', self.registration.scope || (self.location.origin + '/')).href;
-
   if (!event.data) {
     // iOS: data gelse de gelmese de showNotification çağrılmalı (budget ihlali olmasın)
     event.waitUntil(
       self.registration.showNotification('WP Sayım', {
         body: 'Yeni bir bildiriminiz var.',
-        icon: defaultIcon,
-        badge: defaultIcon,
       })
     );
     return;
@@ -86,8 +82,6 @@ self.addEventListener('push', function(event) {
 
     return self.registration.showNotification(title, {
       body: body,
-      icon: defaultIcon,
-      badge: defaultIcon,
       vibrate: [200, 100, 200],
       requireInteraction: true,
       tag: 'wp-notification-' + Date.now(), // Unique tag
