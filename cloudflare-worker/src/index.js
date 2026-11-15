@@ -55,13 +55,11 @@ async function authenticateRequest(request) {
 }
 
 // ─── HELPER: FCM Token Hata Yönetimi ───
-// Beta ortamında (env.IS_BETA === 'true'):
 // - Kesin geçersiz token formatı -> hemen sil
 // - registration-token-not-registered / auth hatası -> 3 ardışık hatadan sonra sil (soft-invalidation)
-// Canlı ortamda (env.IS_BETA !== 'true'):
-// - Orijinal hemen silme davranışı korunur
 async function handleFcmTokenError(db, userId, userDoc, error, env) {
   const isBeta = env?.IS_BETA === 'true';
+  const prefix = isBeta ? '[BETA TOKEN]' : '[TOKEN]';
 
   const immediateDeleteCodes = [
     'messaging/invalid-registration-token',
@@ -72,27 +70,8 @@ async function handleFcmTokenError(db, userId, userDoc, error, env) {
     'messaging/mismatched-credential',
   ];
 
-  if (!isBeta) {
-    // Canlı ortam: Orijinal mantık aynen çalışır
-    const invalidTokenCodes = [...immediateDeleteCodes, ...softInvalidateCodes];
-    if (error.code && invalidTokenCodes.includes(error.code)) {
-      console.log(`[TOKEN CLEANUP] Geçersiz token siliniyor. userId: ${userId}, hata: ${error.code}`);
-      try {
-        await db.updateDoc('users', userId, {
-          fcmToken: deleteField(),
-          fcmTokenInvalidatedAt: new Date().toISOString(),
-          fcmTokenInvalidReason: error.code,
-        });
-      } catch (cleanupErr) {
-        console.error('[TOKEN CLEANUP] Token silinirken hata:', cleanupErr);
-      }
-    }
-    return;
-  }
-
-  // Beta ortamı: Soft-invalidation ve detaylı hata takibi
   if (error.code && immediateDeleteCodes.includes(error.code)) {
-    console.log(`[BETA TOKEN CLEANUP] Kesin geçersiz token siliniyor. userId: ${userId}, hata: ${error.code}`);
+    console.log(`${prefix} Kesin geçersiz token siliniyor. userId: ${userId}, hata: ${error.code}`);
     try {
       await db.updateDoc('users', userId, {
         fcmToken: deleteField(),
@@ -103,12 +82,12 @@ async function handleFcmTokenError(db, userId, userDoc, error, env) {
         fcmTokenInvalidReason: error.code,
       });
     } catch (cleanupErr) {
-      console.error('[BETA TOKEN CLEANUP] Token silinirken hata:', cleanupErr);
+      console.error(`${prefix} Token silinirken hata:`, cleanupErr);
     }
   } else if (error.code && softInvalidateCodes.includes(error.code)) {
     const currentCount = (userDoc.fcmTokenFailCount || 0) + 1;
     if (currentCount >= 3) {
-      console.log(`[BETA TOKEN CLEANUP] ${currentCount} ardışık hata sonrası token siliniyor. userId: ${userId}, hata: ${error.code}`);
+      console.log(`${prefix} ${currentCount} ardışık hata sonrası token siliniyor. userId: ${userId}, hata: ${error.code}`);
       try {
         await db.updateDoc('users', userId, {
           fcmToken: deleteField(),
@@ -119,10 +98,10 @@ async function handleFcmTokenError(db, userId, userDoc, error, env) {
           fcmTokenInvalidReason: `${error.code} (${currentCount} ardışık hata)`,
         });
       } catch (cleanupErr) {
-        console.error('[BETA TOKEN CLEANUP] Token silinirken hata:', cleanupErr);
+        console.error(`${prefix} Token silinirken hata:`, cleanupErr);
       }
     } else {
-      console.log(`[BETA TOKEN SOFT-FAIL] userId: ${userId}, hata: ${error.code}, sayac: ${currentCount}/3, retries: ${error.retries ?? 0}`);
+      console.log(`${prefix} [SOFT-FAIL] userId: ${userId}, hata: ${error.code}, sayac: ${currentCount}/3, retries: ${error.retries ?? 0}`);
       try {
         await db.updateDoc('users', userId, {
           fcmTokenFailCount: currentCount,
@@ -130,15 +109,15 @@ async function handleFcmTokenError(db, userId, userDoc, error, env) {
           fcmTokenLastFailReason: error.code,
         });
       } catch (updateErr) {
-        console.error('[BETA TOKEN SOFT-FAIL] Sayac güncellenirken hata:', updateErr);
+        console.error(`${prefix} Sayac güncellenirken hata:`, updateErr);
       }
     }
   }
 }
 
-// Başarılı gönderim sonrası hata sayacını sıfırla (Beta)
+// Başarılı gönderim sonrası hata sayacını sıfırla
 async function resetFcmTokenFailCount(db, userId, userDoc, env) {
-  if (env?.IS_BETA === 'true' && userDoc.fcmTokenFailCount) {
+  if (userDoc.fcmTokenFailCount) {
     try {
       await db.updateDoc('users', userId, {
         fcmTokenFailCount: deleteField(),

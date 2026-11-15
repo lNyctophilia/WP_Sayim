@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../constants/app_config.dart';
 import '../models/app_notification.dart';
 import '../utils/pwa_check.dart';
 import '../utils/sw_token_refresh_stub.dart'
@@ -160,12 +159,10 @@ class NotificationService {
           'fcmError': FieldValue.delete(),
           'fcmTokenInvalidatedAt': FieldValue.delete(),
           'fcmTokenInvalidReason': FieldValue.delete(),
+          'fcmTokenFailCount': FieldValue.delete(),
+          'fcmTokenLastFailAt': FieldValue.delete(),
+          'fcmTokenLastFailReason': FieldValue.delete(),
         };
-        if (AppConfig.isBeta) {
-          cleanData['fcmTokenFailCount'] = FieldValue.delete();
-          cleanData['fcmTokenLastFailAt'] = FieldValue.delete();
-          cleanData['fcmTokenLastFailReason'] = FieldValue.delete();
-        }
         await _firestore.collection('users').doc(user.uid).set(
           cleanData,
           SetOptions(merge: true),
