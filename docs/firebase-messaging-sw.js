@@ -54,8 +54,6 @@ self.addEventListener('push', function(event) {
     event.waitUntil(
       self.registration.showNotification('WP Sayım', {
         body: 'Yeni bir bildiriminiz var.',
-        icon: '/icons/Icon-192.png',
-        badge: '/icons/Icon-192.png',
       })
     );
     return;
@@ -70,6 +68,9 @@ self.addEventListener('push', function(event) {
     title = payload.notification?.title || payload.data?.title || title;
     body = payload.notification?.body || payload.data?.body || body;
     notifData = payload.data || {};
+    if (payload.fcmOptions && payload.fcmOptions.link) {
+      notifData.link = payload.fcmOptions.link;
+    }
   } catch (e) {
     // JSON parse başarısız — fallback değerleri kullan (iOS budget koruması için yine de göster)
     console.error('[firebase-messaging-sw.js] Push parse hatası:', e);
@@ -81,8 +82,6 @@ self.addEventListener('push', function(event) {
 
     return self.registration.showNotification(title, {
       body: body,
-      icon: '/icons/Icon-192.png',
-      badge: '/icons/Icon-192.png',
       vibrate: [200, 100, 200],
       requireInteraction: true,
       tag: 'wp-notification-' + Date.now(), // Unique tag
@@ -153,7 +152,8 @@ self.addEventListener('notificationclick', function(event) {
   event.notification.close();
 
   // Uygulama zaten açıksa onu odakla, değilse yeni pencere aç
-  const targetUrl = self.registration.scope || '/';
+  const appBase = (self.registration.scope || (self.location.origin + '/')).replace('firebase-cloud-messaging-push-scope', '');
+  const targetUrl = (event.notification.data && event.notification.data.link) || appBase;
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
       for (const client of clientList) {

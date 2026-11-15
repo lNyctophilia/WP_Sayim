@@ -280,7 +280,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
                     border: Border.all(
                       color: _isBetaTester
                           ? AppColors.accentLight.withValues(alpha: 0.5)
-                          : AppColors.border,
+                          : AppColors.divider,
                     ),
                   ),
                   child: Row(
