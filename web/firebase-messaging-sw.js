@@ -153,15 +153,16 @@ self.addEventListener('notificationclick', function(event) {
   event.notification.close();
 
   // Uygulama zaten açıksa onu odakla, değilse yeni pencere aç
+  const targetUrl = self.registration.scope || '/';
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
       for (const client of clientList) {
-        if (client.url.includes('/WP_Sayim') && 'focus' in client) {
+        if ('focus' in client) {
           return client.focus();
         }
       }
       // Eğer uygulama arka planda hiç açık değilse, sıfırdan başlat
-      return clients.openWindow('/WP_Sayim/');
+      return clients.openWindow(targetUrl);
     })
   );
 });

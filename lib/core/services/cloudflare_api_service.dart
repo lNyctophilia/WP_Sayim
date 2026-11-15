@@ -9,10 +9,11 @@ import 'package:http/http.dart' as http;
 /// Flutter app'te Firestore yazma işlemi yapıldıktan sonra,
 /// ilgili bildirim/sync işlemi için bu servis çağrılır.
 class CloudflareApiService {
-  /// Cloudflare Worker URL'i
-  /// Deploy sonrası bu URL güncellenecek
-  static const String _baseUrl = 'https://wp-sayim-api.nycgamedevs.workers.dev';
-  // TODO: Deploy sonrası gerçek URL ile değiştir
+  /// Cloudflare Worker URL'i — derleme parametresine göre (Canlı / Beta) otomatik belirlenir
+  static const String _baseUrl = String.fromEnvironment(
+    'CF_API_URL',
+    defaultValue: 'https://wp-sayim-api.nycgamedevs.workers.dev',
+  );
 
   static final CloudflareApiService _instance = CloudflareApiService._();
   factory CloudflareApiService() => _instance;

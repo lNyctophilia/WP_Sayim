@@ -3,6 +3,10 @@ main = "src/index.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
+[vars]
+IS_BETA = "false"
+APP_BASE_URL = "https://lnyctophilia.github.io/WP_Sayim/"
+
 # Cron Triggers (UTC zamanları — Europe/Istanbul UTC+3)
 # sayimAutoReminder: her saat başı (1 saatte bir)
 # cleanupOldNotifications: Pazar 05:00 TR → 02:00 UTC
@@ -17,6 +21,18 @@ crons = [
   "0 1 * * SUN",
   "0 1 16 * *"
 ]
+
+# ─── BETA (TEST) ORTAMI ───
+[env.beta]
+name = "wp-sayim-api-beta"
+
+[env.beta.vars]
+IS_BETA = "true"
+APP_BASE_URL = "https://wp-sayim-beta.pages.dev/"
+
+# Test ortamında cron'ları devre dışı bırakıyoruz (çift bildirim/yedekleme olmaması için)
+[env.beta.triggers]
+crons = []
 
 [observability]
 enabled = true

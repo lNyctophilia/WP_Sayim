@@ -3,8 +3,12 @@ class AppConfig {
   AppConfig._();
 
   static const String _buildVersion = String.fromEnvironment('BUILD_VERSION');
+  static const bool isBeta = bool.fromEnvironment('IS_BETA', defaultValue: false);
+  static const String liveAppUrl = 'https://lnyctophilia.github.io/WP_Sayim/';
+  static const String betaAppUrl = 'https://wp-sayim-beta.pages.dev/';
   
   static String get version {
+    final prefix = isBeta ? 'BETA ' : '';
     if (_buildVersion.isNotEmpty) {
       String displayVersion = _buildVersion;
       // Temizle: sayı, nokta, tire ve iki nokta kalacak. 
@@ -24,9 +28,9 @@ class AppConfig {
           displayVersion = '$datePart-$hour.$minute';
         }
       }
-      return '($displayVersion)';
+      return '($prefix$displayVersion)';
     }
-    return 'Geliştirici Sürümü'; // Local ortamda çalışırken görünecek metin
+    return isBeta ? 'Geliştirici Sürümü (BETA)' : 'Geliştirici Sürümü'; // Local ortamda çalışırken görünecek metin
   }
 
   static const String developerName = 'lNyctophilia';

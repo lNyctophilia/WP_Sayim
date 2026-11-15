@@ -56,10 +56,20 @@ async function authenticateRequest(request) {
 
 // ─── HELPER: sendNotificationAndLog ───
 // Orijinal Firebase Functions'taki sendNotificationAndLog'un birebir karşılığı
-async function sendNotificationAndLog(db, fcm, { userId, title, body, type, relatedId, dataPayload, tag, link }) {
+async function sendNotificationAndLog(db, fcm, { userId, title, body, type, relatedId, dataPayload, tag, link }, env = null) {
   try {
     const userDoc = await db.getDoc('users', userId);
     if (!userDoc) return;
+
+    // Beta koruması: Beta ortamında test yapılıyorsa normal personelin cihazına push gitmesin
+    if (env?.IS_BETA === 'true' && !userDoc.isBetaTester) {
+      console.log(`[BETA GUARD] userId: ${userId} isBetaTester olmadığı için push bildirimi engellendi.`);
+      return;
+    }
+
+    const defaultLink = env?.IS_BETA === 'true'
+      ? 'https://wp-sayim-beta.pages.dev/?open_notifications=true'
+      : 'https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true';
 
     const fcmToken = userDoc.fcmToken;
     const hasEmail = userDoc.email && userDoc.email.trim() !== '';
@@ -97,7 +107,7 @@ async function sendNotificationAndLog(db, fcm, { userId, title, body, type, rela
             requireInteraction: true,
           },
           fcmOptions: {
-            link: link || 'https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true',
+            link: link || defaultLink,
           },
         },
         data: dataPayload,
@@ -383,8 +393,8 @@ async function handleApprovalNotification(body, db, fcm, env) {
       relatedId: userId,
       dataPayload: { type: 'approval', userId },
       tag: `approval_${userId}`,
-      link: 'https://lnyctophilia.github.io/WP_Sayim/',
-    });
+      link: env?.APP_BASE_URL || (env?.IS_BETA === 'true' ? 'https://wp-sayim-beta.pages.dev/' : 'https://lnyctophilia.github.io/WP_Sayim/'),
+    }, env);
   }
 
   return { ok: true };
@@ -420,6 +430,7 @@ async function handleTestNotification(body, db, fcm, env) {
     });
   } else {
     if (fcmToken) {
+      const appUrl = env?.APP_BASE_URL || (env?.IS_BETA === 'true' ? 'https://wp-sayim-beta.pages.dev/' : 'https://lnyctophilia.github.io/WP_Sayim/');
       const message = {
         token: fcmToken,
         notification: {
@@ -441,7 +452,7 @@ async function handleTestNotification(body, db, fcm, env) {
             icon: '/icons/Icon-192.png',
             badge: '/icons/Icon-192.png',
           },
-          fcmOptions: { link: 'https://lnyctophilia.github.io/WP_Sayim/' },
+          fcmOptions: { link: appUrl },
         },
         data: { type: 'test' },
       };
@@ -880,7 +891,11 @@ export default {
 
     // Health check
     if (path === '/' || path === '/health') {
-      return jsonResponse({ status: 'ok', worker: 'wp-sayim-api' });
+      return jsonResponse({
+        status: 'ok',
+        worker: env?.IS_BETA === 'true' ? 'wp-sayim-api-beta' : 'wp-sayim-api',
+        isBeta: env?.IS_BETA === 'true',
+      });
     }
 
 

@@ -51,6 +51,7 @@ class AppUser {
   final bool isApproved;
   final String? email;
   final String city;
+  final bool isBetaTester;
 
   const AppUser({
     required this.id,
@@ -74,6 +75,7 @@ class AppUser {
     this.isApproved = false,
     this.email,
     this.city = 'Denizli',
+    this.isBetaTester = false,
   });
 
   /// Rol bazlı kontroller (maaş hesaplaması için)
@@ -140,6 +142,7 @@ class AppUser {
       isApproved: data['isApproved'] as bool? ?? true,
       email: data['email'] as String?,
       city: data['city'] as String? ?? 'Denizli',
+      isBetaTester: data['isBetaTester'] as bool? ?? false,
     );
   }
 
@@ -165,6 +168,7 @@ class AppUser {
       'isApproved': isApproved,
       if (email != null) 'email': email,
       'city': city,
+      'isBetaTester': isBetaTester,
     };
   }
 
@@ -190,6 +194,7 @@ class AppUser {
     bool? isApproved,
     String? email,
     String? city,
+    bool? isBetaTester,
   }) {
     return AppUser(
       id: id ?? this.id,
@@ -213,6 +218,7 @@ class AppUser {
       isApproved: isApproved ?? this.isApproved,
       email: email ?? this.email,
       city: city ?? this.city,
+      isBetaTester: isBetaTester ?? this.isBetaTester,
     );
   }
 }

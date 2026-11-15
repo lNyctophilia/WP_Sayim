@@ -15,6 +15,10 @@ import '../../features/auth/presentation/pages/install_prompt_page.dart';
 import '../utils/pwa_check.dart';
 import '../utils/bottom_toast.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../constants/app_config.dart';
+import '../constants/app_colors.dart';
 import 'dart:async';
 import '../../main.dart';
 
@@ -248,6 +252,87 @@ class _AppRouterState extends State<AppRouter> with WidgetsBindingObserver {
                   return Scaffold(
                     body: Center(
                       child: Text('Hesabınız henüz onaylanmamış. Lütfen yöneticinin onaylamasını bekleyin.'),
+                    ),
+                  );
+                }
+
+                // Beta sürüm kontrolü — Sadece isBetaTester: true olanlar girebilir!
+                if (AppConfig.isBeta && !appUser.isBetaTester) {
+                  return Scaffold(
+                    backgroundColor: AppColors.background,
+                    body: SafeArea(
+                      child: Center(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(28.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.amber.withValues(alpha: 0.15),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.lock_person_rounded,
+                                  color: Colors.amber,
+                                  size: 48,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              Text(
+                                'Kapalı Beta Sürümü',
+                                style: GoogleFonts.inter(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Bu sürüm sadece seçilmiş test kullanıcıları içindir. Hesabınız (${appUser.username}) için beta test yetkisi tanımlanmamış.',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: AppColors.textSecondary,
+                                  height: 1.5,
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                              SizedBox(
+                                width: double.infinity,
+                                height: 48,
+                                child: ElevatedButton.icon(
+                                  onPressed: () async {
+                                    await _authService.logout(true);
+                                    final uri = Uri.parse(AppConfig.liveAppUrl);
+                                    if (await canLaunchUrl(uri)) {
+                                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                    }
+                                  },
+                                  icon: const Icon(Icons.open_in_browser_rounded),
+                                  label: const Text('Canlı Sürüme Git'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.accentLight,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              TextButton(
+                                onPressed: () => _authService.logout(true),
+                                child: Text(
+                                  'Farklı Hesapla Giriş Yap',
+                                  style: TextStyle(color: AppColors.textSecondary),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   );
                 }

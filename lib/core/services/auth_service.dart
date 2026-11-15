@@ -366,6 +366,7 @@ class AuthService {
     double? longitude,
     String? email,
     String? city,
+    bool? isBetaTester,
   }) async {
     // Eski veriyi çek (auth sync için)
     final oldDoc = await _firestore.collection('users').doc(uid).get();
@@ -384,6 +385,7 @@ class AuthService {
     if (longitude != null) updates['longitude'] = longitude;
     if (email != null) updates['email'] = email;
     if (city != null && city.isNotEmpty) updates['city'] = city;
+    if (isBetaTester != null) updates['isBetaTester'] = isBetaTester;
 
     if (updates.isNotEmpty) {
       await _firestore.collection('users').doc(uid).update(updates);

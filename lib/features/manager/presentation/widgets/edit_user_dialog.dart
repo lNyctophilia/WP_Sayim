@@ -35,6 +35,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
   bool _isLoading = false;
   String? _errorMessage;
   bool _obscurePassword = true;
+  late bool _isBetaTester;
 
   @override
   void initState() {
@@ -44,6 +45,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
     if (widget.targetUser.password != null) {
       _passwordController.text = widget.targetUser.password!;
     }
+    _isBetaTester = widget.targetUser.isBetaTester;
   }
 
   @override
@@ -82,6 +84,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
         fullName: _fullNameController.text.trim(),
         username: username,
         password: _passwordController.text.isNotEmpty ? _passwordController.text : null,
+        isBetaTester: widget.currentUser.hasAdminPermission ? _isBetaTester : null,
       );
 
       if (mounted) {
@@ -266,6 +269,60 @@ class _EditUserDialogState extends State<EditUserDialog> {
                 },
               ),
               const SizedBox(height: 16),
+
+              // Beta Test Kullanıcısı Switch (Sadece admin/owner görebilir)
+              if (widget.currentUser.hasAdminPermission) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _isBetaTester
+                          ? AppColors.accentLight.withValues(alpha: 0.5)
+                          : AppColors.border,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.science_outlined,
+                        color: _isBetaTester ? AppColors.accentLight : AppColors.textSecondary,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Beta Test Kullanıcısı',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            Text(
+                              'Bu kullanıcı kapalı beta sürümüne erişebilir',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Switch.adaptive(
+                        value: _isBetaTester,
+                        activeColor: AppColors.accentLight,
+                        onChanged: (val) => setState(() => _isBetaTester = val),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
 
               // Hata mesajı
               if (_errorMessage != null)
