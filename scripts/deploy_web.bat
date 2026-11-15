@@ -21,7 +21,7 @@ echo Build basarili!
 echo.
 
 REM 1.5. Versiyon dosyasi olustur (PWA Cache guncelleme icin)
-echo {"version": "%TIMESTAMP%"} > build\web\version.json
+powershell -Command "@{'version' = '%TIMESTAMP%'} | ConvertTo-Json | Set-Content 'build\web\version.json'"
 
 REM 2. docs klasorunu temizle ve yeni build'i kopyala
 echo [2/4] Build dosyalari docs/ klasorune kopyalaniyor...

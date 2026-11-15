@@ -16,7 +16,7 @@ call flutter build web --release --wasm --base-href "/" --dart-define="BUILD_VER
 if errorlevel 1 (
     echo.
     echo HATA: Flutter Web beta build basarisiz!
-    pause
+    if "%~1"=="" pause
     exit /b 1
 )
 echo Build basarili!
@@ -24,7 +24,7 @@ echo.
 
 REM 1.5. Beta manifest ve versiyon dosyasini ekle
 echo [1.5/4] Beta Manifest ve Versiyon dosyalari yerlestiriliyor...
-echo {"version": "%TIMESTAMP%"} > build\web\version.json
+powershell -Command "@{'version' = '%TIMESTAMP%'} | ConvertTo-Json | Set-Content 'build\web\version.json'"
 if exist web\manifest_beta.json (
     copy /y web\manifest_beta.json build\web\manifest.json >nul
 )
@@ -38,7 +38,7 @@ call firebase deploy --only hosting
 if errorlevel 1 (
     echo.
     echo HATA: Firebase Hosting deploy basarisiz!
-    pause
+    if "%~1"=="" pause
     exit /b 1
 )
 echo Firebase Hosting yuklendi!
@@ -68,4 +68,4 @@ echo   Beta Web:    https://wp-sayim-beta.web.app/
 echo   Beta Worker: https://wp-sayim-api-beta.nycgamedevs.workers.dev/
 echo ===================================================
 echo.
-pause
+if "%~1"=="" pause

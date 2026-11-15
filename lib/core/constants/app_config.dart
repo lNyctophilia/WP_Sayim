@@ -14,6 +14,7 @@ class AppConfig {
       // Temizle: sayı, nokta, tire ve iki nokta kalacak. 
       // Windows %time% boşluk içeriyorsa (_) temizlenecek.
       displayVersion = displayVersion.replaceAll(RegExp(r'[^\d\.\-:]'), '');
+      displayVersion = displayVersion.replaceAll(RegExp(r'-+'), '-');
       displayVersion = displayVersion.replaceAll(RegExp(r'^\-+|\-+$'), '');
       
       var dateAndTime = displayVersion.split('-');
