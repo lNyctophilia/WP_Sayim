@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../constants/app_config.dart';
 import '../models/app_notification.dart';
 import '../utils/pwa_check.dart';
 import '../utils/sw_token_refresh_stub.dart'
@@ -136,31 +135,11 @@ class NotificationService {
     return null;
   }
 
-  /// Manuel izin isteme ve token kaydetme (Kullanıcı etkileşimi / buton tıklamasında çağrılır)
-  /// iOS Safari PWA'da izin penceresinin tetiklenebilmesi için kullanıcı etkileşimi (tap/click) şarttır.
-  Future<bool> requestPermissionAndSyncToken() async {
-    try {
-      final settings = await _messaging.requestPermission(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
-
-      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-        return await _saveTokenToDatabase();
-      }
-      return false;
-    } catch (e) {
-      debugPrint('requestPermissionAndSyncToken error: $e');
-      return false;
-    }
-  }
-
   /// FCM Token alıp kullanıcının Firestore dokümanına kaydetme
   /// Her çağrıda token'ı Firestore'a yazar (iOS subscription yenilemelerini yakalamak için)
-  Future<bool> _saveTokenToDatabase() async {
+  Future<void> _saveTokenToDatabase() async {
     final user = _auth.currentUser;
-    if (user == null) return false; // Giriş yapılmamışsa kaydetme
+    if (user == null) return; // Giriş yapılmamışsa kaydetme
 
     try {
       String? token;
@@ -171,34 +150,32 @@ class NotificationService {
         // Android/iOS
         token = await _messaging.getToken();
       }
-      if (token != null && token.isNotEmpty) {
+      if (token != null) {
         await _updateToken(token);
         
-        final errorField = AppConfig.isBeta ? 'fcmErrorBeta' : 'fcmError';
+        // Başarılı olursa eski hatayı ve invalidation bilgisini temizle
+        // (Backend, geçersiz token tespit ettiğinde bu alanları set ediyor)
         await _firestore.collection('users').doc(user.uid).set(
           {
-            errorField: FieldValue.delete(),
+            'fcmError': FieldValue.delete(),
             'fcmTokenInvalidatedAt': FieldValue.delete(),
             'fcmTokenInvalidReason': FieldValue.delete(),
           },
           SetOptions(merge: true),
         );
-        debugPrint('[Push] Token başarıyla kaydedildi ($token).');
-        return true;
+        debugPrint('[iOS Push Fix] Token başarıyla kaydedildi ve eski hata bilgileri temizlendi.');
       }
-      return false;
     } catch (e) {
       debugPrint('FCM Token alınırken hata: $e');
-      final errorField = AppConfig.isBeta ? 'fcmErrorBeta' : 'fcmError';
+      // Mobil cihazın console ekranını göremediğimiz için, hatayı Firestore'a kaydediyoruz!
       try {
         await _firestore.collection('users').doc(user.uid).set(
-          {errorField: e.toString()},
+          {'fcmError': e.toString()},
           SetOptions(merge: true),
         );
       } catch (innerError) {
         debugPrint('Hata veritabanına yazılamadı: $innerError');
       }
-      return false;
     }
   }
 
@@ -216,11 +193,10 @@ class NotificationService {
     if (user == null) return;
 
     try {
-      final tokenField = AppConfig.isBeta ? 'fcmTokenBeta' : 'fcmToken';
       await _firestore.collection('users').doc(user.uid).update({
-        tokenField: token,
+        'fcmToken': token,
       });
-      debugPrint('FCM Token ($tokenField) Firestore\'a kaydedildi.');
+      debugPrint('FCM Token Firestore\'a kaydedildi.');
     } catch (e) {
       debugPrint('FCM Token güncellenirken hata: $e');
     }
@@ -232,10 +208,11 @@ class NotificationService {
     if (user == null) return;
 
     try {
-      final tokenField = AppConfig.isBeta ? 'fcmTokenBeta' : 'fcmToken';
       await _firestore.collection('users').doc(user.uid).update({
-        tokenField: FieldValue.delete(),
+        'fcmToken': FieldValue.delete(),
       }).timeout(const Duration(milliseconds: 1000));
+      // Cihazdaki tokenı tamamen silmiyoruz (yeni girişte sorun yaşamamak için)
+      // await _messaging.deleteToken();
     } catch (e) {
       debugPrint('FCM Token silinirken hata: $e');
     }

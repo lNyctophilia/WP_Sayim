@@ -71,7 +71,12 @@ async function sendNotificationAndLog(db, fcm, { userId, title, body, type, rela
       ? 'https://wp-sayim-beta.web.app/?open_notifications=true'
       : 'https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true');
 
-    const fcmToken = (env?.IS_BETA === 'true' && userDoc.fcmTokenBeta) ? userDoc.fcmTokenBeta : userDoc.fcmToken;
+    const appBase = env?.APP_BASE_URL || (env?.IS_BETA === 'true'
+      ? 'https://wp-sayim-beta.web.app/'
+      : 'https://lnyctophilia.github.io/WP_Sayim/');
+    const iconUrl = new URL('icons/Icon-192.png', appBase).href;
+
+    const fcmToken = userDoc.fcmToken;
     const hasEmail = userDoc.email && userDoc.email.trim() !== '';
 
     // E-posta adresi yoksa VE fcmToken varsa push notification at
@@ -102,8 +107,8 @@ async function sendNotificationAndLog(db, fcm, { userId, title, body, type, rela
           notification: {
             title,
             body,
-            icon: '/icons/Icon-192.png',
-            badge: '/icons/Icon-192.png',
+            icon: iconUrl,
+            badge: iconUrl,
             requireInteraction: true,
           },
           fcmOptions: {
@@ -126,11 +131,10 @@ async function sendNotificationAndLog(db, fcm, { userId, title, body, type, rela
         ];
 
         if (e.code && invalidTokenCodes.includes(e.code)) {
-          const tokenField = (env?.IS_BETA === 'true' && userDoc.fcmTokenBeta) ? 'fcmTokenBeta' : 'fcmToken';
-          console.log(`[TOKEN CLEANUP] Geçersiz token siliniyor. userId: ${userId}, field: ${tokenField}, hata: ${e.code}`);
+          console.log(`[TOKEN CLEANUP] Geçersiz token siliniyor. userId: ${userId}, hata: ${e.code}`);
           try {
             await db.updateDoc('users', userId, {
-              [tokenField]: deleteField(),
+              fcmToken: deleteField(),
               fcmTokenInvalidatedAt: new Date().toISOString(),
               fcmTokenInvalidReason: e.code,
             });
@@ -410,7 +414,7 @@ async function handleTestNotification(body, db, fcm, env) {
   if (!userDoc) return { ok: true, skipped: 'no_user' };
 
   const hasEmail = userDoc.email && userDoc.email.trim() !== '';
-  const fcmToken = (env?.IS_BETA === 'true' && userDoc.fcmTokenBeta) ? userDoc.fcmTokenBeta : userDoc.fcmToken;
+  const fcmToken = userDoc.fcmToken;
 
   if (hasEmail) {
     await sendEmailJSEmail(
@@ -432,6 +436,7 @@ async function handleTestNotification(body, db, fcm, env) {
   } else {
     if (fcmToken) {
       const appUrl = env?.APP_BASE_URL || (env?.IS_BETA === 'true' ? 'https://wp-sayim-beta.web.app/' : 'https://lnyctophilia.github.io/WP_Sayim/');
+      const iconUrl = new URL('icons/Icon-192.png', appUrl).href;
       const message = {
         token: fcmToken,
         notification: {
@@ -450,8 +455,8 @@ async function handleTestNotification(body, db, fcm, env) {
           notification: {
             title: 'Test Bildirimi',
             body: 'Uygulama kapalıyken (veya arka plandayken) de bildirim alabiliyorsunuz. Harika!',
-            icon: '/icons/Icon-192.png',
-            badge: '/icons/Icon-192.png',
+            icon: iconUrl,
+            badge: iconUrl,
           },
           fcmOptions: { link: appUrl },
         },
@@ -469,11 +474,10 @@ async function handleTestNotification(body, db, fcm, env) {
           'messaging/third-party-auth-error',
           'messaging/mismatched-credential',
         ];
-        const tokenField = (env?.IS_BETA === 'true' && userDoc.fcmTokenBeta) ? 'fcmTokenBeta' : 'fcmToken';
         if (pushErr.code && invalidTokenCodes.includes(pushErr.code)) {
           try {
             await db.updateDoc('users', userId, {
-              [tokenField]: deleteField(),
+              fcmToken: deleteField(),
               fcmTokenInvalidatedAt: new Date().toISOString(),
               fcmTokenInvalidReason: pushErr.code,
             });

@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_config.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/cloudflare_api_service.dart';
-import '../../../../core/services/notification_service.dart';
-import '../../../../core/utils/pwa_check.dart';
 import '../../../../core/models/app_user.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/theme_service.dart';
@@ -886,63 +883,6 @@ class _NotificationHelpSheetState extends State<_NotificationHelpSheet> {
   }
 
   void _startTest() async {
-    // Mobil web ve PWA değilse uyar (iOS Safari'de tarayıcı sekmesi Web Push desteklemez)
-    if (kIsWeb && isMobileBrowser() && !isPWA()) {
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: AppColors.card,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Row(
-            children: [
-              Icon(Icons.info_outline_rounded, color: AppColors.accentLight),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  widget.lang.currentLang == 'tr' ? 'PWA Kurulumu Gerekli' : 'PWA Required',
-                  style: TextStyle(color: AppColors.textPrimary, fontSize: 16),
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            widget.lang.currentLang == 'tr'
-                ? 'iOS ve mobil cihazlarda anlık bildirim alabilmek için uygulamanın Ana Ekrana eklenmiş olması gerekir.\n\nLütfen Safari\'de "Paylaş" (Share) butonuna basıp "Ana Ekrana Ekle" diyerek uygulamayı yükleyin ve ana ekrandaki ikonundan açın.'
-                : 'To receive notifications on iOS/mobile devices, the app must be added to your Home Screen.\n\nPlease tap "Share" in Safari, choose "Add to Home Screen", and open the app from your home screen icon.',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(widget.lang.tr('ok'), style: TextStyle(color: AppColors.accentLight)),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
-
-    // Buton tıklamasıyla (User Gesture) doğrudan bildirim izni iste ve token'ı senkronize et
-    final tokenSaved = await NotificationService().requestPermissionAndSyncToken();
-    if (!mounted) return;
-    if (!tokenSaved) {
-      final settings = await FirebaseMessaging.instance.getNotificationSettings();
-      if (!mounted) return;
-      if (settings.authorizationStatus != AuthorizationStatus.authorized) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              widget.lang.currentLang == 'tr'
-                  ? 'Bildirim izni verilmedi! Lütfen tarayıcı / cihaz ayarlarından izin verin.'
-                  : 'Notification permission not granted! Please allow notifications in device settings.',
-            ),
-            backgroundColor: AppColors.danger,
-          ),
-        );
-        return;
-      }
-    }
-
     setState(() {
       _countdown = 5;
     });

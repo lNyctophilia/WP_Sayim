@@ -49,7 +49,7 @@ self.registration.showNotification = function(title, options) {
 // iOS'un aboneliği öldürmemesi için, push event'inde her durumda (foreground/background)
 // event.waitUntil() içinde showNotification çağrılmak ZORUNDADIR.
 self.addEventListener('push', function(event) {
-  const defaultIcon = new URL('icons/Icon-192.png', self.location.origin + '/').href;
+  const defaultIcon = new URL('icons/Icon-192.png', self.registration.scope || (self.location.origin + '/')).href;
 
   if (!event.data) {
     // iOS: data gelse de gelmese de showNotification çağrılmalı (budget ihlali olmasın)
@@ -158,8 +158,8 @@ self.addEventListener('notificationclick', function(event) {
   event.notification.close();
 
   // Uygulama zaten açıksa onu odakla, değilse yeni pencere aç
-  const targetUrl = (event.notification.data && event.notification.data.link) ||
-                    (self.location.origin + '/');
+  const appBase = (self.registration.scope || (self.location.origin + '/')).replace('firebase-cloud-messaging-push-scope', '');
+  const targetUrl = (event.notification.data && event.notification.data.link) || appBase;
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
       for (const client of clientList) {
