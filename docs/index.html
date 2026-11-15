@@ -19,6 +19,7 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="WP Sayım Yönetim Uygulaması">
+  <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0A1128">
 
@@ -282,9 +283,12 @@
       navigator.serviceWorker.register = function(url, options) {
         if (url === '/firebase-messaging-sw.js' || url.includes('firebase-messaging-sw.js')) {
           console.log('[SW Interceptor] Firebase SW isteği yakalandı. Yönlendiriliyor...');
-          url = '/WP_Sayim/firebase-messaging-sw.js';
+          const baseEl = document.querySelector('base');
+          let baseHref = baseEl ? baseEl.getAttribute('href') : '/';
+          if (!baseHref.endsWith('/')) baseHref += '/';
+          url = baseHref + 'firebase-messaging-sw.js';
           options = Object.assign({}, options, {
-            scope: '/WP_Sayim/firebase-cloud-messaging-push-scope',
+            scope: baseHref + 'firebase-cloud-messaging-push-scope',
             updateViaCache: 'none'
           });
         }
