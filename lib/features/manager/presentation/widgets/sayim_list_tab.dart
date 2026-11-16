@@ -6,7 +6,6 @@ import '../../../../core/services/language_service.dart';
 import '../../../../core/services/sayim_service.dart';
 import '../../../../core/services/davet_service.dart';
 import '../../../../core/models/davet.dart';
-import '../../../../core/utils/url_helper.dart';
 import '../pages/create_sayim_page.dart';
 import '../pages/sayim_detail_page.dart';
 
@@ -421,28 +420,6 @@ class _SayimListTabState extends State<SayimListTab> {
                       SizedBox(width: 4),
                       Icon(Icons.warning_amber_rounded,
                           size: 16, color: AppColors.warning),
-                    ],
-                    if (sayim.locationUrl != null && sayim.locationUrl!.trim().isNotEmpty) ...[
-                      const Spacer(),
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () => UrlHelper.openMapUrl(context, sayim.locationUrl!),
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            padding: const EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color: AppColors.accentLight.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(
-                              Icons.location_on,
-                              size: 15,
-                              color: AppColors.accentLight,
-                            ),
-                          ),
-                        ),
-                      ),
                     ],
                   ],
                 ),

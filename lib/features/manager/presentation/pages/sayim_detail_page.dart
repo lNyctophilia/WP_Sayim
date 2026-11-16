@@ -572,12 +572,6 @@ class _SayimDetailPageState extends State<SayimDetailPage>
               ),
             ),
             actions: [
-              if (currentSayim.locationUrl != null && currentSayim.locationUrl!.trim().isNotEmpty)
-                IconButton(
-                  icon: Icon(Icons.location_on, color: AppColors.accentLight, size: 22),
-                  tooltip: AppStrings.get('location', isTr ? 'tr' : 'en'),
-                  onPressed: () => UrlHelper.openMapUrl(context, currentSayim.locationUrl!),
-                ),
               if (widget.currentUser.hasManagerPermission || widget.currentUser.hasAdminPermission)
                 PopupMenuButton<String>(
                   icon: Icon(Icons.more_vert_rounded, color: AppColors.textPrimary, size: 22),
@@ -599,6 +593,11 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                             ),
                           ),
                         );
+                        break;
+                      case 'go_to_location':
+                        if (currentSayim.locationUrl != null && currentSayim.locationUrl!.trim().isNotEmpty) {
+                          UrlHelper.openMapUrl(context, currentSayim.locationUrl!);
+                        }
                         break;
                       case 'export_excel':
                         final acceptedDavets = davetler.where((d) => d.status == DavetStatus.accepted).toList();
@@ -634,6 +633,20 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                         ],
                       ),
                     ),
+                    if (currentSayim.locationUrl != null && currentSayim.locationUrl!.trim().isNotEmpty)
+                      PopupMenuItem<String>(
+                        value: 'go_to_location',
+                        child: Row(
+                          children: [
+                            Icon(Icons.location_on, color: AppColors.accentLight, size: 20),
+                            const SizedBox(width: 12),
+                            Text(
+                              AppStrings.get('go_to_location', isTr ? 'tr' : 'en'),
+                              style: TextStyle(color: AppColors.textPrimary),
+                            ),
+                          ],
+                        ),
+                      ),
                     PopupMenuItem<String>(
                       value: 'export_excel',
                       child: Row(

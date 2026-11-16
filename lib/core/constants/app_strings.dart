@@ -503,6 +503,7 @@ class AppStrings {
     'location_link': {'tr': 'Konum Linki (İsteğe bağlı)', 'en': 'Location Link (Optional)'},
     'location': {'tr': 'Konum', 'en': 'Location'},
     'open_in_maps': {'tr': 'Haritada Aç', 'en': 'Open in Maps'},
+    'go_to_location': {'tr': 'Konuma Git', 'en': 'Go to Location'},
 
     // Güncelleme
     'check_updates': {'tr': 'Güncelleştirmeleri Denetle', 'en': 'Check for Updates'},
