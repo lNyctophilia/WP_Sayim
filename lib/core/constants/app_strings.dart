@@ -1,4 +1,3 @@
-import 'package:daytrack/core/constants/app_strings.dart';
 /// Tüm UI string'leri — Türkçe ve İngilizce
 class AppStrings {
   AppStrings._();
@@ -501,6 +500,9 @@ class AppStrings {
     'route_error': {'tr': 'Rota hesaplanırken bir hata oluştu.', 'en': 'An error occurred while calculating route.'},
     'no_valid_location_for_routing': {'tr': 'Rota için geçerli başlangıç ve varış noktası seçilmeli.', 'en': 'Valid start and destination must be selected.'},
     'search': {'tr': 'Ara...', 'en': 'Search...'},
+    'location_link': {'tr': 'Konum Linki', 'en': 'Location Link'},
+    'location': {'tr': 'Konum', 'en': 'Location'},
+    'open_in_maps': {'tr': 'Haritada Aç', 'en': 'Open in Maps'},
 
     // Güncelleme
     'check_updates': {'tr': 'Güncelleştirmeleri Denetle', 'en': 'Check for Updates'},

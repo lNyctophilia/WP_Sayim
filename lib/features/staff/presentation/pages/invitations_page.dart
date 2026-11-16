@@ -6,6 +6,7 @@ import '../../../../core/models/app_user.dart';
 import '../../../../core/models/davet.dart';
 import '../../../../core/models/sayim.dart';
 import '../../../../core/services/davet_service.dart';
+import '../../../../core/utils/url_helper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class InvitationsPage extends StatefulWidget {
@@ -311,6 +312,28 @@ class _InvitationsPageState extends State<InvitationsPage> {
                       ),
                     ),
                   ),
+                  if (sayim.locationUrl != null && sayim.locationUrl!.trim().isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => UrlHelper.openMapUrl(context, sayim.locationUrl!),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: AppColors.accentLight.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.near_me_rounded,
+                            size: 16,
+                            color: AppColors.accentLight,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
               const SizedBox(height: 16),

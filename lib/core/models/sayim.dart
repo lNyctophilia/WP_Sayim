@@ -49,6 +49,7 @@ class Sayim {
   final DateTime createdAt;
   final String? startTime;
   final String city;
+  final String? locationUrl;
 
   Sayim({
     required this.id,
@@ -69,6 +70,7 @@ class Sayim {
     required this.createdAt,
     this.startTime,
     this.city = 'Denizli',
+    this.locationUrl,
   });
 
   Sayim copyWith({
@@ -90,6 +92,7 @@ class Sayim {
     DateTime? createdAt,
     String? startTime,
     String? city,
+    String? locationUrl,
   }) {
     return Sayim(
       id: id ?? this.id,
@@ -110,6 +113,7 @@ class Sayim {
       createdAt: createdAt ?? this.createdAt,
       startTime: startTime ?? this.startTime,
       city: city ?? this.city,
+      locationUrl: locationUrl ?? this.locationUrl,
     );
   }
 
@@ -147,6 +151,7 @@ class Sayim {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       startTime: data['startTime'] as String?,
       city: data['city'] as String? ?? 'Denizli',
+      locationUrl: data['locationUrl'] as String?,
     );
   }
 
@@ -217,6 +222,7 @@ class Sayim {
       'createdAt': Timestamp.fromDate(createdAt),
       'startTime': startTime,
       'city': city,
+      if (locationUrl != null && locationUrl!.isNotEmpty) 'locationUrl': locationUrl,
     };
   }
 

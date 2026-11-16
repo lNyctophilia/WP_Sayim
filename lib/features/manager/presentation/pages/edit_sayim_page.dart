@@ -41,6 +41,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
   final _noteController = TextEditingController();
   final _firmaAdiController = TextEditingController();
   final _toplanmaYeriController = TextEditingController();
+  final _locationUrlController = TextEditingController();
   final _maxKisiController = TextEditingController(text: '20');
   final _maxYoneticiController = TextEditingController(text: '2');
   DateTime _selectedDate = DateTime.now();
@@ -62,6 +63,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
     _noteController.text = widget.sayim.note;
     _firmaAdiController.text = widget.sayim.firmaAdi;
     _toplanmaYeriController.text = widget.sayim.toplanmaYeri;
+    _locationUrlController.text = widget.sayim.locationUrl ?? '';
     _maxKisiController.text = widget.sayim.maxKisi.toString();
     _maxYoneticiController.text = widget.sayim.maxYonetici.toString();
     _selectedDate = widget.sayim.date;
@@ -83,6 +85,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
     _noteController.dispose();
     _firmaAdiController.dispose();
     _toplanmaYeriController.dispose();
+    _locationUrlController.dispose();
     _maxKisiController.dispose();
     _maxYoneticiController.dispose();
     super.dispose();
@@ -292,6 +295,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
         invitedUserIds: _selectedUsers.map((e) => e.user.id).toList(),
         sehirTipi: _sehirTipi,
         globalMultiplier: _globalMultiplier,
+        locationUrl: _locationUrlController.text.trim().isEmpty ? '' : _locationUrlController.text.trim(),
       );
 
       await _sayimService.updateSayim(updatedSayim);
@@ -477,6 +481,25 @@ class _EditSayimPageState extends State<EditSayimPage> {
                       validator: (val) => val == null || val.trim().isEmpty
                           ? (AppStrings.get('cannot_be_empty', isTr ? 'tr' : 'en'))
                           : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _locationUrlController,
+                      style: TextStyle(color: AppColors.textPrimary),
+                      keyboardType: TextInputType.url,
+                      decoration: InputDecoration(
+                        labelText: AppStrings.get('location_link', isTr ? 'tr' : 'en'),
+                        hintText: 'https://maps.app.goo.gl/...',
+                        hintStyle: TextStyle(color: AppColors.textHint.withValues(alpha: 0.5)),
+                        labelStyle: TextStyle(color: AppColors.textHint),
+                        filled: true,
+                        fillColor: AppColors.surface,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        prefixIcon: Icon(Icons.place_outlined, color: AppColors.textSecondary),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Row(

@@ -10,6 +10,7 @@ import '../../../../core/models/app_user.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/theme/theme_service.dart';
+import '../../../../core/utils/url_helper.dart';
 import '../../data/models/monthly_data.dart';
 import '../../data/models/work_day.dart';
 import '../../data/repositories/work_day_repository.dart';
@@ -378,6 +379,41 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                             ),
                                           ),
                                         ],
+                                        if (existing.locationUrl != null && existing.locationUrl!.trim().isNotEmpty) ...[
+                                          const SizedBox(width: 8),
+                                          Material(
+                                            color: Colors.transparent,
+                                            child: InkWell(
+                                              onTap: () => UrlHelper.openMapUrl(context, existing.locationUrl!),
+                                              borderRadius: BorderRadius.circular(8),
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                  vertical: 5,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.accentLight.withValues(alpha: 0.15),
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Icon(Icons.near_me_rounded, size: 13, color: AppColors.accentLight),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      AppStrings.get('location', widget.lang.currentLang),
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w600,
+                                                        color: AppColors.accentLight,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ],
                                     ),
                                   ),
@@ -693,7 +729,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildRecentNotes(MonthlyData data) {
-    final daysWithNotes = data.workDays.where((d) => d.displayNote.trim().isNotEmpty).toList();
+    final daysWithNotes = data.workDays.where((d) => d.displayNote.trim().isNotEmpty || (d.locationUrl != null && d.locationUrl!.trim().isNotEmpty)).toList();
     daysWithNotes.sort((a, b) => b.date.compareTo(a.date));
 
     final isTr = widget.lang.currentLang == 'tr';
@@ -783,15 +819,44 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       const SizedBox(height: 8),
                       Expanded(
-                        child: Text(
-                          day.displayNote.trim(),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textPrimary,
-                            height: 1.4,
-                          ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                day.displayNote.trim(),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textPrimary,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                            if (day.locationUrl != null && day.locationUrl!.trim().isNotEmpty) ...[
+                              const SizedBox(width: 8),
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () => UrlHelper.openMapUrl(context, day.locationUrl!),
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.accentLight.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(
+                                      Icons.near_me_rounded,
+                                      size: 15,
+                                      color: AppColors.accentLight,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                     ],
