@@ -729,7 +729,7 @@ class _UserCalendarPageState extends State<UserCalendarPage> with TickerProvider
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.location_on_rounded, size: 14, color: AppColors.accentLight),
+                Icon(Icons.location_on, size: 14, color: AppColors.accentLight),
                 const SizedBox(width: 4),
                 Text(
                   AppStrings.get('location', widget.lang.currentLang),
@@ -807,7 +807,7 @@ class _UserCalendarPageState extends State<UserCalendarPage> with TickerProvider
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              Icons.location_on_rounded,
+              Icons.location_on,
               size: 15,
               color: AppColors.accentLight,
             ),

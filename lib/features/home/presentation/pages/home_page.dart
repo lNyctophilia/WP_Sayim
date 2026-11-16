@@ -899,7 +899,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.location_on_rounded, size: 14, color: AppColors.accentLight),
+                Icon(Icons.location_on, size: 14, color: AppColors.accentLight),
                 const SizedBox(width: 4),
                 Text(
                   AppStrings.get('location', widget.lang.currentLang),
@@ -977,7 +977,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              Icons.location_on_rounded,
+              Icons.location_on,
               size: 15,
               color: AppColors.accentLight,
             ),

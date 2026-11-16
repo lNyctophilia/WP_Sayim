@@ -499,7 +499,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
                         ),
-                        prefixIcon: Icon(Icons.location_on_rounded, color: AppColors.textSecondary),
+                        prefixIcon: Icon(Icons.location_on, color: AppColors.textSecondary),
                         suffixIcon: _locationUrlController.text.isNotEmpty
                             ? IconButton(
                                 icon: Icon(Icons.clear_rounded, color: AppColors.textHint, size: 18),

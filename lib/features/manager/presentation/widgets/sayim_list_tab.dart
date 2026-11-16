@@ -436,7 +436,7 @@ class _SayimListTabState extends State<SayimListTab> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
-                              Icons.location_on_rounded,
+                              Icons.location_on,
                               size: 15,
                               color: AppColors.accentLight,
                             ),

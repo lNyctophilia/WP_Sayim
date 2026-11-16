@@ -12,7 +12,7 @@ set TIMESTAMP=%TIMESTAMP: =_%
 
 REM 1. Flutter Web Beta Build
 echo [1/4] Flutter Web (Beta) build aliniyor...
-call flutter build web --release --wasm --no-tree-shake-icons --base-href "/" --dart-define="BUILD_VERSION=%TIMESTAMP%" --dart-define="IS_BETA=true" --dart-define="CF_API_URL=https://wp-sayim-api-beta.nycgamedevs.workers.dev"
+call flutter build web --release --wasm --base-href "/" --dart-define="BUILD_VERSION=%TIMESTAMP%" --dart-define="IS_BETA=true" --dart-define="CF_API_URL=https://wp-sayim-api-beta.nycgamedevs.workers.dev"
 if errorlevel 1 (
     echo.
     echo HATA: Flutter Web beta build basarisiz!

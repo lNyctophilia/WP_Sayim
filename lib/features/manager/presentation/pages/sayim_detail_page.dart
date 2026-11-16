@@ -574,7 +574,7 @@ class _SayimDetailPageState extends State<SayimDetailPage>
             actions: [
               if (currentSayim.locationUrl != null && currentSayim.locationUrl!.trim().isNotEmpty)
                 IconButton(
-                  icon: Icon(Icons.location_on_rounded, color: AppColors.accentLight, size: 22),
+                  icon: Icon(Icons.location_on, color: AppColors.accentLight, size: 22),
                   tooltip: AppStrings.get('location', isTr ? 'tr' : 'en'),
                   onPressed: () => UrlHelper.openMapUrl(context, currentSayim.locationUrl!),
                 ),
