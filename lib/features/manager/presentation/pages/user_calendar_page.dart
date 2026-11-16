@@ -599,39 +599,39 @@ class _UserCalendarPageState extends State<UserCalendarPage> with TickerProvider
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.divider, width: 1),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Stack(
                     children: [
-                      Row(
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.sticky_note_2_rounded, size: 14, color: AppColors.accentLight),
-                          const SizedBox(width: 6),
-                          Text(
-                            dateStr,
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                          Row(
+                            children: [
+                              Icon(Icons.sticky_note_2_rounded, size: 14, color: AppColors.accentLight),
+                              const SizedBox(width: 6),
+                              Text(
+                                dateStr,
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                              ),
+                              if (day.payment > 0) ...[
+                                const Spacer(),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.success.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    '${day.payment.toInt()} ₺',
+                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.success),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
-                          if (day.payment > 0) ...[
-                            const Spacer(),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: AppColors.success.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '${day.payment.toInt()} ₺',
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.success),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Expanded(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Expanded(
+                          const SizedBox(height: 8),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 28.0),
                               child: Text(
                                 day.displayNote.trim(),
                                 maxLines: 2,
@@ -639,16 +639,20 @@ class _UserCalendarPageState extends State<UserCalendarPage> with TickerProvider
                                 style: TextStyle(fontSize: 13, color: AppColors.textPrimary, height: 1.4),
                               ),
                             ),
-                            _buildRecentNoteLocationButton(
-                              context,
-                              locationUrl: day.locationUrl,
-                              sayimId: day.sayimId,
-                              workDayDocId: day.sayimId != null
-                                  ? "${day.date.year}-${day.date.month.toString().padLeft(2, '0')}-${day.date.day.toString().padLeft(2, '0')}_${day.sayimId}"
-                                  : null,
-                              userId: widget.selectedUser.id,
-                            ),
-                          ],
+                          ),
+                        ],
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: _buildRecentNoteLocationButton(
+                          context,
+                          locationUrl: day.locationUrl,
+                          sayimId: day.sayimId,
+                          workDayDocId: day.sayimId != null
+                              ? "${day.date.year}-${day.date.month.toString().padLeft(2, '0')}-${day.date.day.toString().padLeft(2, '0')}_${day.sayimId}"
+                              : null,
+                          userId: widget.selectedUser.id,
                         ),
                       ),
                     ],
@@ -793,24 +797,21 @@ class _UserCalendarPageState extends State<UserCalendarPage> with TickerProvider
   }
 
   Widget _renderCardLocationIcon(BuildContext context, String url) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 8.0),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => UrlHelper.openMapUrl(context, url),
-          borderRadius: BorderRadius.circular(8),
-          child: Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: AppColors.accentLight.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.location_on,
-              size: 15,
-              color: AppColors.accentLight,
-            ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => UrlHelper.openMapUrl(context, url),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: AppColors.accentLight.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.location_on,
+            size: 14,
+            color: AppColors.accentLight,
           ),
         ),
       ),
