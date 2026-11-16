@@ -351,28 +351,6 @@ class _SayimListTabState extends State<SayimListTab> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    if (sayim.locationUrl != null && sayim.locationUrl!.trim().isNotEmpty) ...[
-                      const SizedBox(width: 8),
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () => UrlHelper.openMapUrl(context, sayim.locationUrl!),
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            padding: const EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color: AppColors.accentLight.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(
-                              Icons.location_on_rounded,
-                              size: 16,
-                              color: AppColors.accentLight,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -443,6 +421,28 @@ class _SayimListTabState extends State<SayimListTab> {
                       SizedBox(width: 4),
                       Icon(Icons.warning_amber_rounded,
                           size: 16, color: AppColors.warning),
+                    ],
+                    if (sayim.locationUrl != null && sayim.locationUrl!.trim().isNotEmpty) ...[
+                      const Spacer(),
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => UrlHelper.openMapUrl(context, sayim.locationUrl!),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: AppColors.accentLight.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.location_on_rounded,
+                              size: 15,
+                              color: AppColors.accentLight,
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ],
                 ),
