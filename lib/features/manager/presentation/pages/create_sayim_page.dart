@@ -421,6 +421,7 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
                       controller: _locationUrlController,
                       style: TextStyle(color: AppColors.textPrimary),
                       keyboardType: TextInputType.url,
+                      onChanged: (_) => setState(() {}),
                       decoration: InputDecoration(
                         labelText: AppStrings.get('location_link', isTr ? 'tr' : 'en'),
                         hintText: 'https://maps.app.goo.gl/...',
@@ -432,7 +433,13 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
                         ),
-                        prefixIcon: Icon(Icons.place_outlined, color: AppColors.textSecondary),
+                        prefixIcon: Icon(Icons.location_on_rounded, color: AppColors.textSecondary),
+                        suffixIcon: _locationUrlController.text.isNotEmpty
+                            ? IconButton(
+                                icon: Icon(Icons.clear_rounded, color: AppColors.textHint, size: 18),
+                                onPressed: () => setState(() => _locationUrlController.clear()),
+                              )
+                            : null,
                       ),
                     ),
                     const SizedBox(height: 12),

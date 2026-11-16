@@ -1,5 +1,6 @@
 import 'package:daytrack/core/constants/app_strings.dart';
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/scheduler.dart';
@@ -379,41 +380,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                             ),
                                           ),
                                         ],
-                                        if (existing.locationUrl != null && existing.locationUrl!.trim().isNotEmpty) ...[
-                                          const SizedBox(width: 8),
-                                          Material(
-                                            color: Colors.transparent,
-                                            child: InkWell(
-                                              onTap: () => UrlHelper.openMapUrl(context, existing.locationUrl!),
-                                              borderRadius: BorderRadius.circular(8),
-                                              child: Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                  horizontal: 8,
-                                                  vertical: 5,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: AppColors.accentLight.withValues(alpha: 0.15),
-                                                  borderRadius: BorderRadius.circular(8),
-                                                ),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    Icon(Icons.near_me_rounded, size: 13, color: AppColors.accentLight),
-                                                    const SizedBox(width: 4),
-                                                    Text(
-                                                      AppStrings.get('location', widget.lang.currentLang),
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.w600,
-                                                        color: AppColors.accentLight,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                        _buildLocationBadge(
+                                          context,
+                                          locationUrl: existing.locationUrl,
+                                          sayimId: existing.sayimId,
+                                          workDayDocId: existing.sayimId != null
+                                              ? "${existing.date.year}-${existing.date.month.toString().padLeft(2, '0')}-${existing.date.day.toString().padLeft(2, '0')}_${existing.sayimId}"
+                                              : null,
+                                          userId: widget.currentUser?.id,
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -834,28 +809,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 ),
                               ),
                             ),
-                            if (day.locationUrl != null && day.locationUrl!.trim().isNotEmpty) ...[
-                              const SizedBox(width: 8),
-                              Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () => UrlHelper.openMapUrl(context, day.locationUrl!),
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.accentLight.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Icon(
-                                      Icons.near_me_rounded,
-                                      size: 15,
-                                      color: AppColors.accentLight,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                            _buildRecentNoteLocationButton(
+                              context,
+                              locationUrl: day.locationUrl,
+                              sayimId: day.sayimId,
+                              workDayDocId: day.sayimId != null
+                                  ? "${day.date.year}-${day.date.month.toString().padLeft(2, '0')}-${day.date.day.toString().padLeft(2, '0')}_${day.sayimId}"
+                                  : null,
+                              userId: widget.currentUser?.id,
+                            ),
                           ],
                         ),
                       ),
@@ -867,6 +829,161 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         const SizedBox(height: 20),
       ],
+    );
+  }
+
+  static final Map<String, String?> _sayimLocationCache = {};
+
+  Widget _buildLocationBadge(
+    BuildContext context, {
+    required String? locationUrl,
+    String? sayimId,
+    String? workDayDocId,
+    String? userId,
+  }) {
+    if (locationUrl != null && locationUrl.trim().isNotEmpty) {
+      return _renderLocationBadge(context, locationUrl.trim());
+    }
+    if (sayimId != null && sayimId.isNotEmpty) {
+      if (_sayimLocationCache.containsKey(sayimId)) {
+        final cached = _sayimLocationCache[sayimId];
+        if (cached != null && cached.trim().isNotEmpty) {
+          return _renderLocationBadge(context, cached.trim());
+        }
+        return const SizedBox.shrink();
+      }
+      return FutureBuilder<DocumentSnapshot>(
+        future: FirebaseFirestore.instance.collection('sayimlar').doc(sayimId).get(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData || snapshot.data?.data() == null) {
+            return const SizedBox.shrink();
+          }
+          final data = snapshot.data!.data() as Map<String, dynamic>;
+          final url = data['locationUrl'] as String?;
+          _sayimLocationCache[sayimId] = url;
+          if (url != null && url.trim().isNotEmpty) {
+            if (userId != null && workDayDocId != null) {
+              FirebaseFirestore.instance
+                  .collection('personel_takvimi')
+                  .doc(userId)
+                  .collection('gunler')
+                  .doc(workDayDocId)
+                  .set({'locationUrl': url.trim()}, SetOptions(merge: true));
+            }
+            return _renderLocationBadge(context, url.trim());
+          }
+          return const SizedBox.shrink();
+        },
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _renderLocationBadge(BuildContext context, String url) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 8.0),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => UrlHelper.openMapUrl(context, url),
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 5,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.accentLight.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.location_on_rounded, size: 14, color: AppColors.accentLight),
+                const SizedBox(width: 4),
+                Text(
+                  AppStrings.get('location', widget.lang.currentLang),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.accentLight,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentNoteLocationButton(
+    BuildContext context, {
+    required String? locationUrl,
+    String? sayimId,
+    String? workDayDocId,
+    String? userId,
+  }) {
+    if (locationUrl != null && locationUrl.trim().isNotEmpty) {
+      return _renderCardLocationIcon(context, locationUrl.trim());
+    }
+    if (sayimId != null && sayimId.isNotEmpty) {
+      if (_sayimLocationCache.containsKey(sayimId)) {
+        final cached = _sayimLocationCache[sayimId];
+        if (cached != null && cached.trim().isNotEmpty) {
+          return _renderCardLocationIcon(context, cached.trim());
+        }
+        return const SizedBox.shrink();
+      }
+      return FutureBuilder<DocumentSnapshot>(
+        future: FirebaseFirestore.instance.collection('sayimlar').doc(sayimId).get(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData || snapshot.data?.data() == null) {
+            return const SizedBox.shrink();
+          }
+          final data = snapshot.data!.data() as Map<String, dynamic>;
+          final url = data['locationUrl'] as String?;
+          _sayimLocationCache[sayimId] = url;
+          if (url != null && url.trim().isNotEmpty) {
+            if (userId != null && workDayDocId != null) {
+              FirebaseFirestore.instance
+                  .collection('personel_takvimi')
+                  .doc(userId)
+                  .collection('gunler')
+                  .doc(workDayDocId)
+                  .set({'locationUrl': url.trim()}, SetOptions(merge: true));
+            }
+            return _renderCardLocationIcon(context, url.trim());
+          }
+          return const SizedBox.shrink();
+        },
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _renderCardLocationIcon(BuildContext context, String url) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 8.0),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => UrlHelper.openMapUrl(context, url),
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: AppColors.accentLight.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.location_on_rounded,
+              size: 15,
+              color: AppColors.accentLight,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

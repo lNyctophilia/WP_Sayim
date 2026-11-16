@@ -12,7 +12,7 @@ set TIMESTAMP=%TIMESTAMP: =_%
 
 REM 1. Flutter Web Beta Build
 echo [1/4] Flutter Web (Beta) build aliniyor...
-call flutter build web --release --wasm --base-href "/" --dart-define="BUILD_VERSION=%TIMESTAMP%" --dart-define="IS_BETA=true" --dart-define="CF_API_URL=https://wp-sayim-api-beta.nycgamedevs.workers.dev"
+call flutter build web --release --base-href "/" --dart-define="BUILD_VERSION=%TIMESTAMP%" --dart-define="IS_BETA=true" --dart-define="CF_API_URL=https://wp-sayim-api-beta.nycgamedevs.workers.dev"
 if errorlevel 1 (
     echo.
     echo HATA: Flutter Web beta build basarisiz!
@@ -30,7 +30,7 @@ if exist web\manifest_beta.json (
 )
 
 REM 1.7. Cache Busting (flutter_bootstrap.js icindeki dosyalara timestamp ekle)
-powershell -Command "(Get-Content build\web\flutter_bootstrap.js).Replace('\"main.dart.js\"', '\"main.dart.js?v=%TIMESTAMP%\"').Replace('\"main.dart.wasm\"', '\"main.dart.wasm?v=%TIMESTAMP%\"').Replace('\"main.dart.mjs\"', '\"main.dart.mjs?v=%TIMESTAMP%\"') | Set-Content build\web\flutter_bootstrap.js"
+powershell -Command "(Get-Content build\web\flutter_bootstrap.js).Replace('\"main.dart.js\"', '\"main.dart.js?v=%TIMESTAMP%\"') | Set-Content build\web\flutter_bootstrap.js"
 
 REM 2. Firebase Hosting'e Yukle (Google CDN - Turkiye'de 100% erisilebilir)
 echo [2/4] Firebase Hosting'e yukleniyor (wp-sayim-beta.web.app)...

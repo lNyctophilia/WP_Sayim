@@ -14,6 +14,7 @@ import '../../../../core/services/davet_service.dart';
 import '../../../../core/services/sayim_service.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../../core/utils/url_helper.dart';
 import 'add_person_to_sayim_page.dart';
 import 'edit_sayim_page.dart';
 
@@ -571,6 +572,12 @@ class _SayimDetailPageState extends State<SayimDetailPage>
               ),
             ),
             actions: [
+              if (currentSayim.locationUrl != null && currentSayim.locationUrl!.trim().isNotEmpty)
+                IconButton(
+                  icon: Icon(Icons.location_on_rounded, color: AppColors.accentLight, size: 22),
+                  tooltip: AppStrings.get('location', isTr ? 'tr' : 'en'),
+                  onPressed: () => UrlHelper.openMapUrl(context, currentSayim.locationUrl!),
+                ),
               if (widget.currentUser.hasManagerPermission || widget.currentUser.hasAdminPermission)
                 PopupMenuButton<String>(
                   icon: Icon(Icons.more_vert_rounded, color: AppColors.textPrimary, size: 22),

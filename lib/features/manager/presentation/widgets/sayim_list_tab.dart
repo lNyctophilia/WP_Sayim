@@ -6,6 +6,7 @@ import '../../../../core/services/language_service.dart';
 import '../../../../core/services/sayim_service.dart';
 import '../../../../core/services/davet_service.dart';
 import '../../../../core/models/davet.dart';
+import '../../../../core/utils/url_helper.dart';
 import '../pages/create_sayim_page.dart';
 import '../pages/sayim_detail_page.dart';
 
@@ -158,7 +159,7 @@ class _SayimListTabState extends State<SayimListTab> {
                 child: Padding(
                   padding: EdgeInsets.all(16.0),
                   child: Text(
-                    widget.lang.tr('error_occurred') + '${snapshot.error}',
+                    '${widget.lang.tr('error_occurred')}${snapshot.error}',
                     style: TextStyle(color: AppColors.danger),
                     textAlign: TextAlign.center,
                   ),
@@ -350,6 +351,29 @@ class _SayimListTabState extends State<SayimListTab> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    if (sayim.locationUrl != null && sayim.locationUrl!.trim().isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => UrlHelper.openMapUrl(context, sayim.locationUrl!),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: AppColors.accentLight.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.location_on_rounded,
+                              size: 16,
+                              color: AppColors.accentLight,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),

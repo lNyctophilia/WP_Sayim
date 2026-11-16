@@ -500,7 +500,7 @@ class AppStrings {
     'route_error': {'tr': 'Rota hesaplanırken bir hata oluştu.', 'en': 'An error occurred while calculating route.'},
     'no_valid_location_for_routing': {'tr': 'Rota için geçerli başlangıç ve varış noktası seçilmeli.', 'en': 'Valid start and destination must be selected.'},
     'search': {'tr': 'Ara...', 'en': 'Search...'},
-    'location_link': {'tr': 'Konum Linki', 'en': 'Location Link'},
+    'location_link': {'tr': 'Konum Linki (İsteğe bağlı)', 'en': 'Location Link (Optional)'},
     'location': {'tr': 'Konum', 'en': 'Location'},
     'open_in_maps': {'tr': 'Haritada Aç', 'en': 'Open in Maps'},
 
