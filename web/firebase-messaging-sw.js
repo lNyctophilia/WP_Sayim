@@ -143,6 +143,40 @@ function notifyClientsToRefreshToken() {
   });
 }
 
+// ─── ANDROID CHROME: PERIODIC BACKGROUND TOKEN REFRESH ────────────────────
+// Android Chrome'da pushsubscriptionchange event'i token expire'da tetiklenmez.
+// Periodic Background Sync API, uygulama kapalıyken Chrome'u uyandırarak
+// iOS'takine benzer proaktif token yenileme sağlar.
+self.addEventListener('periodicsync', function(event) {
+  if (event.tag === 'fcm-token-refresh') {
+    console.log('[firebase-messaging-sw.js] Periodic token refresh tetiklendi.');
+    event.waitUntil(handlePeriodicTokenRefresh());
+  }
+});
+
+async function handlePeriodicTokenRefresh() {
+  var windowClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+
+  if (windowClients.length > 0) {
+    // Uygulama açık → doğrudan token yenileme sinyali gönder
+    windowClients.forEach(function(client) {
+      client.postMessage({ type: 'TOKEN_REFRESH_NEEDED', reason: 'PERIODIC_SYNC' });
+    });
+    console.log('[firebase-messaging-sw.js] Periodic sync: Uygulama açık, postMessage gönderildi.');
+  } else {
+    // Uygulama kapalı → Cache API'ye flag yaz, uygulama açılınca okusun
+    try {
+      var cache = await caches.open('wp-sayim-sync-flags');
+      await cache.put('/periodic-token-refresh-needed', new Response('true', {
+        headers: { 'Content-Type': 'text/plain' }
+      }));
+      console.log('[firebase-messaging-sw.js] Periodic sync: Uygulama kapalı, Cache flag yazıldı.');
+    } catch (cacheErr) {
+      console.error('[firebase-messaging-sw.js] Cache flag yazılamadı:', cacheErr);
+    }
+  }
+}
+
 // Bildirime tıklanınca uygulamayı aç
 self.addEventListener('notificationclick', function(event) {
   console.log('[firebase-messaging-sw.js] Bildirime tıklandı:', event);

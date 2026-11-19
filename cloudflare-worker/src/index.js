@@ -141,9 +141,11 @@ async function sendNotificationAndLog(db, fcm, { userId, title, body, type, rela
       return;
     }
 
-    const defaultLink = env?.APP_BASE_URL || (env?.IS_BETA === 'true'
-      ? 'https://wp-sayim-beta.web.app/?open_notifications=true'
-      : 'https://lnyctophilia.github.io/WP_Sayim/?open_notifications=true');
+    const appBaseUrl = env?.IS_BETA === 'true'
+      ? 'https://wp-sayim-beta.web.app/'
+      : 'https://lnyctophilia.github.io/WP_Sayim/';
+
+    const defaultLink = `${appBaseUrl}?open_notifications=true`;
 
     const fcmToken = userDoc.fcmToken;
     const hasEmail = userDoc.email && userDoc.email.trim() !== '';
@@ -177,6 +179,9 @@ async function sendNotificationAndLog(db, fcm, { userId, title, body, type, rela
           notification: {
             title,
             body,
+            // Mutlak URL — göreli path CF Worker domain'ine işaret eder, app domain'ine değil
+            icon: `${appBaseUrl}icons/Icon-192.png`,
+            badge: `${appBaseUrl}icons/Icon-192.png`,
             requireInteraction: true,
             vibrate: [200, 100, 200],
           },
@@ -197,7 +202,19 @@ async function sendNotificationAndLog(db, fcm, { userId, title, body, type, rela
         await fcm.send(message);
         await resetFcmTokenFailCount(db, userId, userDoc, env);
       } catch (e) {
-        console.error(`Error sending push notification (userId: ${userId}, code: ${e.code}, retries: ${e.retries ?? 0}):`, e);
+        const currentFailCount = (userDoc.fcmTokenFailCount || 0) + 1;
+        const softCodes = [
+          'messaging/registration-token-not-registered',
+          'messaging/third-party-auth-error',
+          'messaging/mismatched-credential',
+        ];
+        if (currentFailCount >= 3 || !softCodes.includes(e.code)) {
+          // 3. hata veya kesin geçersiz token → ERROR (gerçek alarm)
+          console.error(`[FCM] Token siliniyor. userId: ${userId}, code: ${e.code}, sayac: ${currentFailCount}, retries: ${e.retries ?? 0}`);
+        } else {
+          // 1. veya 2. soft-fail → sadece WARN (beklenen, alarm verme)
+          console.warn(`[FCM] Soft-fail ${currentFailCount}/3. userId: ${userId}, code: ${e.code}`);
+        }
         await handleFcmTokenError(db, userId, userDoc, e, env);
       }
     }
