@@ -12,6 +12,8 @@ import '../../../../core/services/language_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/theme/theme_service.dart';
 import '../../../../core/utils/url_helper.dart';
+import '../../../../core/utils/bottom_toast.dart';
+import '../../../../core/utils/date_utils.dart';
 import '../../data/models/monthly_data.dart';
 import '../../data/models/work_day.dart';
 import '../../data/repositories/work_day_repository.dart';
@@ -388,6 +390,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                               ? "${existing.date.year}-${existing.date.month.toString().padLeft(2, '0')}-${existing.date.day.toString().padLeft(2, '0')}_${existing.sayimId}"
                                               : null,
                                           userId: widget.currentUser?.id,
+                                          workDay: existing,
                                         ),
                                       ],
                                     ),
@@ -823,6 +826,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               ? "${day.date.year}-${day.date.month.toString().padLeft(2, '0')}-${day.date.day.toString().padLeft(2, '0')}_${day.sayimId}"
                               : null,
                           userId: widget.currentUser?.id,
+                          workDay: day,
                         ),
                       ),
                     ],
@@ -836,7 +840,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  static final Map<String, String?> _sayimLocationCache = {};
+  static final Map<String, Map<String, dynamic>> _sayimDataCache = {};
 
   Widget _buildLocationBadge(
     BuildContext context, {
@@ -844,18 +848,44 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     String? sayimId,
     String? workDayDocId,
     String? userId,
+    WorkDay? workDay,
   }) {
-    if (locationUrl != null && locationUrl.trim().isNotEmpty) {
+    if (workDay != null) {
+      final isUnlocked = workDay.isLocationVisible;
+      final startTime = workDay.sayimStartTime ?? workDay.grupSaati ?? '';
+      if (locationUrl != null && locationUrl.trim().isNotEmpty) {
+        if (isUnlocked) {
+          return _renderLocationBadge(context, locationUrl.trim());
+        } else {
+          return _renderLockedLocationBadge(context, startTime);
+        }
+      }
+    } else if (locationUrl != null && locationUrl.trim().isNotEmpty) {
       return _renderLocationBadge(context, locationUrl.trim());
     }
+
     if (sayimId != null && sayimId.isNotEmpty) {
-      if (_sayimLocationCache.containsKey(sayimId)) {
-        final cached = _sayimLocationCache[sayimId];
-        if (cached != null && cached.trim().isNotEmpty) {
-          return _renderLocationBadge(context, cached.trim());
+      if (_sayimDataCache.containsKey(sayimId)) {
+        final cached = _sayimDataCache[sayimId];
+        final url = cached?['locationUrl'] as String?;
+        if (url != null && url.trim().isNotEmpty) {
+          final isCityCenter = (cached?['sehirTipi'] as String? ?? 'ici') == 'ici';
+          final startTime = cached?['startTime'] as String? ?? '';
+          final date = (cached?['date'] as DateTime?) ?? DateTime.now();
+          final isUnlocked = AppDateUtils.canViewSayimLocation(
+            isCityCenter: isCityCenter,
+            date: date,
+            startTime: startTime,
+          );
+          if (isUnlocked) {
+            return _renderLocationBadge(context, url.trim());
+          } else {
+            return _renderLockedLocationBadge(context, startTime);
+          }
         }
         return const SizedBox.shrink();
       }
+
       return FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance.collection('sayimlar').doc(sayimId).get(),
         builder: (context, snapshot) {
@@ -864,7 +894,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           }
           final data = snapshot.data!.data() as Map<String, dynamic>;
           final url = data['locationUrl'] as String?;
-          _sayimLocationCache[sayimId] = url;
+          final sehirTipi = data['sehirTipi'] as String? ?? 'ici';
+          final startTime = data['startTime'] as String? ?? '';
+          final date = (data['date'] as Timestamp?)?.toDate() ?? DateTime.now();
+
+          _sayimDataCache[sayimId] = {
+            'locationUrl': url,
+            'sehirTipi': sehirTipi,
+            'startTime': startTime,
+            'date': date,
+          };
+
           if (url != null && url.trim().isNotEmpty) {
             if (userId != null && workDayDocId != null) {
               FirebaseFirestore.instance
@@ -874,7 +914,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   .doc(workDayDocId)
                   .set({'locationUrl': url.trim()}, SetOptions(merge: true));
             }
-            return _renderLocationBadge(context, url.trim());
+            final isCityCenter = sehirTipi == 'ici';
+            final isUnlocked = AppDateUtils.canViewSayimLocation(
+              isCityCenter: isCityCenter,
+              date: date,
+              startTime: startTime,
+            );
+            if (isUnlocked) {
+              return _renderLocationBadge(context, url.trim());
+            } else {
+              return _renderLockedLocationBadge(context, startTime);
+            }
           }
           return const SizedBox.shrink();
         },
@@ -921,24 +971,97 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
+  Widget _renderLockedLocationBadge(BuildContext context, String startTime) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 8.0),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            final isTr = widget.lang.currentLang == 'tr';
+            final timeStr = startTime.isNotEmpty ? ' ($startTime)' : '';
+            BottomToast.show(
+              context,
+              isTr
+                  ? 'Şehir dışı konumu sayım başlangıç saatinde$timeStr açılacaktır.'
+                  : 'Intercity location will unlock at count start time$timeStr.',
+            );
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 5,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.amber.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.lock_clock_rounded, size: 14, color: Colors.amber),
+                const SizedBox(width: 4),
+                Text(
+                  AppStrings.get('location_locked', widget.lang.currentLang),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.amber,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildRecentNoteLocationButton(
     BuildContext context, {
     required String? locationUrl,
     String? sayimId,
     String? workDayDocId,
     String? userId,
+    WorkDay? workDay,
   }) {
-    if (locationUrl != null && locationUrl.trim().isNotEmpty) {
+    if (workDay != null) {
+      final isUnlocked = workDay.isLocationVisible;
+      final startTime = workDay.sayimStartTime ?? workDay.grupSaati ?? '';
+      if (locationUrl != null && locationUrl.trim().isNotEmpty) {
+        if (isUnlocked) {
+          return _renderCardLocationIcon(context, locationUrl.trim());
+        } else {
+          return _renderLockedCardLocationIcon(context, startTime);
+        }
+      }
+    } else if (locationUrl != null && locationUrl.trim().isNotEmpty) {
       return _renderCardLocationIcon(context, locationUrl.trim());
     }
+
     if (sayimId != null && sayimId.isNotEmpty) {
-      if (_sayimLocationCache.containsKey(sayimId)) {
-        final cached = _sayimLocationCache[sayimId];
-        if (cached != null && cached.trim().isNotEmpty) {
-          return _renderCardLocationIcon(context, cached.trim());
+      if (_sayimDataCache.containsKey(sayimId)) {
+        final cached = _sayimDataCache[sayimId];
+        final url = cached?['locationUrl'] as String?;
+        if (url != null && url.trim().isNotEmpty) {
+          final isCityCenter = (cached?['sehirTipi'] as String? ?? 'ici') == 'ici';
+          final startTime = cached?['startTime'] as String? ?? '';
+          final date = (cached?['date'] as DateTime?) ?? DateTime.now();
+          final isUnlocked = AppDateUtils.canViewSayimLocation(
+            isCityCenter: isCityCenter,
+            date: date,
+            startTime: startTime,
+          );
+          if (isUnlocked) {
+            return _renderCardLocationIcon(context, url.trim());
+          } else {
+            return _renderLockedCardLocationIcon(context, startTime);
+          }
         }
         return const SizedBox.shrink();
       }
+
       return FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance.collection('sayimlar').doc(sayimId).get(),
         builder: (context, snapshot) {
@@ -947,7 +1070,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           }
           final data = snapshot.data!.data() as Map<String, dynamic>;
           final url = data['locationUrl'] as String?;
-          _sayimLocationCache[sayimId] = url;
+          final sehirTipi = data['sehirTipi'] as String? ?? 'ici';
+          final startTime = data['startTime'] as String? ?? '';
+          final date = (data['date'] as Timestamp?)?.toDate() ?? DateTime.now();
+
+          _sayimDataCache[sayimId] = {
+            'locationUrl': url,
+            'sehirTipi': sehirTipi,
+            'startTime': startTime,
+            'date': date,
+          };
+
           if (url != null && url.trim().isNotEmpty) {
             if (userId != null && workDayDocId != null) {
               FirebaseFirestore.instance
@@ -957,7 +1090,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   .doc(workDayDocId)
                   .set({'locationUrl': url.trim()}, SetOptions(merge: true));
             }
-            return _renderCardLocationIcon(context, url.trim());
+            final isCityCenter = sehirTipi == 'ici';
+            final isUnlocked = AppDateUtils.canViewSayimLocation(
+              isCityCenter: isCityCenter,
+              date: date,
+              startTime: startTime,
+            );
+            if (isUnlocked) {
+              return _renderCardLocationIcon(context, url.trim());
+            } else {
+              return _renderLockedCardLocationIcon(context, startTime);
+            }
           }
           return const SizedBox.shrink();
         },
@@ -982,6 +1125,37 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             Icons.location_on,
             size: 14,
             color: AppColors.accentLight,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _renderLockedCardLocationIcon(BuildContext context, String startTime) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          final isTr = widget.lang.currentLang == 'tr';
+          final timeStr = startTime.isNotEmpty ? ' ($startTime)' : '';
+          BottomToast.show(
+            context,
+            isTr
+                ? 'Şehir dışı konumu sayım başlangıç saatinde$timeStr açılacaktır.'
+                : 'Intercity location will unlock at count start time$timeStr.',
+          );
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: Colors.amber.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(
+            Icons.lock_clock_rounded,
+            size: 14,
+            color: Colors.amber,
           ),
         ),
       ),

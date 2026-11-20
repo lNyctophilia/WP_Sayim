@@ -29,4 +29,30 @@ class AppDateUtils {
   static bool isToday(DateTime date) {
     return isSameDay(date, DateTime.now());
   }
+
+  /// Tarih ile saat dizesini ("18:00") birleştirerek tam DateTime oluşturur
+  static DateTime combineDateAndTime(DateTime date, String? timeStr) {
+    if (timeStr != null && timeStr.trim().isNotEmpty) {
+      try {
+        final parts = timeStr.trim().split(':');
+        final hour = int.parse(parts[0]);
+        final minute = int.parse(parts[1]);
+        return DateTime(date.year, date.month, date.day, hour, minute);
+      } catch (_) {}
+    }
+    return DateTime(date.year, date.month, date.day, 0, 0);
+  }
+
+  /// Şehir dışı konum görünürlük kontrolü:
+  /// Şehir içiyse her zaman true, şehir dışıysa sayım başlangıç saati geçmişse true
+  static bool canViewSayimLocation({
+    required bool isCityCenter,
+    required DateTime date,
+    String? startTime,
+  }) {
+    if (isCityCenter) return true;
+    final startDateTime = combineDateAndTime(date, startTime);
+    final now = DateTime.now();
+    return now.isAfter(startDateTime) || now.isAtSameMomentAs(startDateTime);
+  }
 }

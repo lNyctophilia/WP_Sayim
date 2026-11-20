@@ -505,6 +505,24 @@ class AppStrings {
     'open_in_maps': {'tr': 'Haritada Aç', 'en': 'Open in Maps'},
     'go_to_location': {'tr': 'Konuma Git', 'en': 'Go to Location'},
 
+    // Hazır Konumlar
+    'preset_locations': {'tr': 'Hazır Konumlar', 'en': 'Preset Locations'},
+    'preset_locations_desc': {'tr': 'AVM ve sık kullanılan mekan konumları', 'en': 'Mall and frequent place locations'},
+    'add_preset_location': {'tr': 'Hazır Konum Ekle', 'en': 'Add Preset Location'},
+    'edit_preset_location': {'tr': 'Konumu Düzenle', 'en': 'Edit Location'},
+    'delete_preset_location': {'tr': 'Konumu Sil', 'en': 'Delete Location'},
+    'delete_preset_location_confirm': {'tr': 'Bu hazır konumu silmek istediğinizden emin misiniz?', 'en': 'Are you sure you want to delete this preset location?'},
+    'location_name': {'tr': 'Mekan / AVM Adı', 'en': 'Venue / Mall Name'},
+    'location_city': {'tr': 'Şehir', 'en': 'City'},
+    'location_description': {'tr': 'Açıklama (İsteğe bağlı)', 'en': 'Description (Optional)'},
+    'location_url': {'tr': 'Harita / Konum Linki', 'en': 'Map / Location Link'},
+    'select_from_preset_locations': {'tr': 'Hazır Konumlardan Seç', 'en': 'Select from Preset Locations'},
+    'search_preset_location': {'tr': 'Konum veya AVM ara...', 'en': 'Search venue or mall...'},
+    'no_preset_locations': {'tr': 'Henüz hazır konum bulunmuyor.', 'en': 'No preset locations yet.'},
+    'location_opens_at_start': {'tr': 'Şehir dışı konumu sayım saatinde açılacaktır.', 'en': 'Intercity location will unlock at count start time.'},
+    'location_locked': {'tr': 'Saatinde Açılır', 'en': 'Unlocks at Start'},
+    'test_location_link': {'tr': 'Linki Test Et', 'en': 'Test Link'},
+
     // Güncelleme
     'check_updates': {'tr': 'Güncelleştirmeleri Denetle', 'en': 'Check for Updates'},
     'checking_updates': {'tr': 'Kontrol ediliyor...', 'en': 'Checking...'},

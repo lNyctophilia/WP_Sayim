@@ -5,7 +5,7 @@ class BottomToast {
   static OverlayEntry? _overlayEntry;
   static Timer? _timer;
 
-  static void show(BuildContext context, String title, String body) {
+  static void show(BuildContext context, String title, [String body = '']) {
     _overlayEntry?.remove();
     _overlayEntry = null;
     _timer?.cancel();
@@ -48,7 +48,7 @@ class BottomToast {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),

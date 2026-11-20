@@ -13,6 +13,7 @@ import '../../../../core/services/notification_service.dart';
 import '../widgets/grup_selector.dart';
 import '../widgets/staff_picker.dart';
 import '../../../../core/utils/string_utils.dart';
+import '../../../../core/widgets/preset_location_picker_sheet.dart';
 
 class CreateSayimPage extends StatefulWidget {
   final AppUser currentUser;
@@ -178,6 +179,18 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
     if (picked != null) {
       setState(() {
         _startTime = picked;
+      });
+    }
+  }
+
+  Future<void> _pickPresetLocation() async {
+    final loc = await showPresetLocationPicker(context, lang: widget.lang);
+    if (loc != null) {
+      setState(() {
+        _locationUrlController.text = loc.url;
+        if (_toplanmaYeriController.text.trim().isEmpty && loc.name.isNotEmpty) {
+          _toplanmaYeriController.text = loc.name;
+        }
       });
     }
   }
@@ -434,12 +447,22 @@ class _CreateSayimPageState extends State<CreateSayimPage> {
                           borderSide: BorderSide.none,
                         ),
                         prefixIcon: Icon(Icons.location_on, color: AppColors.textSecondary),
-                        suffixIcon: _locationUrlController.text.isNotEmpty
-                            ? IconButton(
+                        suffixIcon: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_locationUrlController.text.isNotEmpty)
+                              IconButton(
                                 icon: Icon(Icons.clear_rounded, color: AppColors.textHint, size: 18),
                                 onPressed: () => setState(() => _locationUrlController.clear()),
-                              )
-                            : null,
+                                tooltip: isTr ? 'Temizle' : 'Clear',
+                              ),
+                            IconButton(
+                              icon: Icon(Icons.arrow_drop_down_circle_outlined, color: AppColors.accentLight, size: 20),
+                              tooltip: AppStrings.get('select_from_preset_locations', isTr ? 'tr' : 'en'),
+                              onPressed: _pickPresetLocation,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),

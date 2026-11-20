@@ -116,4 +116,28 @@ class WorkDay {
       return note;
     }
   }
+
+  DateTime get startDateTime {
+    final timeToUse = (sayimStartTime != null && sayimStartTime!.trim().isNotEmpty)
+        ? sayimStartTime
+        : grupSaati;
+
+    if (timeToUse != null && timeToUse.trim().isNotEmpty) {
+      try {
+        final parts = timeToUse.split(':');
+        final hour = int.parse(parts[0]);
+        final minute = int.parse(parts[1]);
+        return DateTime(date.year, date.month, date.day, hour, minute);
+      } catch (_) {}
+    }
+    return DateTime(date.year, date.month, date.day, 0, 0);
+  }
+
+  /// Şehir içinde konumlar direkt görülebilir.
+  /// Şehir dışında ise paylaşılan konum ancak sayım başlangıç saatinden sonra görülebilir.
+  bool get isLocationVisible {
+    if (isCityCenter) return true;
+    final now = DateTime.now();
+    return now.isAfter(startDateTime) || now.isAtSameMomentAs(startDateTime);
+  }
 }

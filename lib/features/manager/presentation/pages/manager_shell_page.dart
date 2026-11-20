@@ -14,6 +14,7 @@ import 'edit_profiles_page.dart';
 import 'create_past_sayim_page.dart';
 import '../../../settings/presentation/pages/global_settings_page.dart';
 import 'deleted_users_calendar_page.dart';
+import 'preset_locations_page.dart';
 
 class ManagerShellPage extends StatefulWidget {
   final AppUser currentUser;
@@ -180,6 +181,17 @@ class ManagerShellPageState extends State<ManagerShellPage> {
       case 'deleted_calendars':
         if (_liveUser.hasAdminPermission) {
           return DeletedUsersCalendarPage(
+            currentUser: _liveUser,
+            storage: widget.storage,
+            lang: widget.lang,
+            themeService: widget.themeService,
+            isEmbedded: true,
+          );
+        }
+        break;
+      case 'locations':
+        if (_liveUser.hasAdminPermission) {
+          return PresetLocationsPage(
             currentUser: _liveUser,
             storage: widget.storage,
             lang: widget.lang,
