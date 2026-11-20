@@ -7,7 +7,6 @@ import '../../../../core/models/davet.dart';
 import '../../../../core/models/sayim.dart';
 import '../../../../core/services/davet_service.dart';
 import '../../../../core/utils/url_helper.dart';
-import '../../../../core/utils/bottom_toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class InvitationsPage extends StatefulWidget {
@@ -314,64 +313,39 @@ class _InvitationsPageState extends State<InvitationsPage> {
                     ),
                   ),
                   if (sayim.locationUrl != null && sayim.locationUrl!.trim().isNotEmpty) ...[
-                    const SizedBox(width: 8),
                     Builder(
                       builder: (context) {
                         final isCityCenter = davet.sehirIciDisi == SehirTipi.ici && sayim.sehirTipi == SehirTipi.ici;
                         final isUnlocked = isCityCenter || sayim.isLocationVisible;
 
-                        if (isUnlocked) {
-                          return Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () => UrlHelper.openMapUrl(context, sayim.locationUrl!),
-                              borderRadius: BorderRadius.circular(8),
-                              child: Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: AppColors.accentLight.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  Icons.near_me_rounded,
-                                  size: 16,
-                                  color: AppColors.accentLight,
-                                ),
-                              ),
-                            ),
-                          );
+                        if (!isUnlocked) {
+                          return const SizedBox.shrink();
                         }
 
-                        // Şehir dışı ve henüz başlangıç saati gelmemiş
-                        return Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              final isTr = widget.lang.currentLang == 'tr';
-                              final startTimeStr = (sayim.startTime != null && sayim.startTime!.isNotEmpty)
-                                  ? ' (${sayim.startTime})'
-                                  : '';
-                              BottomToast.show(
-                                context,
-                                isTr
-                                    ? 'Şehir dışı konumu sayım başlangıç saatinde$startTimeStr açılacaktır.'
-                                    : 'Intercity location will unlock at count start time$startTimeStr.',
-                              );
-                            },
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: Colors.amber.withValues(alpha: 0.15),
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(width: 8),
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => UrlHelper.openMapUrl(context, sayim.locationUrl!),
                                 borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.lock_clock_rounded,
-                                size: 16,
-                                color: Colors.amber,
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.accentLight.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    Icons.near_me_rounded,
+                                    size: 16,
+                                    color: AppColors.accentLight,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         );
                       },
                     ),

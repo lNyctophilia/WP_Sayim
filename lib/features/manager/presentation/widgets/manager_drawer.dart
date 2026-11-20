@@ -221,7 +221,6 @@ class ManagerDrawer extends StatelessWidget {
                   ListTile(
                     leading: Icon(Icons.place_rounded, color: AppColors.textSecondary),
                     title: Text(lang.tr('preset_locations'), style: TextStyle(color: AppColors.textPrimary)),
-                    subtitle: Text(lang.tr('preset_locations_desc'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
                     onTap: () {
                       Navigator.pop(context); // Close drawer
                       if (onPanelSelected != null) {

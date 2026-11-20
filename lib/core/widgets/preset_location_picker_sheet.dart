@@ -169,9 +169,8 @@ class _PresetLocationPickerSheetState extends State<_PresetLocationPickerSheet> 
                         ? allLocations
                         : allLocations.where((loc) {
                             final nameMatch = loc.name.toLowerCase().contains(_searchQuery);
-                            final cityMatch = loc.city.toLowerCase().contains(_searchQuery);
-                            final descMatch = loc.description.toLowerCase().contains(_searchQuery);
-                            return nameMatch || cityMatch || descMatch;
+                            final urlMatch = loc.url.toLowerCase().contains(_searchQuery);
+                            return nameMatch || urlMatch;
                           }).toList();
 
                     if (filtered.isEmpty) {
@@ -236,49 +235,15 @@ class _PresetLocationPickerSheetState extends State<_PresetLocationPickerSheet> 
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Row(
-                                          children: [
-                                            Flexible(
-                                              child: Text(
-                                                loc.name,
-                                                style: TextStyle(
-                                                  color: AppColors.textPrimary,
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 14,
-                                                ),
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                            if (loc.city.isNotEmpty) ...[
-                                              const SizedBox(width: 8),
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                                decoration: BoxDecoration(
-                                                  color: AppColors.card,
-                                                  borderRadius: BorderRadius.circular(6),
-                                                  border: Border.all(color: AppColors.divider, width: 0.8),
-                                                ),
-                                                child: Text(
-                                                  loc.city,
-                                                  style: TextStyle(
-                                                    color: AppColors.textSecondary,
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                        if (loc.description.isNotEmpty) ...[
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            loc.description,
-                                            style: TextStyle(color: AppColors.textHint, fontSize: 12),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
+                                        Text(
+                                          loc.name,
+                                          style: TextStyle(
+                                            color: AppColors.textPrimary,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 14,
                                           ),
-                                        ],
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                         const SizedBox(height: 2),
                                         Text(
                                           loc.url,

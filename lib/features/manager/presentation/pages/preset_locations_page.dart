@@ -47,8 +47,6 @@ class _PresetLocationsPageState extends State<PresetLocationsPage> {
     final isEditing = existing != null;
 
     final nameController = TextEditingController(text: existing?.name ?? '');
-    final cityController = TextEditingController(text: existing?.city ?? 'Denizli');
-    final descController = TextEditingController(text: existing?.description ?? '');
     final urlController = TextEditingController(text: existing?.url ?? '');
     final formKey = GlobalKey<FormState>();
 
@@ -103,26 +101,6 @@ class _PresetLocationsPageState extends State<PresetLocationsPage> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Şehir
-                    TextFormField(
-                      controller: cityController,
-                      style: TextStyle(color: AppColors.textPrimary),
-                      decoration: InputDecoration(
-                        labelText: AppStrings.get('location_city', isTr ? 'tr' : 'en'),
-                        hintText: isTr ? 'Örn: Denizli' : 'e.g. Denizli',
-                        hintStyle: TextStyle(color: AppColors.textHint.withValues(alpha: 0.5)),
-                        labelStyle: TextStyle(color: AppColors.textHint),
-                        filled: true,
-                        fillColor: AppColors.surface,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        prefixIcon: Icon(Icons.location_city_rounded, color: AppColors.textSecondary),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
                     // Harita / Konum Linki
                     TextFormField(
                       controller: urlController,
@@ -158,27 +136,6 @@ class _PresetLocationsPageState extends State<PresetLocationsPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 12),
-
-                    // Açıklama / Not
-                    TextFormField(
-                      controller: descController,
-                      style: TextStyle(color: AppColors.textPrimary),
-                      maxLines: 2,
-                      decoration: InputDecoration(
-                        labelText: AppStrings.get('location_description', isTr ? 'tr' : 'en'),
-                        hintText: isTr ? 'Örn: Zemin kat ana giriş kapısı' : 'e.g. Ground floor main entrance',
-                        hintStyle: TextStyle(color: AppColors.textHint.withValues(alpha: 0.5)),
-                        labelStyle: TextStyle(color: AppColors.textHint),
-                        filled: true,
-                        fillColor: AppColors.surface,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        prefixIcon: Icon(Icons.notes_rounded, color: AppColors.textSecondary),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -204,17 +161,13 @@ class _PresetLocationsPageState extends State<PresetLocationsPage> {
                     if (isEditing) {
                       final updated = existing.copyWith(
                         name: nameController.text.trim(),
-                        city: cityController.text.trim(),
                         url: urlController.text.trim(),
-                        description: descController.text.trim(),
                       );
                       await _locationService.updatePresetLocation(updated);
                     } else {
                       await _locationService.addPresetLocation(
                         name: nameController.text.trim(),
-                        city: cityController.text.trim(),
                         url: urlController.text.trim(),
-                        description: descController.text.trim(),
                       );
                     }
                     if (dialogCtx.mounted) {
@@ -385,9 +338,8 @@ class _PresetLocationsPageState extends State<PresetLocationsPage> {
                   ? allLocations
                   : allLocations.where((loc) {
                       final nameMatch = loc.name.toLowerCase().contains(_searchQuery);
-                      final cityMatch = loc.city.toLowerCase().contains(_searchQuery);
-                      final descMatch = loc.description.toLowerCase().contains(_searchQuery);
-                      return nameMatch || cityMatch || descMatch;
+                      final urlMatch = loc.url.toLowerCase().contains(_searchQuery);
+                      return nameMatch || urlMatch;
                     }).toList();
 
               if (filtered.isEmpty) {
@@ -470,46 +422,14 @@ class _PresetLocationsPageState extends State<PresetLocationsPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      loc.name,
-                                      style: TextStyle(
-                                        color: AppColors.textPrimary,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                  ),
-                                  if (loc.city.isNotEmpty) ...[
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.surface,
-                                        borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(color: AppColors.divider, width: 0.8),
-                                      ),
-                                      child: Text(
-                                        loc.city,
-                                        style: TextStyle(
-                                          color: AppColors.textSecondary,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                              if (loc.description.isNotEmpty) ...[
-                                const SizedBox(height: 4),
-                                Text(
-                                  loc.description,
-                                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                              Text(
+                                loc.name,
+                                style: TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
                                 ),
-                              ],
+                              ),
                               const SizedBox(height: 6),
                               InkWell(
                                 onTap: () => UrlHelper.openMapUrl(context, loc.url),

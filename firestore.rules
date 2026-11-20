@@ -114,6 +114,11 @@ service cloud.firestore {
       allow write: if hasAdminPermission();
     }
 
+    match /hazir_konumlar/{locId} {
+      allow read: if request.auth != null;
+      allow write: if hasAdminPermission();
+    }
+
     match /davetler/{davetId} {
       // Personel kendi davetlerini okuyabilir. Yönetici/Admin hepsini görebilir.
       allow read: if hasManagerPermission() || hasAdminPermission() || (request.auth != null && resource.data.userId == request.auth.uid);
