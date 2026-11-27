@@ -4,6 +4,7 @@ import '../constants/app_strings.dart';
 import '../models/preset_location.dart';
 import '../services/language_service.dart';
 import '../services/location_service.dart';
+import '../utils/url_helper.dart';
 
 /// Hazır konum seçimi için alttan açılan BottomSheet penceresi
 Future<PresetLocation?> showPresetLocationPicker(
@@ -87,22 +88,13 @@ class _PresetLocationPickerSheetState extends State<_PresetLocationPickerSheet> 
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            AppStrings.get('select_from_preset_locations', isTr ? 'tr' : 'en'),
-                            style: TextStyle(
-                              color: AppColors.textPrimary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Text(
-                            isTr ? 'Hazır AVM ve mekan konumları' : 'Preset mall and venue locations',
-                            style: TextStyle(color: AppColors.textHint, fontSize: 12),
-                          ),
-                        ],
+                      child: Text(
+                        AppStrings.get('select_from_preset_locations', isTr ? 'tr' : 'en'),
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                     IconButton(
@@ -222,43 +214,29 @@ class _PresetLocationPickerSheetState extends State<_PresetLocationPickerSheet> 
                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                               child: Row(
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.accentLight.withValues(alpha: 0.12),
-                                      shape: BoxShape.circle,
+                                  GestureDetector(
+                                    onTap: () => UrlHelper.openMapUrl(context, loc.url),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.accentLight.withValues(alpha: 0.12),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(Icons.location_on_rounded, color: AppColors.accentLight, size: 18),
                                     ),
-                                    child: Icon(Icons.location_on_rounded, color: AppColors.accentLight, size: 18),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          loc.name,
-                                          style: TextStyle(
-                                            color: AppColors.textPrimary,
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 14,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          loc.url,
-                                          style: TextStyle(
-                                            color: AppColors.textHint.withValues(alpha: 0.6),
-                                            fontSize: 11,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
+                                    child: Text(
+                                      loc.name,
+                                      style: TextStyle(
+                                        color: AppColors.textPrimary,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  Icon(Icons.check_circle_outline_rounded, color: AppColors.accentLight, size: 20),
                                 ],
                               ),
                             ),

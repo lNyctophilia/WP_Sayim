@@ -407,51 +407,28 @@ class _PresetLocationsPageState extends State<PresetLocationsPage> {
                       border: Border.all(color: AppColors.divider, width: 0.8),
                     ),
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: AppColors.accentLight.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(12),
+                        GestureDetector(
+                          onTap: () => UrlHelper.openMapUrl(context, loc.url),
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: AppColors.accentLight.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(Icons.location_on_rounded, color: AppColors.accentLight, size: 24),
                           ),
-                          child: Icon(Icons.storefront_rounded, color: AppColors.accentLight, size: 24),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                loc.name,
-                                style: TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              InkWell(
-                                onTap: () => UrlHelper.openMapUrl(context, loc.url),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.link_rounded, size: 14, color: AppColors.accentLight),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: Text(
-                                        loc.url,
-                                        style: TextStyle(
-                                          color: AppColors.accentLight,
-                                          fontSize: 12,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            loc.name,
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 10),
