@@ -14,6 +14,7 @@ import '../../../../core/services/davet_service.dart';
 import '../../../../core/services/sayim_service.dart';
 import '../../../../core/services/language_service.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../../core/utils/url_helper.dart';
 import 'add_person_to_sayim_page.dart';
 import 'edit_sayim_page.dart';
 
@@ -593,6 +594,11 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                           ),
                         );
                         break;
+                      case 'go_to_location':
+                        if (currentSayim.locationUrl != null && currentSayim.locationUrl!.trim().isNotEmpty) {
+                          UrlHelper.openMapUrl(context, currentSayim.locationUrl!);
+                        }
+                        break;
                       case 'export_excel':
                         final acceptedDavets = davetler.where((d) => d.status == DavetStatus.accepted).toList();
                         _exportSayimRaporu(currentSayim, acceptedDavets);
@@ -627,6 +633,20 @@ class _SayimDetailPageState extends State<SayimDetailPage>
                         ],
                       ),
                     ),
+                    if (currentSayim.locationUrl != null && currentSayim.locationUrl!.trim().isNotEmpty)
+                      PopupMenuItem<String>(
+                        value: 'go_to_location',
+                        child: Row(
+                          children: [
+                            Icon(Icons.location_on, color: AppColors.accentLight, size: 20),
+                            const SizedBox(width: 12),
+                            Text(
+                              AppStrings.get('go_to_location', isTr ? 'tr' : 'en'),
+                              style: TextStyle(color: AppColors.textPrimary),
+                            ),
+                          ],
+                        ),
+                      ),
                     PopupMenuItem<String>(
                       value: 'export_excel',
                       child: Row(

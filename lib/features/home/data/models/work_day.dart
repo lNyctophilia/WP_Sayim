@@ -10,6 +10,7 @@ class WorkDay {
   final String? grupSaati;
   final String? sayimStartTime;
   final String? sayimId;
+  final String? locationUrl;
 
   const WorkDay({
     required this.date,
@@ -20,6 +21,7 @@ class WorkDay {
     this.grupSaati,
     this.sayimStartTime,
     this.sayimId,
+    this.locationUrl,
   });
 
   WorkDay copyWith({
@@ -31,6 +33,7 @@ class WorkDay {
     String? grupSaati,
     String? sayimStartTime,
     String? sayimId,
+    String? locationUrl,
   }) {
     return WorkDay(
       date: date ?? this.date,
@@ -41,6 +44,7 @@ class WorkDay {
       grupSaati: grupSaati ?? this.grupSaati,
       sayimStartTime: sayimStartTime ?? this.sayimStartTime,
       sayimId: sayimId ?? this.sayimId,
+      locationUrl: locationUrl ?? this.locationUrl,
     );
   }
 
@@ -54,6 +58,7 @@ class WorkDay {
       if (grupSaati != null) 'grupSaati': grupSaati,
       if (sayimStartTime != null) 'sayimStartTime': sayimStartTime,
       if (sayimId != null) 'sayimId': sayimId,
+      if (locationUrl != null && locationUrl!.isNotEmpty) 'locationUrl': locationUrl,
     };
   }
 
@@ -77,6 +82,7 @@ class WorkDay {
       grupSaati: json['grupSaati'] as String?,
       sayimStartTime: json['sayimStartTime'] as String?,
       sayimId: json['sayimId'] as String?,
+      locationUrl: json['locationUrl'] as String?,
     );
   }
 
@@ -109,5 +115,29 @@ class WorkDay {
     } catch (e) {
       return note;
     }
+  }
+
+  DateTime get startDateTime {
+    final timeToUse = (sayimStartTime != null && sayimStartTime!.trim().isNotEmpty)
+        ? sayimStartTime
+        : grupSaati;
+
+    if (timeToUse != null && timeToUse.trim().isNotEmpty) {
+      try {
+        final parts = timeToUse.split(':');
+        final hour = int.parse(parts[0]);
+        final minute = int.parse(parts[1]);
+        return DateTime(date.year, date.month, date.day, hour, minute);
+      } catch (_) {}
+    }
+    return DateTime(date.year, date.month, date.day, 0, 0);
+  }
+
+  /// Şehir içinde konumlar direkt görülebilir.
+  /// Şehir dışında ise paylaşılan konum ancak sayım başlangıç saatinden sonra görülebilir.
+  bool get isLocationVisible {
+    if (isCityCenter) return true;
+    final now = DateTime.now();
+    return now.isAfter(startDateTime) || now.isAtSameMomentAs(startDateTime);
   }
 }

@@ -16,6 +16,7 @@ import '../../../../core/utils/string_utils.dart';
 import '../../../../features/home/presentation/widgets/custom_top_bar.dart';
 import 'manager_panel_page.dart';
 import '../../../../core/theme/theme_service.dart';
+import '../../../../core/widgets/preset_location_picker_sheet.dart';
 
 class CreatePastSayimPage extends StatefulWidget {
   final AppUser currentUser;
@@ -45,6 +46,7 @@ class _CreatePastSayimPageState extends State<CreatePastSayimPage> {
   final _noteController = TextEditingController();
   final _firmaAdiController = TextEditingController();
   final _toplanmaYeriController = TextEditingController();
+  final _locationUrlController = TextEditingController();
   final _maxKisiController = TextEditingController(text: '20');
   final _maxYoneticiController = TextEditingController(text: '2');
   DateTime _selectedDate = DateTime.now();
@@ -72,6 +74,7 @@ class _CreatePastSayimPageState extends State<CreatePastSayimPage> {
     _noteController.dispose();
     _firmaAdiController.dispose();
     _toplanmaYeriController.dispose();
+    _locationUrlController.dispose();
     _maxKisiController.dispose();
     _maxYoneticiController.dispose();
     super.dispose();
@@ -159,6 +162,18 @@ class _CreatePastSayimPageState extends State<CreatePastSayimPage> {
     if (picked != null) {
       setState(() {
         _startTime = picked;
+      });
+    }
+  }
+
+  Future<void> _pickPresetLocation() async {
+    final loc = await showPresetLocationPicker(context, lang: widget.lang);
+    if (loc != null) {
+      setState(() {
+        _locationUrlController.text = loc.url;
+        if (_toplanmaYeriController.text.trim().isEmpty && loc.name.isNotEmpty) {
+          _toplanmaYeriController.text = loc.name;
+        }
       });
     }
   }
@@ -256,6 +271,7 @@ class _CreatePastSayimPageState extends State<CreatePastSayimPage> {
         globalMultiplier: _globalMultiplier,
         isPast: true,
         createdAt: DateTime.now(),
+        locationUrl: _locationUrlController.text.trim().isEmpty ? null : _locationUrlController.text.trim(),
       );
 
       // 2. Davetleri hazırla
@@ -415,6 +431,42 @@ class _CreatePastSayimPageState extends State<CreatePastSayimPage> {
                       validator: (val) => val == null || val.trim().isEmpty
                           ? (AppStrings.get('cannot_be_empty', isTr ? 'tr' : 'en'))
                           : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _locationUrlController,
+                      style: TextStyle(color: AppColors.textPrimary),
+                      keyboardType: TextInputType.url,
+                      onChanged: (_) => setState(() {}),
+                      decoration: InputDecoration(
+                        labelText: AppStrings.get('location_link', isTr ? 'tr' : 'en'),
+                        hintText: 'https://maps.app.goo.gl/...',
+                        hintStyle: TextStyle(color: AppColors.textHint.withValues(alpha: 0.5)),
+                        labelStyle: TextStyle(color: AppColors.textHint),
+                        filled: true,
+                        fillColor: AppColors.surface,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        prefixIcon: Icon(Icons.location_on, color: AppColors.textSecondary),
+                        suffixIcon: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_locationUrlController.text.isNotEmpty)
+                              IconButton(
+                                icon: Icon(Icons.clear_rounded, color: AppColors.textHint, size: 18),
+                                onPressed: () => setState(() => _locationUrlController.clear()),
+                                tooltip: isTr ? 'Temizle' : 'Clear',
+                              ),
+                            IconButton(
+                              icon: Icon(Icons.arrow_drop_down_circle_outlined, color: AppColors.accentLight, size: 20),
+                              tooltip: AppStrings.get('select_from_preset_locations', isTr ? 'tr' : 'en'),
+                              onPressed: _pickPresetLocation,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Row(

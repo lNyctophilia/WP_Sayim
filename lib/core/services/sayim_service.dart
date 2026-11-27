@@ -113,6 +113,8 @@ class SayimService {
         'grupSaati': grup.saat,
         'sayimStartTime': newSayim.startTime,
         'sayimId': newSayim.id,
+        if (newSayim.locationUrl != null && newSayim.locationUrl!.isNotEmpty)
+          'locationUrl': newSayim.locationUrl,
       };
 
       batch.set(workDayRef, workDay, SetOptions(merge: true));
@@ -197,6 +199,7 @@ class SayimService {
           'grupSaati': grup.saat,
           'sayimStartTime': sayim.startTime,
           'sayimId': sayim.id,
+          'locationUrl': sayim.locationUrl,
         };
 
         batch.set(newWorkDayRef, workDay, SetOptions(merge: true));

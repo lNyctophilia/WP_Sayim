@@ -13,6 +13,7 @@ import '../../../../core/services/notification_service.dart';
 import '../widgets/grup_selector.dart';
 import '../widgets/staff_picker.dart';
 import '../../../../core/utils/string_utils.dart';
+import '../../../../core/widgets/preset_location_picker_sheet.dart';
 
 class EditSayimPage extends StatefulWidget {
   final AppUser currentUser;
@@ -41,6 +42,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
   final _noteController = TextEditingController();
   final _firmaAdiController = TextEditingController();
   final _toplanmaYeriController = TextEditingController();
+  final _locationUrlController = TextEditingController();
   final _maxKisiController = TextEditingController(text: '20');
   final _maxYoneticiController = TextEditingController(text: '2');
   DateTime _selectedDate = DateTime.now();
@@ -62,6 +64,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
     _noteController.text = widget.sayim.note;
     _firmaAdiController.text = widget.sayim.firmaAdi;
     _toplanmaYeriController.text = widget.sayim.toplanmaYeri;
+    _locationUrlController.text = widget.sayim.locationUrl ?? '';
     _maxKisiController.text = widget.sayim.maxKisi.toString();
     _maxYoneticiController.text = widget.sayim.maxYonetici.toString();
     _selectedDate = widget.sayim.date;
@@ -83,6 +86,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
     _noteController.dispose();
     _firmaAdiController.dispose();
     _toplanmaYeriController.dispose();
+    _locationUrlController.dispose();
     _maxKisiController.dispose();
     _maxYoneticiController.dispose();
     super.dispose();
@@ -204,6 +208,18 @@ class _EditSayimPageState extends State<EditSayimPage> {
     }
   }
 
+  Future<void> _pickPresetLocation() async {
+    final loc = await showPresetLocationPicker(context, lang: widget.lang);
+    if (loc != null) {
+      setState(() {
+        _locationUrlController.text = loc.url;
+        if (_toplanmaYeriController.text.trim().isEmpty && loc.name.isNotEmpty) {
+          _toplanmaYeriController.text = loc.name;
+        }
+      });
+    }
+  }
+
   Future<void> _submit() async {
     final isTr = widget.lang.currentLang == 'tr';
     bool isValid = _formKey.currentState!.validate();
@@ -292,6 +308,7 @@ class _EditSayimPageState extends State<EditSayimPage> {
         invitedUserIds: _selectedUsers.map((e) => e.user.id).toList(),
         sehirTipi: _sehirTipi,
         globalMultiplier: _globalMultiplier,
+        locationUrl: _locationUrlController.text.trim().isEmpty ? '' : _locationUrlController.text.trim(),
       );
 
       await _sayimService.updateSayim(updatedSayim);
@@ -477,6 +494,42 @@ class _EditSayimPageState extends State<EditSayimPage> {
                       validator: (val) => val == null || val.trim().isEmpty
                           ? (AppStrings.get('cannot_be_empty', isTr ? 'tr' : 'en'))
                           : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _locationUrlController,
+                      style: TextStyle(color: AppColors.textPrimary),
+                      keyboardType: TextInputType.url,
+                      onChanged: (_) => setState(() {}),
+                      decoration: InputDecoration(
+                        labelText: AppStrings.get('location_link', isTr ? 'tr' : 'en'),
+                        hintText: 'https://maps.app.goo.gl/...',
+                        hintStyle: TextStyle(color: AppColors.textHint.withValues(alpha: 0.5)),
+                        labelStyle: TextStyle(color: AppColors.textHint),
+                        filled: true,
+                        fillColor: AppColors.surface,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        prefixIcon: Icon(Icons.location_on, color: AppColors.textSecondary),
+                        suffixIcon: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_locationUrlController.text.isNotEmpty)
+                              IconButton(
+                                icon: Icon(Icons.clear_rounded, color: AppColors.textHint, size: 18),
+                                onPressed: () => setState(() => _locationUrlController.clear()),
+                                tooltip: isTr ? 'Temizle' : 'Clear',
+                              ),
+                            IconButton(
+                              icon: Icon(Icons.arrow_drop_down_circle_outlined, color: AppColors.accentLight, size: 20),
+                              tooltip: AppStrings.get('select_from_preset_locations', isTr ? 'tr' : 'en'),
+                              onPressed: _pickPresetLocation,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Row(

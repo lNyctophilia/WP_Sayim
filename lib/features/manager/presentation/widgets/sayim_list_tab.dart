@@ -158,7 +158,7 @@ class _SayimListTabState extends State<SayimListTab> {
                 child: Padding(
                   padding: EdgeInsets.all(16.0),
                   child: Text(
-                    widget.lang.tr('error_occurred') + '${snapshot.error}',
+                    '${widget.lang.tr('error_occurred')}${snapshot.error}',
                     style: TextStyle(color: AppColors.danger),
                     textAlign: TextAlign.center,
                   ),
@@ -350,6 +350,7 @@ class _SayimListTabState extends State<SayimListTab> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),

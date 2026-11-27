@@ -131,6 +131,7 @@ class DavetService {
       grupSaati: grup.saat,
       sayimStartTime: sayim.startTime,
       sayimId: sayim.id,
+      locationUrl: sayim.locationUrl,
     );
 
     // 4. Batch işlemi (Hem daveti güncelle hem de takvime ekle)

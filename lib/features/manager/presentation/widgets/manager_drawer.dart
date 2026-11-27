@@ -12,6 +12,7 @@ import '../pages/create_past_sayim_page.dart';
 import '../pages/export_sayim_page.dart';
 import '../pages/shuttle_panel_page.dart';
 import '../pages/deleted_users_calendar_page.dart';
+import '../pages/preset_locations_page.dart';
 
 class ManagerDrawer extends StatelessWidget {
   final AppUser currentUser;
@@ -186,6 +187,31 @@ class ManagerDrawer extends StatelessWidget {
                     },
                   ),
                   
+                  ListTile(
+                    leading: Icon(Icons.place_rounded, color: AppColors.textSecondary),
+                    title: Text(lang.tr('preset_locations'), style: TextStyle(color: AppColors.textPrimary)),
+                    subtitle: Text(lang.tr('preset_locations_desc'), style: TextStyle(color: AppColors.textHint, fontSize: 12)),
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      if (onPanelSelected != null) {
+                        onPanelSelected!('locations');
+                      } else {
+                        Navigator.pushReplacement(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (_, __, ___) => PresetLocationsPage(
+                              currentUser: currentUser,
+                              lang: lang,
+                              storage: storage,
+                              themeService: themeService,
+                            ),
+                            transitionDuration: Duration.zero,
+                          ),
+                        );
+                      }
+                    },
+                  ),
+
                   ListTile(
                     leading: Icon(Icons.directions_bus_rounded, color: AppColors.textSecondary),
                     title: Text(lang.tr('shuttle_planning'), style: TextStyle(color: AppColors.textPrimary)),

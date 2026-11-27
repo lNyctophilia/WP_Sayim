@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_strings.dart';
 import '../../../../core/models/app_user.dart';
 import '../../../../core/services/language_service.dart';
+import '../../../../core/utils/url_helper.dart';
 import '../../../home/data/models/monthly_data.dart';
 import '../../../home/data/models/work_day.dart';
 import '../../../home/data/repositories/work_day_repository.dart';
@@ -284,6 +287,15 @@ class _UserCalendarPageState extends State<UserCalendarPage> with TickerProvider
                                             ),
                                           ),
                                         ],
+                                        _buildLocationBadge(
+                                          context,
+                                          locationUrl: existing.locationUrl,
+                                          sayimId: existing.sayimId,
+                                          workDayDocId: existing.sayimId != null
+                                              ? "${existing.date.year}-${existing.date.month.toString().padLeft(2, '0')}-${existing.date.day.toString().padLeft(2, '0')}_${existing.sayimId}"
+                                              : null,
+                                          userId: widget.selectedUser.id,
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -542,7 +554,7 @@ class _UserCalendarPageState extends State<UserCalendarPage> with TickerProvider
   }
 
   Widget _buildRecentNotes(MonthlyData data) {
-    final daysWithNotes = data.workDays.where((d) => d.displayNote.trim().isNotEmpty).toList();
+    final daysWithNotes = data.workDays.where((d) => d.displayNote.trim().isNotEmpty || (d.locationUrl != null && d.locationUrl!.trim().isNotEmpty)).toList();
     daysWithNotes.sort((a, b) => b.date.compareTo(a.date));
 
     final isTr = widget.lang.currentLang == 'tr';
@@ -587,40 +599,60 @@ class _UserCalendarPageState extends State<UserCalendarPage> with TickerProvider
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.divider, width: 1),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Stack(
                     children: [
-                      Row(
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.sticky_note_2_rounded, size: 14, color: AppColors.accentLight),
-                          const SizedBox(width: 6),
-                          Text(
-                            dateStr,
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
-                          ),
-                          if (day.payment > 0) ...[
-                            const Spacer(),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: AppColors.success.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(4),
+                          Row(
+                            children: [
+                              Icon(Icons.sticky_note_2_rounded, size: 14, color: AppColors.accentLight),
+                              const SizedBox(width: 6),
+                              Text(
+                                dateStr,
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
                               ),
+                              if (day.payment > 0) ...[
+                                const Spacer(),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.success.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    '${day.payment.toInt()} ₺',
+                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.success),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 28.0),
                               child: Text(
-                                '${day.payment.toInt()} ₺',
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.success),
+                                day.displayNote.trim(),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(fontSize: 13, color: AppColors.textPrimary, height: 1.4),
                               ),
                             ),
-                          ],
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      Expanded(
-                        child: Text(
-                          day.displayNote.trim(),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 13, color: AppColors.textPrimary, height: 1.4),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: _buildRecentNoteLocationButton(
+                          context,
+                          locationUrl: day.locationUrl,
+                          sayimId: day.sayimId,
+                          workDayDocId: day.sayimId != null
+                              ? "${day.date.year}-${day.date.month.toString().padLeft(2, '0')}-${day.date.day.toString().padLeft(2, '0')}_${day.sayimId}"
+                              : null,
+                          userId: widget.selectedUser.id,
                         ),
                       ),
                     ],
@@ -631,6 +663,158 @@ class _UserCalendarPageState extends State<UserCalendarPage> with TickerProvider
           ),
         const SizedBox(height: 20),
       ],
+    );
+  }
+
+  static final Map<String, String?> _sayimLocationCache = {};
+
+  Widget _buildLocationBadge(
+    BuildContext context, {
+    required String? locationUrl,
+    String? sayimId,
+    String? workDayDocId,
+    String? userId,
+  }) {
+    if (locationUrl != null && locationUrl.trim().isNotEmpty) {
+      return _renderLocationBadge(context, locationUrl.trim());
+    }
+    if (sayimId != null && sayimId.isNotEmpty) {
+      if (_sayimLocationCache.containsKey(sayimId)) {
+        final cached = _sayimLocationCache[sayimId];
+        if (cached != null && cached.trim().isNotEmpty) {
+          return _renderLocationBadge(context, cached.trim());
+        }
+        return const SizedBox.shrink();
+      }
+      return FutureBuilder<DocumentSnapshot>(
+        future: FirebaseFirestore.instance.collection('sayimlar').doc(sayimId).get(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData || snapshot.data?.data() == null) {
+            return const SizedBox.shrink();
+          }
+          final data = snapshot.data!.data() as Map<String, dynamic>;
+          final url = data['locationUrl'] as String?;
+          _sayimLocationCache[sayimId] = url;
+          if (url != null && url.trim().isNotEmpty) {
+            if (userId != null && workDayDocId != null) {
+              FirebaseFirestore.instance
+                  .collection('personel_takvimi')
+                  .doc(userId)
+                  .collection('gunler')
+                  .doc(workDayDocId)
+                  .set({'locationUrl': url.trim()}, SetOptions(merge: true));
+            }
+            return _renderLocationBadge(context, url.trim());
+          }
+          return const SizedBox.shrink();
+        },
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _renderLocationBadge(BuildContext context, String url) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 8.0),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => UrlHelper.openMapUrl(context, url),
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 5,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.accentLight.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.location_on, size: 14, color: AppColors.accentLight),
+                const SizedBox(width: 4),
+                Text(
+                  AppStrings.get('location', widget.lang.currentLang),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.accentLight,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentNoteLocationButton(
+    BuildContext context, {
+    required String? locationUrl,
+    String? sayimId,
+    String? workDayDocId,
+    String? userId,
+  }) {
+    if (locationUrl != null && locationUrl.trim().isNotEmpty) {
+      return _renderCardLocationIcon(context, locationUrl.trim());
+    }
+    if (sayimId != null && sayimId.isNotEmpty) {
+      if (_sayimLocationCache.containsKey(sayimId)) {
+        final cached = _sayimLocationCache[sayimId];
+        if (cached != null && cached.trim().isNotEmpty) {
+          return _renderCardLocationIcon(context, cached.trim());
+        }
+        return const SizedBox.shrink();
+      }
+      return FutureBuilder<DocumentSnapshot>(
+        future: FirebaseFirestore.instance.collection('sayimlar').doc(sayimId).get(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData || snapshot.data?.data() == null) {
+            return const SizedBox.shrink();
+          }
+          final data = snapshot.data!.data() as Map<String, dynamic>;
+          final url = data['locationUrl'] as String?;
+          _sayimLocationCache[sayimId] = url;
+          if (url != null && url.trim().isNotEmpty) {
+            if (userId != null && workDayDocId != null) {
+              FirebaseFirestore.instance
+                  .collection('personel_takvimi')
+                  .doc(userId)
+                  .collection('gunler')
+                  .doc(workDayDocId)
+                  .set({'locationUrl': url.trim()}, SetOptions(merge: true));
+            }
+            return _renderCardLocationIcon(context, url.trim());
+          }
+          return const SizedBox.shrink();
+        },
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _renderCardLocationIcon(BuildContext context, String url) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => UrlHelper.openMapUrl(context, url),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: AppColors.accentLight.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.location_on,
+            size: 14,
+            color: AppColors.accentLight,
+          ),
+        ),
+      ),
     );
   }
 }

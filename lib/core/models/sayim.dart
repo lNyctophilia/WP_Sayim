@@ -49,6 +49,7 @@ class Sayim {
   final DateTime createdAt;
   final String? startTime;
   final String city;
+  final String? locationUrl;
 
   Sayim({
     required this.id,
@@ -69,6 +70,7 @@ class Sayim {
     required this.createdAt,
     this.startTime,
     this.city = 'Denizli',
+    this.locationUrl,
   });
 
   Sayim copyWith({
@@ -90,6 +92,7 @@ class Sayim {
     DateTime? createdAt,
     String? startTime,
     String? city,
+    String? locationUrl,
   }) {
     return Sayim(
       id: id ?? this.id,
@@ -110,6 +113,7 @@ class Sayim {
       createdAt: createdAt ?? this.createdAt,
       startTime: startTime ?? this.startTime,
       city: city ?? this.city,
+      locationUrl: locationUrl ?? this.locationUrl,
     );
   }
 
@@ -147,6 +151,7 @@ class Sayim {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       startTime: data['startTime'] as String?,
       city: data['city'] as String? ?? 'Denizli',
+      locationUrl: data['locationUrl'] as String?,
     );
   }
 
@@ -197,6 +202,43 @@ class Sayim {
 
   bool get isClosed => effectiveStatus == SayimStatus.closed;
 
+  /// Sayım başlangıç tarih ve saati
+  DateTime get startDateTime {
+    if (startTime != null && startTime!.isNotEmpty) {
+      try {
+        final parts = startTime!.split(':');
+        final hour = int.parse(parts[0]);
+        final minute = int.parse(parts[1]);
+        return DateTime(date.year, date.month, date.day, hour, minute);
+      } catch (_) {}
+    }
+
+    if (gruplar.isNotEmpty) {
+      String earliest = gruplar.first.saat;
+      for (var g in gruplar) {
+        if (g.saat.isNotEmpty && (earliest.isEmpty || g.saat.compareTo(earliest) < 0)) {
+          earliest = g.saat;
+        }
+      }
+      try {
+        final parts = earliest.split(':');
+        final hour = int.parse(parts[0]);
+        final minute = int.parse(parts[1]);
+        return DateTime(date.year, date.month, date.day, hour, minute);
+      } catch (_) {}
+    }
+
+    return DateTime(date.year, date.month, date.day, 0, 0);
+  }
+
+  /// Şehir içinde konumlar direkt görülebilir.
+  /// Şehir dışında ise paylaşılan konum ancak sayım başlangıç saatinden sonra görülebilir.
+  bool get isLocationVisible {
+    if (sehirTipi == SehirTipi.ici) return true;
+    final now = DateTime.now();
+    return now.isAfter(startDateTime) || now.isAtSameMomentAs(startDateTime);
+  }
+
   /// Firestore'a yaz
   Map<String, dynamic> toFirestore() {
     return {
@@ -217,6 +259,7 @@ class Sayim {
       'createdAt': Timestamp.fromDate(createdAt),
       'startTime': startTime,
       'city': city,
+      if (locationUrl != null && locationUrl!.isNotEmpty) 'locationUrl': locationUrl,
     };
   }
 

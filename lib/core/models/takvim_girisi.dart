@@ -10,6 +10,7 @@ class TakvimGirisi {
   final double ucret;
   final String not;
   final String? sayimId; // Hangi sayımdan geldiğinin referansı
+  final String? locationUrl;
 
   const TakvimGirisi({
     required this.id,
@@ -17,6 +18,7 @@ class TakvimGirisi {
     required this.ucret,
     this.not = '',
     this.sayimId,
+    this.locationUrl,
   });
 
   bool get isCityCenter => sehirIciDisi == 'ici';
@@ -30,6 +32,7 @@ class TakvimGirisi {
       ucret: (data['ucret'] as num?)?.toDouble() ?? 0.0,
       not: data['not'] as String? ?? '',
       sayimId: data['sayimId'] as String?,
+      locationUrl: data['locationUrl'] as String?,
     );
   }
 
@@ -40,6 +43,7 @@ class TakvimGirisi {
       'ucret': ucret,
       'not': not,
       'sayimId': sayimId,
+      if (locationUrl != null && locationUrl!.isNotEmpty) 'locationUrl': locationUrl,
     };
   }
 
@@ -51,6 +55,7 @@ class TakvimGirisi {
     double? ucret,
     String? not,
     String? sayimId,
+    String? locationUrl,
   }) {
     return TakvimGirisi(
       id: id ?? this.id,
@@ -58,6 +63,7 @@ class TakvimGirisi {
       ucret: ucret ?? this.ucret,
       not: not ?? this.not,
       sayimId: sayimId ?? this.sayimId,
+      locationUrl: locationUrl ?? this.locationUrl,
     );
   }
 }
