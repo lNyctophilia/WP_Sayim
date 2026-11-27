@@ -443,7 +443,6 @@ class _PresetLocationsPageState extends State<PresetLocationsPage> {
                                         style: TextStyle(
                                           color: AppColors.accentLight,
                                           fontSize: 12,
-                                          decoration: TextDecoration.underline,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,

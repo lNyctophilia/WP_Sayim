@@ -190,7 +190,7 @@ class ManagerShellPageState extends State<ManagerShellPage> {
         }
         break;
       case 'locations':
-        if (_liveUser.hasAdminPermission) {
+        if (_liveUser.hasManagerPermission || _liveUser.hasAdminPermission) {
           return PresetLocationsPage(
             currentUser: _liveUser,
             storage: widget.storage,

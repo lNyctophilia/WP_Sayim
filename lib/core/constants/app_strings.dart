@@ -507,7 +507,7 @@ class AppStrings {
 
     // Hazır Konumlar
     'preset_locations': {'tr': 'Hazır Konumlar', 'en': 'Preset Locations'},
-    'preset_locations_desc': {'tr': 'AVM ve sık kullanılan mekan konumları', 'en': 'Mall and frequent place locations'},
+    'preset_locations_desc': {'tr': 'Konum Yönetimi', 'en': 'Location Management'},
     'add_preset_location': {'tr': 'Hazır Konum Ekle', 'en': 'Add Preset Location'},
     'edit_preset_location': {'tr': 'Konumu Düzenle', 'en': 'Edit Location'},
     'delete_preset_location': {'tr': 'Konumu Sil', 'en': 'Delete Location'},
