@@ -294,6 +294,59 @@
         }
       });
 
+      // ─── ANDROID CHROME: PERIODIC BACKGROUND SYNC ─────────────────────────
+      // Uygulama kapalıyken Chrome'un SW'ı periyodik uyandırmasını sağlar.
+      // Bu, Android Chrome'da token'ın 60 günlük inactive sayacı dolmadan
+      // yenilenmesini garantiler (iOS'taki pushsubscriptionchange'e karşılık gelir).
+      async function registerPeriodicTokenRefresh() {
+        try {
+          if (!('periodicSync' in ServiceWorkerRegistration.prototype)) {
+            console.log('[Periodic Sync] Bu tarayıcı Periodic Background Sync desteklemiyor.');
+            return;
+          }
+          var registration = await navigator.serviceWorker.ready;
+          var tags = await registration.periodicSync.getTags();
+          if (tags.includes('fcm-token-refresh')) {
+            console.log('[Periodic Sync] Zaten kayıtlı, tekrar kayıt atlanıyor.');
+            return;
+          }
+          await registration.periodicSync.register('fcm-token-refresh', {
+            minInterval: 5 * 24 * 60 * 60 * 1000 // 5 gün (token expire süresinin altında)
+          });
+          console.log('[Periodic Sync] Token refresh 5 günde bir kaydedildi.');
+        } catch (e) {
+          // İzin verilmemişse veya desteklenmiyorsa sessizce geç
+          console.warn('[Periodic Sync] Kayıt başarısız (izin yok veya desteklenmiyor):', e.message);
+        }
+      }
+
+      // Uygulama kapalıyken SW periodic sync tetiklenmiş olabilir.
+      // Cache'e yazılan flag'i oku ve token yenileme sinyali fırlat.
+      async function checkPeriodicSyncFlag() {
+        try {
+          var cache = await caches.open('wp-sayim-sync-flags');
+          var response = await cache.match('/periodic-token-refresh-needed');
+          if (response) {
+            var flagValue = await response.text();
+            if (flagValue === 'true') {
+              await cache.delete('/periodic-token-refresh-needed');
+              window._swTokenRefreshNeeded = true;
+              window.dispatchEvent(new CustomEvent('fcm-token-refresh-needed', {
+                detail: { reason: 'PERIODIC_SYNC' }
+              }));
+              console.log('[Periodic Sync] Cache flag okundu, token yenileme tetiklendi.');
+            }
+          }
+        } catch (e) {
+          console.warn('[Periodic Sync] Cache flag kontrolü başarısız:', e.message);
+        }
+      }
+
+      navigator.serviceWorker.ready.then(function() {
+        checkPeriodicSyncFlag();
+        registerPeriodicTokenRefresh();
+      });
+
       // ─── FIREBASE MESSAGING SW REGISTER (updateViaCache: none) ───
       const originalRegister = navigator.serviceWorker.register;
       navigator.serviceWorker.register = function(url, options) {
