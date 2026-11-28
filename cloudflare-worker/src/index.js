@@ -112,6 +112,18 @@ async function handleFcmTokenError(db, userId, userDoc, error, env) {
         console.error(`${prefix} Sayac güncellenirken hata:`, updateErr);
       }
     }
+  } else {
+    // Bilinmeyen / diğer FCM hataları (400/404-other/5xx vb.): Token'ı silme ama teşhis için kaydet
+    const reason = `${error.code || 'messaging/unknown'}${error.message ? ': ' + error.message : ''}`;
+    console.error(`${prefix} [OTHER-FAIL] Token korunuyor. userId: ${userId}, ${reason}`);
+    try {
+      await db.updateDoc('users', userId, {
+        fcmTokenLastFailAt: new Date().toISOString(),
+        fcmTokenLastFailReason: reason,
+      });
+    } catch (updateErr) {
+      console.error(`${prefix} Hata sebebi kaydedilirken hata:`, updateErr);
+    }
   }
 }
 
@@ -175,6 +187,7 @@ async function sendNotificationAndLog(db, fcm, { userId, title, body, type, rela
           headers: {
             Topic: safeTopic,
             Urgency: 'high',
+            TTL: '86400',
           },
           notification: {
             title,
@@ -210,10 +223,10 @@ async function sendNotificationAndLog(db, fcm, { userId, title, body, type, rela
         ];
         if (currentFailCount >= 3 || !softCodes.includes(e.code)) {
           // 3. hata veya kesin geçersiz token → ERROR (gerçek alarm)
-          console.error(`[FCM] Token siliniyor. userId: ${userId}, code: ${e.code}, sayac: ${currentFailCount}, retries: ${e.retries ?? 0}`);
+          console.error(`[FCM] Gönderim hatası. userId: ${userId}, code: ${e.code}, msg: ${e.message}, sayac: ${currentFailCount}, retries: ${e.retries ?? 0}`);
         } else {
           // 1. veya 2. soft-fail → sadece WARN (beklenen, alarm verme)
-          console.warn(`[FCM] Soft-fail ${currentFailCount}/3. userId: ${userId}, code: ${e.code}`);
+          console.warn(`[FCM] Soft-fail ${currentFailCount}/3. userId: ${userId}, code: ${e.code}, msg: ${e.message}`);
         }
         await handleFcmTokenError(db, userId, userDoc, e, env);
       }
@@ -524,10 +537,12 @@ async function handleTestNotification(body, db, fcm, env) {
           notification: { channelId: 'sayim_notifications', defaultSound: true, tag: `test_${userId}` },
         },
         webpush: {
-          headers: { Urgency: 'high' },
+          headers: { Urgency: 'high', TTL: '86400' },
           notification: {
             title: 'Test Bildirimi',
             body: 'Uygulama kapalıyken (veya arka plandayken) de bildirim alabiliyorsunuz. Harika!',
+            icon: `${appUrl}icons/Icon-192.png`,
+            badge: `${appUrl}icons/Icon-192.png`,
             requireInteraction: true,
             vibrate: [200, 100, 200],
           },
