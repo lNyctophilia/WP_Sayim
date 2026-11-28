@@ -12,7 +12,13 @@ void showWebNotification(String title, String body) {
         window._tempShowNotification = async function(title, body) {
           try {
             const regs = await navigator.serviceWorker.getRegistrations();
-            let reg = regs && regs.length > 0 ? regs[0] : await navigator.serviceWorker.ready;
+            let reg = regs && regs.find(r => {
+              const url = r.active?.scriptURL || r.installing?.scriptURL || r.waiting?.scriptURL || '';
+              return url.includes('firebase-messaging-sw');
+            });
+            if (!reg && regs && regs.length > 0) {
+              reg = regs[0];
+            }
             if (reg) {
               const tag = 'sayim-group';
               const existingNotifications = await reg.getNotifications({ tag: tag });
