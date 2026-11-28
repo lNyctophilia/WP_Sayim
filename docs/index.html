@@ -294,23 +294,49 @@
         }
       });
 
+      // ─── FIREBASE SW REGISTRATION BULUCU ──────────────────────────────────
+      // firebase-messaging-sw.js ayrı scope (/firebase-cloud-messaging-push-scope) kullandığı için
+      // navigator.serviceWorker.ready sayfa scope'unda asla resolve olmaz.
+      // Bu yüzden doğrudan scriptURL/scope üzerinden registration'ı buluyoruz.
+      async function _getFirebaseSwRegistration() {
+        try {
+          const baseEl = document.querySelector('base');
+          let baseHref = baseEl ? baseEl.getAttribute('href') : '/';
+          if (!baseHref.endsWith('/')) baseHref += '/';
+          const targetScope = new URL(baseHref + 'firebase-cloud-messaging-push-scope', window.location.origin).href;
+
+          const regs = await navigator.serviceWorker.getRegistrations();
+          const firebaseReg = regs.find(function(r) {
+            const url = r.active?.scriptURL || r.installing?.scriptURL || r.waiting?.scriptURL || '';
+            return url.includes('firebase-messaging-sw') || r.scope === targetScope;
+          });
+          return firebaseReg || null;
+        } catch (e) {
+          return null;
+        }
+      }
+
       // ─── ANDROID CHROME: PERIODIC BACKGROUND SYNC ─────────────────────────
       // Uygulama kapalıyken Chrome'un SW'ı periyodik uyandırmasını sağlar.
       // Bu, Android Chrome'da token'ın 60 günlük inactive sayacı dolmadan
       // yenilenmesini garantiler (iOS'taki pushsubscriptionchange'e karşılık gelir).
-      async function registerPeriodicTokenRefresh() {
+      async function registerPeriodicTokenRefresh(registration) {
         try {
           if (!('periodicSync' in ServiceWorkerRegistration.prototype)) {
             console.log('[Periodic Sync] Bu tarayıcı Periodic Background Sync desteklemiyor.');
             return;
           }
-          var registration = await navigator.serviceWorker.ready;
-          var tags = await registration.periodicSync.getTags();
+          var reg = registration || await _getFirebaseSwRegistration();
+          if (!reg) {
+            console.log('[Periodic Sync] Firebase SW henüz kayıtlı değil, atlanıyor.');
+            return;
+          }
+          var tags = await reg.periodicSync.getTags();
           if (tags.includes('fcm-token-refresh')) {
             console.log('[Periodic Sync] Zaten kayıtlı, tekrar kayıt atlanıyor.');
             return;
           }
-          await registration.periodicSync.register('fcm-token-refresh', {
+          await reg.periodicSync.register('fcm-token-refresh', {
             minInterval: 5 * 24 * 60 * 60 * 1000 // 5 gün (token expire süresinin altında)
           });
           console.log('[Periodic Sync] Token refresh 5 günde bir kaydedildi.');
@@ -342,15 +368,18 @@
         }
       }
 
-      navigator.serviceWorker.ready.then(function() {
-        checkPeriodicSyncFlag();
-        registerPeriodicTokenRefresh();
+      checkPeriodicSyncFlag();
+      _getFirebaseSwRegistration().then(function(reg) {
+        if (reg) {
+          registerPeriodicTokenRefresh(reg);
+        }
       });
 
       // ─── FIREBASE MESSAGING SW REGISTER (updateViaCache: none) ───
       const originalRegister = navigator.serviceWorker.register;
       navigator.serviceWorker.register = function(url, options) {
-        if (url === '/firebase-messaging-sw.js' || url.includes('firebase-messaging-sw.js')) {
+        const isFirebaseSw = (url === '/firebase-messaging-sw.js' || url.includes('firebase-messaging-sw.js'));
+        if (isFirebaseSw) {
           console.log('[SW Interceptor] Firebase SW isteği yakalandı. Yönlendiriliyor...');
           const baseEl = document.querySelector('base');
           let baseHref = baseEl ? baseEl.getAttribute('href') : '/';
@@ -361,7 +390,13 @@
             updateViaCache: 'none'
           });
         }
-        return originalRegister.call(navigator.serviceWorker, url, options);
+        const regPromise = originalRegister.call(navigator.serviceWorker, url, options);
+        if (isFirebaseSw) {
+          regPromise.then(function(reg) {
+            registerPeriodicTokenRefresh(reg);
+          }).catch(function() {});
+        }
+        return regPromise;
       };
     }
   </script>
@@ -387,7 +422,13 @@
         if (!('serviceWorker' in navigator) || Notification.permission !== 'granted') return;
         
         const registrations = await navigator.serviceWorker.getRegistrations();
-        let reg = registrations && registrations.length > 0 ? registrations[0] : await navigator.serviceWorker.ready;
+        let reg = registrations && registrations.find(function(r) {
+          const url = r.active?.scriptURL || r.installing?.scriptURL || r.waiting?.scriptURL || '';
+          return url.includes('firebase-messaging-sw');
+        });
+        if (!reg && registrations && registrations.length > 0) {
+          reg = registrations[0];
+        }
         
         if (reg) {
           await reg.showNotification(title, {
